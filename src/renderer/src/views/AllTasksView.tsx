@@ -154,6 +154,11 @@ export function AllTasksView(): React.JSX.Element {
         await load();
     };
 
+    const handleSetText = async (id: number, text: string): Promise<void> => {
+        await window.api.updateTask(id, { text });
+        await load(); // or load() depending on the file
+    };
+
     const totalCount = tasks.length;
     const openCount = tasks.filter((t) => !t.done).length;
     const doneCount = tasks.filter((t) => t.done).length;
@@ -306,6 +311,7 @@ export function AllTasksView(): React.JSX.Element {
                                       onDelete={handleDelete}
                                       onSetDueDate={handleSetDueDate}
                                       onSetPriority={handleSetPriority}
+                                      onSetText={handleSetText}
                                   />
                               ))}
                           </section>
@@ -324,6 +330,7 @@ export function AllTasksView(): React.JSX.Element {
                           onDelete={handleDelete}
                           onSetDueDate={handleSetDueDate}
                           onSetPriority={handleSetPriority}
+                          onSetText={handleSetText}
                       />
                   ))}
         </div>

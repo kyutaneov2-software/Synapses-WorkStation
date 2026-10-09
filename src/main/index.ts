@@ -10,6 +10,7 @@ import {
     startNotificationScheduler,
     stopNotificationScheduler,
 } from "./services/notifications";
+import { runAutoBackup } from "./services/backup";
 
 // Set AppUserModelID BEFORE app.whenReady() — Windows needs this for notifications
 // In dev mode, we point at the Electron binary so Windows routes notifications correctly
@@ -54,6 +55,7 @@ app.whenReady().then(() => {
     runMigrations();
     console.log("Database initialized at:", db.name);
     migrateLegacyJson();
+    runAutoBackup();
 
     db.prepare(
         `UPDATE sessions SET ended_at = datetime('now') WHERE ended_at IS NULL`,

@@ -18,6 +18,26 @@ export function runMigrations(): void {
         db.exec(schemaSql);
         db.pragma("user_version = 1");
     }
+
+    if (userVersion < 2) {
+        console.log("Running migration to version 2 — project currency...");
+        // Add currency column to projects
+        db.exec(`ALTER TABLE projects ADD COLUMN currency TEXT DEFAULT 'USD'`);
+        // Backfill from existing phases
+        db.exec(`
+      UPDATE projects
+      SET currency = (
+        SELECT currency FROM project_phases
+        WHERE project_phases.project_id = projects.id
+        ORDER BY sort_order ASC
+        LIMIT 1
+      )
+      WHERE EXISTS (
+        SELECT 1 FROM project_phases WHERE project_phases.project_id = projects.id
+      )
+    `);
+        db.pragma("user_version = 2");
+    }
 }
 
 export default db;

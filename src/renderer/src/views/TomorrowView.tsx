@@ -89,6 +89,11 @@ export function TomorrowView(): React.JSX.Element {
         await load();
     };
 
+    const handleSetText = async (id: number, text: string): Promise<void> => {
+        await window.api.updateTask(id, { text });
+        await load(); // or load() depending on the file
+    };
+
     const projectById = new Map(projects.map((p) => [p.id, p]));
 
     if (loading)
@@ -125,6 +130,7 @@ export function TomorrowView(): React.JSX.Element {
                     onDelete={handleDelete}
                     onSetDueDate={handleSetDueDate}
                     onSetPriority={handleSetPriority}
+                    onSetText={handleSetText}
                 />
             ))}
 

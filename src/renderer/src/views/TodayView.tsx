@@ -53,6 +53,11 @@ export function TodayView(): React.JSX.Element {
         await reload();
     };
 
+    const handleSetText = async (id: number, text: string): Promise<void> => {
+        await window.api.updateTask(id, { text });
+        await reload(); // or load() depending on the file
+    };
+
     const overdue = tasks.filter((t) => isOverdue(t.planned_for));
     const regular = tasks.filter((t) => !isOverdue(t.planned_for));
     const projectById = new Map(projects.map((p) => [p.id, p]));
@@ -96,6 +101,7 @@ export function TodayView(): React.JSX.Element {
                             onDelete={handleDelete}
                             onSetDueDate={handleSetDueDate}
                             onSetPriority={handleSetPriority}
+                            onSetText={handleSetText}
                         />
                     ))}
                 </section>
@@ -119,6 +125,7 @@ export function TodayView(): React.JSX.Element {
                             onDelete={handleDelete}
                             onSetDueDate={handleSetDueDate}
                             onSetPriority={handleSetPriority}
+                            onSetText={handleSetText}
                         />
                     ))}
                 </section>

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Settings } from "lucide-react";
 import type {
     Project,
     Task,
@@ -133,12 +134,16 @@ export function ProjectDetailView({
         await load();
     };
 
+    const handleSetText = async (id: number, text: string): Promise<void> => {
+        await window.api.updateTask(id, { text });
+        await load();
+    };
+
     const handleAddPhase = async (
         name: string,
         amount: number,
-        currency: string,
     ): Promise<void> => {
-        await window.api.createPhase(projectId, name, amount, currency);
+        await window.api.createPhase(projectId, name, amount);
         await load();
     };
 
@@ -185,7 +190,7 @@ export function ProjectDetailView({
         .filter((p) => p.paid)
         .reduce((sum, p) => sum + (p.amount || 0), 0);
     const remaining = total - paid;
-    const currency = phases[0]?.currency || "USD";
+    const currency = project.currency || "USD";
     const symbol = CURRENCY_SYMBOLS[currency] || currency;
 
     const moneySummary = total > 0 && (
@@ -244,7 +249,7 @@ export function ProjectDetailView({
                         onClick={() => setShowEdit(true)}
                         title="Edit project details"
                     >
-                        ⚙
+                        <Settings size={15} strokeWidth={2} />
                     </button>
                 </div>
             </div>
@@ -299,6 +304,7 @@ export function ProjectDetailView({
                                     onDelete={handleDeleteTask}
                                     onSetDueDate={handleSetDueDate}
                                     onSetPriority={handleSetPriority}
+                                    onSetText={handleSetText}
                                 />
                             ))}
                         </section>
@@ -315,6 +321,7 @@ export function ProjectDetailView({
                                     onDelete={handleDeleteTask}
                                     onSetDueDate={handleSetDueDate}
                                     onSetPriority={handleSetPriority}
+                                    onSetText={handleSetText}
                                 />
                             ))}
                         </section>
@@ -332,6 +339,7 @@ export function ProjectDetailView({
                 <div className="tab-content">
                     <PhaseList
                         phases={phases}
+                        currency={currency}
                         onAdd={handleAddPhase}
                         onUpdate={handleUpdatePhase}
                         onDelete={handleDeletePhase}

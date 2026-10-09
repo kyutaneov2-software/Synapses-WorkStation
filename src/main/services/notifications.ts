@@ -18,7 +18,6 @@ function getDueToday(): DueItem[] {
     const today = getTodayStr();
     const items: DueItem[] = [];
 
-    // Tasks due today (by due_date) — includes done tasks for completeness
     const tasks = db
         .prepare(
             `
@@ -40,7 +39,6 @@ function getDueToday(): DueItem[] {
         });
     }
 
-    // Projects due today
     const projects = db
         .prepare(
             `
@@ -104,22 +102,19 @@ function showDeadlineNotification(): void {
     if (items.length === 1) {
         const item = items[0];
         new Notification({
-            title: item.isProject
-                ? "📁 Project due today"
-                : "📌 Task due today",
+            title: item.isProject ? "Project due today" : "Task due today",
             body: item.projectTitle
-                ? `${item.text}\n${item.projectTitle}`
+                ? `${item.text} — ${item.projectTitle}`
                 : item.text,
         }).show();
         return;
     }
 
-    // Multiple items — show first 3 + count
     const preview = items
         .slice(0, 3)
-        .map((i) => `• ${i.text}`)
+        .map((i) => `- ${i.text}`)
         .join("\n");
-    const more = items.length > 3 ? `\n…and ${items.length - 3} more` : "";
+    const more = items.length > 3 ? `\nand ${items.length - 3} more` : "";
 
     new Notification({
         title: `${items.length} things due today`,
@@ -139,28 +134,26 @@ function showOverdueNotification(): void {
 
     if (items.length === 1) {
         new Notification({
-            title: "⚠ 1 task overdue",
+            title: "1 task overdue",
             body: items[0].text,
         }).show();
         return;
     }
 
     new Notification({
-        title: `⚠ ${items.length} tasks overdue`,
-        body: "Open Synapses to see what slipped.",
+        title: `${items.length} tasks overdue`,
+        body: "Open Synapses WorkStation to see what slipped.",
     }).show();
 }
 
 export function startNotificationScheduler(): void {
-    // Morning notice at 8:00 AM — what's due today
     schedule.scheduleJob("0 8 * * *", () => {
-        console.log("[notifications] Morning deadline check running…");
+        console.log("[notifications] Morning deadline check running...");
         showDeadlineNotification();
     });
 
-    // Evening nudge at 5:00 PM — what slipped
     schedule.scheduleJob("0 17 * * *", () => {
-        console.log("[notifications] Evening overdue check running…");
+        console.log("[notifications] Evening overdue check running...");
         showOverdueNotification();
     });
 

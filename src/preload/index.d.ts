@@ -43,7 +43,6 @@ export interface SynapsesAPI {
         projectId: number,
         name: string,
         amount: number,
-        currency: string,
     ) => Promise<ProjectPhase>;
     updatePhase: (
         id: number,
@@ -62,7 +61,6 @@ export interface SynapsesAPI {
     getSessionTotals: () => Promise<SessionTotals>;
 
     healthCheck: () => Promise<{ alive: number }>;
-    testNotification: () => Promise<void>;
     getDashboardData: () => Promise<DashboardData>;
 
     onDataChanged: (callback: () => void) => () => void;

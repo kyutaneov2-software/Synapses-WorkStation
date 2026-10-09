@@ -71,9 +71,9 @@ export function DashboardView(): React.JSX.Element {
     }, []);
 
     const displayCurrency = useMemo(() => {
-        if (!data || data.phases.length === 0) return "USD";
+        if (!data || data.projects.length === 0) return "USD";
         const counts = new Map<string, number>();
-        for (const p of data.phases) {
+        for (const p of data.projects) {
             counts.set(p.currency, (counts.get(p.currency) || 0) + 1);
         }
         let best = "USD";
@@ -110,7 +110,11 @@ export function DashboardView(): React.JSX.Element {
         const weekAgo = new Date(today);
         weekAgo.setDate(weekAgo.getDate() - 7);
 
-        const relevant = phases.filter((p) => p.currency === displayCurrency);
+        const projectById = new Map(projects.map((p) => [p.id, p]));
+        const relevant = phases.filter((phase) => {
+            const proj = projectById.get(phase.project_id);
+            return proj?.currency === displayCurrency;
+        });
 
         const earned = relevant
             .filter((p) => p.paid)
@@ -211,7 +215,9 @@ export function DashboardView(): React.JSX.Element {
                 );
                 const doneTasks = projectTasks.filter((t) => t.done).length;
                 const projectPhases = data.phases.filter(
-                    (p) => p.project_id === project.id,
+                    (p) =>
+                        p.project_id === project.id &&
+                        p.currency === project.currency,
                 );
                 const moneyPaid = projectPhases
                     .filter((p) => p.paid)
@@ -260,19 +266,9 @@ export function DashboardView(): React.JSX.Element {
         <div className="view dashboard-view">
             <div className="view-header">
                 <h2>Dashboard</h2>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <button
-                        className="test-notification-btn"
-                        onClick={() => window.api.testNotification()}
-                        title="Fire a test notification"
-                    >
-                        🔔 Test
-                    </button>
-                    <span className="view-count">{todayLabel}</span>
-                </div>
+                <span className="view-count">{todayLabel}</span>
             </div>
 
-            {/* Stat cards */}
             <div className="stat-grid">
                 <div className="stat-card stat-green">
                     <span className="stat-label">Earned</span>
@@ -344,7 +340,6 @@ export function DashboardView(): React.JSX.Element {
                 </div>
             </div>
 
-            {/* Two-column row */}
             <div className="dashboard-row">
                 <div className="dashboard-panel">
                     <h3>Deadlines this week</h3>
@@ -426,7 +421,6 @@ export function DashboardView(): React.JSX.Element {
                 </div>
             </div>
 
-            {/* Project health */}
             <div className="dashboard-panel">
                 <h3>Project health</h3>
                 {projectHealth.length === 0 ? (
@@ -438,6 +432,9 @@ export function DashboardView(): React.JSX.Element {
                         {projectHealth.map((h) => {
                             const projectSeconds =
                                 data.sessionTotals.byProject[h.project.id] ?? 0;
+                            const projectSymbol =
+                                CURRENCY_SYMBOLS[h.project.currency] ||
+                                h.project.currency;
                             return (
                                 <div key={h.project.id} className="health-row">
                                     <div className="health-header">
@@ -445,9 +442,9 @@ export function DashboardView(): React.JSX.Element {
                                             {h.project.title}
                                         </span>
                                         <span className="health-money">
-                                            {symbol}
+                                            {projectSymbol}
                                             {h.moneyPaid.toLocaleString()} /{" "}
-                                            {symbol}
+                                            {projectSymbol}
                                             {h.moneyTotal.toLocaleString()}
                                             {h.moneyTotal > 0 &&
                                                 h.moneyPaid ===

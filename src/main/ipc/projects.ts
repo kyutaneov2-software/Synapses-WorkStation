@@ -14,11 +14,11 @@ export function registerProjectHandlers(): void {
 
     ipcMain.handle(
         "db:create-project",
-        (_, title: string, client: string): Project => {
+        (_, title: string, client: string, currency = "USD"): Project => {
             const stmt = db.prepare(
-                "INSERT INTO projects (title, client) VALUES (?, ?)",
+                "INSERT INTO projects (title, client, currency) VALUES (?, ?, ?)",
             );
-            const result = stmt.run(title, client);
+            const result = stmt.run(title, client, currency);
             const project = db
                 .prepare("SELECT * FROM projects WHERE id = ?")
                 .get(result.lastInsertRowid) as Project;
@@ -39,6 +39,7 @@ export function registerProjectHandlers(): void {
                 "start_date",
                 "due_date",
                 "hourly_rate",
+                "currency",
                 "archived",
             ];
             const fields: string[] = [];

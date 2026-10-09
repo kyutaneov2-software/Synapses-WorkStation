@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Calendar } from "lucide-react";
 
 interface DueDatePickerProps {
     value: string | null;
@@ -39,7 +40,6 @@ export function DueDatePicker({
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
-    // Close on outside click
     useEffect(() => {
         if (!open) return;
         const handler = (e: MouseEvent): void => {
@@ -51,7 +51,6 @@ export function DueDatePicker({
         return () => document.removeEventListener("mousedown", handler);
     }, [open]);
 
-    // Close on Escape
     useEffect(() => {
         if (!open) return;
         const handler = (e: KeyboardEvent): void => {
@@ -66,7 +65,6 @@ export function DueDatePicker({
         setOpen(false);
     };
 
-    // Badge state
     let badgeClass = "due-badge";
     if (value) {
         const today = todayStr();
@@ -89,7 +87,11 @@ export function DueDatePicker({
                     value ? `Due ${value} — click to change` : "Set due date"
                 }
             >
-                {value ? formatLabel(value) : "📅"}
+                {value ? (
+                    formatLabel(value)
+                ) : (
+                    <Calendar size={13} strokeWidth={2} />
+                )}
             </button>
 
             {open && (

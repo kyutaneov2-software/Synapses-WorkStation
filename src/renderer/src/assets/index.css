@@ -742,11 +742,14 @@ input.meta-date:hover {
   background: none;
   border: none;
   color: var(--accent);
-  font-size: 19px;
   cursor: pointer;
   padding: 0;
-  line-height: 1.1;
+  line-height: 1;
   flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform var(--dur-fast) var(--ease-spring);
 }
 
@@ -966,7 +969,7 @@ input.meta-date:hover {
 
 .phase-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 11px 14px;
   border-radius: var(--radius);
@@ -991,11 +994,14 @@ input.meta-date:hover {
   background: none;
   border: none;
   color: var(--success);
-  font-size: 19px;
   cursor: pointer;
   padding: 0;
-  line-height: 1.1;
+  line-height: 1;
   flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform var(--dur-fast) var(--ease-spring);
 }
 
@@ -1018,6 +1024,7 @@ input.meta-date:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 5px 10px;
+  margin-top: 0;
   transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
 }
 
@@ -1236,6 +1243,31 @@ input.meta-date:hover {
 .phase-name-wrap {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Paid date sits below the phase name */
+.phase-paid-date {
+  font-size: 10.5px;
+  color: var(--success);
+  font-weight: 500;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+  padding-left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.phase-paid-date::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
 }
 
 .phase-name-input-inline {
@@ -2322,4 +2354,87 @@ input.meta-date:hover {
   .stat-value {
     font-size: 20px;
   }
+}
+
+/* ============================================================
+   LUCIDE ICON INTEGRATION
+   ============================================================ */
+
+/* Chips that contain a lucide icon + a nested form control */
+.meta-chip-select {
+  padding: 5px 10px;
+}
+
+.meta-chip-select select,
+.meta-chip-select input {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  cursor: pointer;
+  max-width: 140px;
+}
+
+.meta-chip-select select option {
+  background: var(--bg-2);
+  color: var(--text-0);
+}
+
+.meta-chip-select input[type='date'] {
+  color-scheme: dark;
+  width: 108px;
+  font-variant-numeric: tabular-nums;
+}
+
+.meta-chip-select input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+/* Icons inside buttons should inherit currentColor */
+.task-checkbox svg,
+.phase-check svg,
+.focus-timer-btn svg,
+.focus-hide svg,
+.focus-empty-check svg,
+.edit-project-btn svg,
+.focus-toggle svg,
+.test-notification-btn svg,
+.due-badge svg {
+  display: block;
+}
+
+.focus-toggle,
+.test-notification-btn {
+  gap: 6px;
+}
+
+.focus-toggle svg,
+.test-notification-btn svg {
+  flex-shrink: 0;
+}
+
+.task-text-input {
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  line-height: 1.45;
+}
+
+/* Make the whole task text area clickable for editing */
+.task-text.editable-text {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  padding: 1px 4px;
+  margin: -1px -4px;
+}
+
+/* Elevate the task item whose due-date popover is open */
+.task-item:has(.due-popover) {
+  position: relative;
+  z-index: 10;
 }

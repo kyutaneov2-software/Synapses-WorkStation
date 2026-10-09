@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Play, Pause, X, Check } from "lucide-react";
 import type { Task, Project } from "../../shared/types";
 import { formatHMS } from "./lib/time";
 
@@ -12,7 +13,6 @@ function FocusApp(): React.JSX.Element {
     const [elapsed, setElapsed] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Load current task + active session on mount
     useEffect(() => {
         let cancelled = false;
 
@@ -53,7 +53,6 @@ function FocusApp(): React.JSX.Element {
         };
     }, []);
 
-    // Resolve project name when the task changes
     useEffect(() => {
         let cancelled = false;
 
@@ -73,7 +72,6 @@ function FocusApp(): React.JSX.Element {
         };
     }, [task]);
 
-    // Live tick
     useEffect(() => {
         if (startedAt === null) return;
 
@@ -130,7 +128,6 @@ function FocusApp(): React.JSX.Element {
 
     return (
         <div className="focus-shell">
-            {/* Main task area */}
             <div className="focus-main">
                 {task ? (
                     <div className="focus-task no-drag">
@@ -156,7 +153,9 @@ function FocusApp(): React.JSX.Element {
                     </div>
                 ) : (
                     <div className="focus-empty">
-                        <span className="focus-empty-check">✓</span>
+                        <span className="focus-empty-check">
+                            <Check size={15} strokeWidth={3} />
+                        </span>
                         <span className="focus-empty-text">
                             All clear for today
                         </span>
@@ -164,7 +163,6 @@ function FocusApp(): React.JSX.Element {
                 )}
             </div>
 
-            {/* Live timer badge — floats top-right */}
             {isTracking && (
                 <div className="focus-timer-badge no-drag">
                     <span className="focus-timer-dot" />
@@ -174,7 +172,6 @@ function FocusApp(): React.JSX.Element {
                 </div>
             )}
 
-            {/* Footer */}
             <div className="focus-bottom">
                 {showInput ? (
                     <form
@@ -206,7 +203,11 @@ function FocusApp(): React.JSX.Element {
                                 isTracking ? "Stop timer" : "Start timer"
                             }
                         >
-                            {isTracking ? "❚❚" : "▶"}
+                            {isTracking ? (
+                                <Pause size={11} strokeWidth={2.5} />
+                            ) : (
+                                <Play size={11} strokeWidth={2.5} />
+                            )}
                         </button>
                     )}
                     <button
@@ -215,7 +216,7 @@ function FocusApp(): React.JSX.Element {
                         title="Hide window (Ctrl+Shift+F)"
                         aria-label="Hide window"
                     >
-                        ×
+                        <X size={14} strokeWidth={2.5} />
                     </button>
                 </div>
             </div>

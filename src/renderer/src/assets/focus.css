@@ -403,3 +403,12 @@ button:focus-visible {
 .no-drag {
   -webkit-app-region: no-drag;
 }
+
+.focus-empty-check svg {
+  display: block;
+}
+
+.focus-timer-btn svg,
+.focus-hide svg {
+  display: block;
+}

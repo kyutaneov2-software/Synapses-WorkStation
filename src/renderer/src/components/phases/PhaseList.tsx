@@ -1,15 +1,15 @@
 import { useState } from "react";
+import { Square, CheckSquare } from "lucide-react";
 import type { ProjectPhase } from "../../../../shared/types";
 import { EditableText } from "../common/EditableText";
 
 interface PhaseListProps {
     phases: ProjectPhase[];
-    onAdd: (name: string, amount: number, currency: string) => Promise<void>;
+    currency: string;
+    onAdd: (name: string, amount: number) => Promise<void>;
     onUpdate: (id: number, updates: Record<string, unknown>) => Promise<void>;
     onDelete: (id: number) => Promise<void>;
 }
-
-const CURRENCIES = ["USD", "PHP", "EUR", "GBP"] as const;
 
 const SYMBOLS: Record<string, string> = {
     USD: "$",
@@ -20,6 +20,7 @@ const SYMBOLS: Record<string, string> = {
 
 export function PhaseList({
     phases,
+    currency,
     onAdd,
     onUpdate,
     onDelete,
@@ -27,7 +28,8 @@ export function PhaseList({
     const [adding, setAdding] = useState(false);
     const [name, setName] = useState("");
     const [amount, setAmount] = useState("");
-    const [currency, setCurrency] = useState("USD");
+
+    const symbol = SYMBOLS[currency] || currency;
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
@@ -35,7 +37,7 @@ export function PhaseList({
         const parsed = parseFloat(amount);
         if (!trimmed || isNaN(parsed)) return;
 
-        await onAdd(trimmed, parsed, currency);
+        await onAdd(trimmed, parsed);
         setName("");
         setAmount("");
         setAdding(false);
@@ -56,14 +58,6 @@ export function PhaseList({
         await onUpdate(phase.id, { amount: newAmount });
     };
 
-    const handleCurrencyChange = async (
-        phase: ProjectPhase,
-        newCurrency: string,
-    ): Promise<void> => {
-        if (newCurrency === phase.currency) return;
-        await onUpdate(phase.id, { currency: newCurrency });
-    };
-
     return (
         <div className="phase-list">
             {phases.map((phase) => (
@@ -76,7 +70,11 @@ export function PhaseList({
                         onClick={() => handleTogglePaid(phase)}
                         title={phase.paid ? "Mark unpaid" : "Mark paid"}
                     >
-                        {phase.paid ? "☑" : "☐"}
+                        {phase.paid ? (
+                            <CheckSquare size={18} strokeWidth={2} />
+                        ) : (
+                            <Square size={18} strokeWidth={2} />
+                        )}
                     </button>
 
                     <div className="phase-name-wrap">
@@ -88,12 +86,16 @@ export function PhaseList({
                             className="phase-name"
                             inputClassName="phase-name-input-inline"
                         />
+                        {phase.paid_at && (
+                            <span className="phase-paid-date">
+                                Paid{" "}
+                                {new Date(phase.paid_at).toLocaleDateString()}
+                            </span>
+                        )}
                     </div>
 
                     <div className="phase-amount-group">
-                        <span className="currency-symbol">
-                            {SYMBOLS[phase.currency] || phase.currency}
-                        </span>
+                        <span className="currency-symbol">{symbol}</span>
                         <input
                             type="number"
                             className="phase-amount-input"
@@ -107,26 +109,8 @@ export function PhaseList({
                                     (e.target as HTMLInputElement).blur();
                             }}
                         />
-                        <select
-                            className="currency-select"
-                            value={phase.currency}
-                            onChange={(e) =>
-                                handleCurrencyChange(phase, e.target.value)
-                            }
-                        >
-                            {CURRENCIES.map((c) => (
-                                <option key={c} value={c}>
-                                    {c}
-                                </option>
-                            ))}
-                        </select>
+                        <span className="currency-code">{currency}</span>
                     </div>
-
-                    {phase.paid_at && (
-                        <span className="phase-paid-date">
-                            {new Date(phase.paid_at).toLocaleDateString()}
-                        </span>
-                    )}
 
                     <button
                         className="phase-delete"
@@ -143,7 +127,9 @@ export function PhaseList({
                     className="phase-item phase-add-form"
                     onSubmit={handleSubmit}
                 >
-                    <span className="phase-check">☐</span>
+                    <span className="phase-check">
+                        <Square size={18} strokeWidth={2} />
+                    </span>
                     <input
                         className="phase-name-input"
                         type="text"
@@ -153,9 +139,7 @@ export function PhaseList({
                         autoFocus
                     />
                     <div className="phase-amount-group">
-                        <span className="currency-symbol">
-                            {SYMBOLS[currency] || currency}
-                        </span>
+                        <span className="currency-symbol">{symbol}</span>
                         <input
                             type="number"
                             className="phase-amount-input"
@@ -163,17 +147,7 @@ export function PhaseList({
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
                         />
-                        <select
-                            className="currency-select"
-                            value={currency}
-                            onChange={(e) => setCurrency(e.target.value)}
-                        >
-                            {CURRENCIES.map((c) => (
-                                <option key={c} value={c}>
-                                    {c}
-                                </option>
-                            ))}
-                        </select>
+                        <span className="currency-code">{currency}</span>
                     </div>
                     <button type="submit" className="phase-save">
                         Save

@@ -17,6 +17,7 @@ export function ProjectEditModal({
     const [title, setTitle] = useState(project.title);
     const [client, setClient] = useState(project.client ?? "");
     const [status, setStatus] = useState(project.status ?? "active");
+    const [currency, setCurrency] = useState(project.currency ?? "USD");
     const [startDate, setStartDate] = useState(project.start_date ?? "");
     const [dueDate, setDueDate] = useState(project.due_date ?? "");
     const [hourlyRate, setHourlyRate] = useState(
@@ -36,6 +37,7 @@ export function ProjectEditModal({
                 title: title.trim(),
                 client: client.trim() || null,
                 status,
+                currency,
                 start_date: startDate || null,
                 due_date: dueDate || null,
                 hourly_rate: hourlyRate ? parseFloat(hourlyRate) : null,
@@ -105,6 +107,21 @@ export function ProjectEditModal({
                                     <option value="paused">Paused</option>
                                     <option value="completed">Completed</option>
                                     <option value="archived">Archived</option>
+                                </select>
+                            </label>
+
+                            <label className="form-field">
+                                <span>Currency</span>
+                                <select
+                                    value={currency}
+                                    onChange={(e) =>
+                                        setCurrency(e.target.value)
+                                    }
+                                >
+                                    <option value="USD">USD — $</option>
+                                    <option value="PHP">PHP — ₱</option>
+                                    <option value="EUR">EUR — €</option>
+                                    <option value="GBP">GBP — £</option>
                                 </select>
                             </label>
 

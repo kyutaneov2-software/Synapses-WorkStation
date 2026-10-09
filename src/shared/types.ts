@@ -8,6 +8,7 @@ export interface Project {
     start_date: string | null;
     due_date: string | null;
     hourly_rate: number | null;
+    currency: string;
     created_at: string;
     archived: number;
 }

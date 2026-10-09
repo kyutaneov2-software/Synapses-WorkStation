@@ -18,13 +18,12 @@ export function registerPhaseHandlers(): void {
 
     ipcMain.handle(
         "db:create-phase",
-        (
-            _,
-            projectId: number,
-            name: string,
-            amount: number,
-            currency: string,
-        ): ProjectPhase => {
+        (_, projectId: number, name: string, amount: number): ProjectPhase => {
+            const project = db
+                .prepare("SELECT currency FROM projects WHERE id = ?")
+                .get(projectId) as { currency: string } | undefined;
+            const currency = project?.currency ?? "USD";
+
             const maxOrder = db
                 .prepare(
                     "SELECT COALESCE(MAX(sort_order), -1) as max FROM project_phases WHERE project_id = ?",
@@ -56,7 +55,6 @@ export function registerPhaseHandlers(): void {
             const allowed: (keyof ProjectPhase)[] = [
                 "name",
                 "amount",
-                "currency",
                 "paid",
                 "paid_at",
                 "sort_order",

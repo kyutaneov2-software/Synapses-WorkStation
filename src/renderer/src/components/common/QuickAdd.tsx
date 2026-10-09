@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Folder, Calendar } from "lucide-react";
 import type { Project, NewTaskOptions } from "../../../../shared/types";
 import {
     PRIORITY_VALUES,
@@ -42,7 +43,6 @@ export function QuickAdd({
     const [submitting, setSubmitting] = useState(false);
     const [focused, setFocused] = useState(false);
 
-    // Metadata — initialised from defaults, then user-controlled
     const [projectId, setProjectId] = useState<number | null>(defaultProjectId);
     const [plannedFor, setPlannedFor] = useState<string | null>(
         defaultPlannedFor,
@@ -53,7 +53,6 @@ export function QuickAdd({
     const wrapperRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Close expanded state when clicking outside
     useEffect(() => {
         if (!focused) return;
         const handler = (e: MouseEvent): void => {
@@ -67,8 +66,6 @@ export function QuickAdd({
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
     }, [focused]);
-
-    // ... rest of the component unchanged
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
@@ -147,36 +144,42 @@ export function QuickAdd({
             {focused && (
                 <div className="quick-add-meta">
                     {!hideProject && (
-                        <select
-                            className="meta-chip"
-                            value={
-                                projectId === null ? "inbox" : String(projectId)
-                            }
-                            onChange={(e) =>
-                                setProjectId(
-                                    e.target.value === "inbox"
-                                        ? null
-                                        : Number(e.target.value),
-                                )
-                            }
-                            title="Project"
-                        >
-                            <option value="inbox">📁 Inbox</option>
-                            {projects.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                    📁 {p.title}
-                                </option>
-                            ))}
-                        </select>
+                        <label className="meta-chip meta-chip-select">
+                            <Folder size={12} strokeWidth={2} />
+                            <select
+                                value={
+                                    projectId === null
+                                        ? "inbox"
+                                        : String(projectId)
+                                }
+                                onChange={(e) =>
+                                    setProjectId(
+                                        e.target.value === "inbox"
+                                            ? null
+                                            : Number(e.target.value),
+                                    )
+                                }
+                                title="Project"
+                            >
+                                <option value="inbox">Inbox</option>
+                                {projects.map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.title}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
                     )}
 
-                    <input
-                        type="date"
-                        className="meta-chip meta-date"
-                        value={dueDate ?? ""}
-                        onChange={(e) => setDueDate(e.target.value || null)}
-                        title="Due date"
-                    />
+                    <label className="meta-chip meta-chip-select meta-date">
+                        <Calendar size={12} strokeWidth={2} />
+                        <input
+                            type="date"
+                            value={dueDate ?? ""}
+                            onChange={(e) => setDueDate(e.target.value || null)}
+                            title="Due date"
+                        />
+                    </label>
 
                     <button
                         type="button"
@@ -191,22 +194,24 @@ export function QuickAdd({
                     </button>
 
                     {!hidePlannedFor && (
-                        <select
-                            className="meta-chip"
-                            value={plannedFor ?? "none"}
-                            onChange={(e) =>
-                                setPlannedFor(
-                                    e.target.value === "none"
-                                        ? null
-                                        : e.target.value,
-                                )
-                            }
-                            title="Planned for"
-                        >
-                            <option value="none">📅 {plannedForLabel}</option>
-                            <option value={todayStr()}>Today</option>
-                            <option value={tomorrowStr()}>Tomorrow</option>
-                        </select>
+                        <label className="meta-chip meta-chip-select">
+                            <Calendar size={12} strokeWidth={2} />
+                            <select
+                                value={plannedFor ?? "none"}
+                                onChange={(e) =>
+                                    setPlannedFor(
+                                        e.target.value === "none"
+                                            ? null
+                                            : e.target.value,
+                                    )
+                                }
+                                title="Planned for"
+                            >
+                                <option value="none">{plannedForLabel}</option>
+                                <option value={todayStr()}>Today</option>
+                                <option value={tomorrowStr()}>Tomorrow</option>
+                            </select>
+                        </label>
                     )}
 
                     <span className="quick-add-hint">

@@ -1,3 +1,5 @@
+import { Zap } from "lucide-react";
+
 type View = "today" | "tomorrow" | "projects" | "all" | "dashboard";
 
 interface HeaderProps {
@@ -14,7 +16,7 @@ export function Header({
         { key: "tomorrow", label: "Tomorrow" },
         { key: "projects", label: "Projects" },
         { key: "all", label: "All Tasks" },
-        { key: "dashboard", label: "$ Dashboard" },
+        { key: "dashboard", label: "Dashboard" },
     ];
 
     return (
@@ -35,7 +37,8 @@ export function Header({
                 onClick={() => window.api.focusToggle()}
                 title="Toggle Focus window (Ctrl+Shift+F)"
             >
-                ⚡ Focus
+                <Zap size={13} strokeWidth={2.5} />
+                Focus
             </button>
         </header>
     );

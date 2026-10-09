@@ -1,7 +1,9 @@
+import { Square, CheckSquare } from "lucide-react";
 import type { Task, Project } from "../../../../shared/types";
 import { isOverdue } from "../../lib/dates";
 import { DueDatePicker } from "./DueDatePicker";
 import { PriorityBadge } from "./PriorityBadge";
+import { EditableText } from "../common/EditableText";
 
 interface TaskItemProps {
     task: Task;
@@ -10,6 +12,7 @@ interface TaskItemProps {
     onDelete: (id: number) => void;
     onSetDueDate: (id: number, date: string | null) => void;
     onSetPriority: (id: number, priority: number) => void;
+    onSetText: (id: number, text: string) => void;
 }
 
 export function TaskItem({
@@ -19,6 +22,7 @@ export function TaskItem({
     onDelete,
     onSetDueDate,
     onSetPriority,
+    onSetText,
 }: TaskItemProps): React.JSX.Element {
     const overdue = isOverdue(task.planned_for);
 
@@ -29,7 +33,11 @@ export function TaskItem({
                 onClick={() => onToggle(task.id, !task.done)}
                 aria-label={task.done ? "Mark incomplete" : "Mark complete"}
             >
-                {task.done ? "☑" : "☐"}
+                {task.done ? (
+                    <CheckSquare size={18} strokeWidth={2} />
+                ) : (
+                    <Square size={18} strokeWidth={2} />
+                )}
             </button>
 
             <PriorityBadge
@@ -38,7 +46,12 @@ export function TaskItem({
             />
 
             <div className="task-body">
-                <span className="task-text">{task.text}</span>
+                <EditableText
+                    value={task.text}
+                    onSave={(newText) => onSetText(task.id, newText)}
+                    className="task-text"
+                    inputClassName="task-text-input"
+                />
                 <div className="task-meta">
                     {project && (
                         <span className="task-project">{project.title}</span>
