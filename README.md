@@ -205,9 +205,6 @@ Private project. Not licensed for redistribution.
 ---
 
 Built with care, for one developer's brain.
-```
-
----
 
 ## Why This Structure
 
@@ -224,4 +221,3 @@ Built with care, for one developer's brain.
 | **Development Notes** | Captures the three hard-won lessons: native rebuilds, timezone bug, Windows notifications |
 | **License** | Explicitly states this is private — protects you if the repo ever goes public |
 
----
