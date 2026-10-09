@@ -220,4 +220,17 @@ Built with care, for one developer's brain.
 | **Roadmap** | Checkboxes as a living todo — you can update it as you ship |
 | **Development Notes** | Captures the three hard-won lessons: native rebuilds, timezone bug, Windows notifications |
 | **License** | Explicitly states this is private — protects you if the repo ever goes public |
+| All Rights Reserved. See [LICENSE](./LICENSE) for details. |
 
+---
+
+## Copyright (c) 2026 Jeremy
+
+All Rights Reserved.
+
+This source code is provided for portfolio and demonstration purposes.
+No permission is granted to copy, modify, distribute, sublicense, or
+sell this software or any portion of it without the express written
+consent of the copyright holder.
+
+---

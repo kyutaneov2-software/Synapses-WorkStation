@@ -1,0 +1,61 @@
+/* ============================================================
+   RESPONSIVE — Media queries
+   ============================================================ */
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 720px) {
+  .dashboard-row {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-bar {
+    padding: 12px;
+  }
+
+  .filter-chips {
+    flex-wrap: wrap;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .topbar {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    width: 170px;
+  }
+
+  .sidebar-header {
+    padding: 14px 12px 10px;
+  }
+
+  .project-list {
+    padding: 4px 6px;
+  }
+
+  .project-list li {
+    padding: 8px 10px;
+  }
+
+  .view h2 {
+    font-size: 20px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+}

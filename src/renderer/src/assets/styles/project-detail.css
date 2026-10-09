@@ -1,0 +1,131 @@
+/* ============================================================
+   PROJECT DETAIL — Title block + Money summary
+   ============================================================ */
+
+.project-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.project-client-label {
+  font-size: 12px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.edit-project-btn {
+  background: var(--bg-2);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background var(--dur-fast),
+    border-color var(--dur-fast),
+    color var(--dur-fast),
+    transform var(--dur-fast);
+}
+
+.edit-project-btn:hover {
+  background: var(--bg-3);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.edit-project-btn:active {
+  transform: scale(0.94);
+}
+
+/* -------- Money summary -------- */
+
+.money-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+}
+
+.money-paid {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.money-sep {
+  color: var(--text-3);
+}
+
+.money-total {
+  color: var(--text-1);
+  font-size: 15px;
+}
+
+.money-dot {
+  color: var(--text-3);
+  margin: 0 2px;
+}
+
+.money-remaining {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.money-remaining.owed {
+  color: var(--warning);
+}
+
+.money-remaining.clear {
+  color: var(--success);
+}
+
+.money-currency {
+  color: var(--text-3);
+  font-size: 10px;
+  margin-left: 6px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.project-brief {
+  font-size: 13px;
+  color: var(--text-1);
+  line-height: 1.55;
+  max-width: 600px;
+  margin-top: 6px;
+  white-space: pre-wrap;
+}
+
+.project-brief.editable-text {
+  display: block;
+  padding: 4px 8px;
+  margin: 2px -8px -4px;
+}
+
+.project-brief.empty {
+  color: var(--text-3);
+  font-style: italic;
+  font-size: 12px;
+}
+
+.project-brief-input {
+  font-size: 13px;
+  line-height: 1.55;
+  max-width: 600px;
+  min-height: 60px;
+  font-family: var(--font-sans);
+}

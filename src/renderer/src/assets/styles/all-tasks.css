@@ -1,0 +1,172 @@
+/* ============================================================
+   ALL TASKS VIEW — Filter bar, chips
+   ============================================================ */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+}
+
+.filter-search {
+  flex: 1;
+  min-width: 200px;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  color: var(--text-0);
+  padding: 9px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.filter-search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.filter-search::placeholder {
+  color: var(--text-3);
+}
+
+.filter-chips {
+  display: flex;
+  gap: 4px;
+}
+
+.filter-chip {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  padding: 7px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    color var(--dur-fast),
+    border-color var(--dur-fast),
+    background var(--dur-fast);
+}
+
+.filter-chip:hover {
+  color: var(--text-0);
+  border-color: var(--border-strong);
+}
+
+.filter-chip.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.filter-chip.has-overdue:not(.active) {
+  border-color: rgba(255, 107, 107, 0.4);
+  color: var(--danger);
+}
+
+.chip-count {
+  font-size: 10px;
+  background: var(--bg-3);
+  color: var(--text-2);
+  padding: 1px 7px;
+  border-radius: 8px;
+  min-width: 18px;
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.filter-chip.active .chip-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.filter-chip.has-overdue .chip-count {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.filter-chip.has-overdue.active .chip-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.filter-selects {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-selects select {
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  color: var(--text-0);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--dur-fast);
+}
+
+.filter-selects select:focus {
+  border-color: var(--accent);
+}
+
+.filter-selects select option {
+  background: var(--bg-2);
+  color: var(--text-0);
+}
+
+.filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.filter-toggle:hover {
+  background: var(--bg-3);
+  color: var(--text-0);
+}
+
+.filter-toggle input[type='checkbox'] {
+  accent-color: var(--accent);
+  cursor: pointer;
+  margin: 0;
+}
+
+.group-count {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  background: var(--bg-3);
+  color: var(--text-2);
+  padding: 1px 7px;
+  border-radius: 8px;
+  min-width: 18px;
+  text-align: center;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

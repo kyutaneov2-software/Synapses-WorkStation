@@ -1,0 +1,384 @@
+/* ============================================================
+   DASHBOARD — Stats, deadlines, quick stats, health
+   ============================================================ */
+
+.dashboard-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* -------- Stat cards -------- */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast),
+    box-shadow var(--dur-fast);
+  animation: stat-enter var(--dur-slow) var(--ease-out) both;
+}
+
+.stat-card:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.stat-card:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.stat-card:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.stat-card:nth-child(4) {
+  animation-delay: 120ms;
+}
+
+.stat-card:nth-child(5) {
+  animation-delay: 160ms;
+}
+
+@keyframes stat-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+
+.stat-card.stat-green::before {
+  background: var(--success);
+}
+
+.stat-card.stat-amber::before {
+  background: var(--warning);
+}
+
+.stat-card.stat-blue::before {
+  background: var(--accent);
+}
+
+.stat-card.stat-red::before {
+  background: var(--danger);
+}
+
+.stat-card.stat-neutral::before {
+  background: var(--border-strong);
+}
+
+.stat-card.stat-purple::before {
+  background: var(--purple);
+}
+
+.stat-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-0);
+  line-height: 1.15;
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-sub {
+  font-size: 11px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+/* -------- Two-column layout -------- */
+
+.dashboard-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+}
+
+.dashboard-panel {
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+}
+
+.dashboard-panel h3 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  margin-bottom: 14px;
+}
+
+.panel-empty {
+  font-size: 13px;
+  color: var(--text-2);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* -------- Deadlines -------- */
+
+.deadline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deadline-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-fast);
+}
+
+.deadline-row:hover {
+  background: var(--bg-2);
+}
+
+.deadline-row.overdue {
+  color: var(--danger);
+}
+
+.deadline-type {
+  font-size: 9px;
+  color: var(--text-3);
+  flex-shrink: 0;
+  width: 12px;
+}
+
+.deadline-row.overdue .deadline-type {
+  color: var(--danger);
+}
+
+.deadline-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.deadline-title {
+  font-size: 13px;
+  color: var(--text-0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.deadline-row.overdue .deadline-title {
+  color: var(--danger);
+}
+
+.deadline-project {
+  font-size: 10px;
+  color: var(--text-2);
+}
+
+.deadline-date {
+  font-size: 11px;
+  color: var(--text-2);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.deadline-row.overdue .deadline-date {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* -------- Quick stats -------- */
+
+.quick-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quick-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.quick-stat-row:last-child {
+  border-bottom: none;
+}
+
+.quick-stat-row span {
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.quick-stat-row strong {
+  color: var(--text-0);
+  font-weight: 600;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+.quick-stat-row strong.green {
+  color: var(--success);
+}
+
+.quick-stat-row strong.purple {
+  color: var(--purple);
+}
+
+/* -------- Project health -------- */
+
+.health-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.health-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 8px;
+  border-radius: var(--radius);
+  transition: background var(--dur-fast);
+}
+
+.health-row:hover {
+  background: var(--bg-2);
+}
+
+.health-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.health-title {
+  font-size: 13.5px;
+  color: var(--text-0);
+  font-weight: 500;
+}
+
+.health-money {
+  font-size: 11.5px;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.health-paid-check {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.health-bars {
+  display: flex;
+  gap: 16px;
+}
+
+.health-bar-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.health-bar-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+  width: 44px;
+  flex-shrink: 0;
+}
+
+.health-bar-count {
+  font-size: 10.5px;
+  color: var(--text-2);
+  width: 56px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.progress-fill.progress-blue {
+  background: linear-gradient(90deg, #4a7eff, #5b8def);
+}
+
+.progress-fill.progress-green {
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+.progress-fill.progress-purple {
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}

@@ -1,0 +1,154 @@
+/* ============================================================
+   APP LAYOUT — Shell, Main Area, Topbar, Content
+   ============================================================ */
+
+.app-shell {
+  display: flex;
+  height: 100vh;
+  background: var(--bg-0);
+}
+
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background:
+    radial-gradient(circle at top right,
+      rgba(91, 141, 239, 0.06),
+      transparent 60%),
+    var(--bg-0);
+}
+
+/* -------- Topbar -------- */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: transparent;
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px);
+}
+
+.topbar-tabs {
+  display: flex;
+  gap: 2px;
+}
+
+.topbar button {
+  background: transparent;
+  color: var(--text-1);
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+
+.topbar button:hover {
+  background: var(--bg-2);
+  color: var(--text-0);
+}
+
+.topbar button.active {
+  background: var(--bg-3);
+  color: var(--text-0);
+}
+
+.focus-toggle {
+  background: var(--bg-2) !important;
+  color: var(--text-1) !important;
+  border: 1px solid var(--border) !important;
+  padding: 6px 12px !important;
+  border-radius: var(--radius) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast),
+    border-color var(--dur-fast) !important;
+}
+
+.focus-toggle:hover {
+  background: var(--bg-3) !important;
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+/* -------- Content & Views -------- */
+
+.content {
+  flex: 1;
+  padding: 28px 32px;
+  overflow-y: auto;
+}
+
+.view {
+  max-width: 1000px;
+  margin: 0 auto;
+  animation: view-enter var(--dur-slow) var(--ease-out);
+}
+
+.view h2 {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.view-count {
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------- Tabs (project detail) -------- */
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 24px;
+}
+
+.tabs button {
+  background: none;
+  border: none;
+  color: var(--text-2);
+  padding: 11px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition:
+    color var(--dur-fast),
+    border-color var(--dur-fast);
+}
+
+.tabs button:hover {
+  color: var(--text-0);
+}
+
+.tabs button.active {
+  color: var(--text-0);
+  border-bottom-color: var(--accent);
+}

@@ -2,6 +2,13 @@ import { ipcMain } from "electron";
 import db from "../db";
 import { broadcast } from "../services/broadcast";
 import type { Task } from "../../shared/types";
+import {
+    requireString,
+    optionalString,
+    requirePositiveId,
+    optionalId,
+    requireNumber,
+} from "./validate";
 
 export function registerTaskHandlers(): void {
     ipcMain.handle("db:get-tasks", (): Task[] => {
@@ -62,22 +69,28 @@ export function registerTaskHandlers(): void {
         "db:create-task",
         (
             _,
-            text: string,
-            projectId: number | null,
-            plannedFor: string | null,
-            dueDate: string | null,
-            priority: number,
+            text: unknown,
+            projectId: unknown,
+            plannedFor: unknown,
+            dueDate: unknown,
+            priority: unknown,
         ): Task => {
+            const cleanText = requireString(text, "text", 2000);
+            const cleanProjectId = optionalId(projectId, "projectId");
+            const cleanPlanned = optionalString(plannedFor, "plannedFor", 10);
+            const cleanDue = optionalString(dueDate, "dueDate", 10);
+            const cleanPriority = requireNumber(priority, "priority");
+
             const stmt = db.prepare(`
-        INSERT INTO tasks (project_id, text, planned_for, due_date, priority)
-        VALUES (?, ?, ?, ?, ?)
-      `);
+          INSERT INTO tasks (project_id, text, planned_for, due_date, priority)
+          VALUES (?, ?, ?, ?, ?)
+        `);
             const result = stmt.run(
-                projectId,
-                text,
-                plannedFor,
-                dueDate,
-                priority,
+                cleanProjectId,
+                cleanText,
+                cleanPlanned,
+                cleanDue,
+                cleanPriority,
             );
             const task = db
                 .prepare("SELECT * FROM tasks WHERE id = ?")
@@ -87,20 +100,25 @@ export function registerTaskHandlers(): void {
         },
     );
 
-    ipcMain.handle("db:toggle-task", (_, id: number, done: boolean): Task => {
+    ipcMain.handle("db:toggle-task", (_, id: unknown, done: unknown): Task => {
+        const cleanId = requirePositiveId(id, "id");
+        if (typeof done !== "boolean") {
+            throw new Error("Invalid done: expected boolean");
+        }
         db.prepare(
             `UPDATE tasks SET done = ?, completed_at = ? WHERE id = ?`,
-        ).run(done ? 1 : 0, done ? new Date().toISOString() : null, id);
+        ).run(done ? 1 : 0, done ? new Date().toISOString() : null, cleanId);
         const task = db
             .prepare("SELECT * FROM tasks WHERE id = ?")
-            .get(id) as Task;
+            .get(cleanId) as Task;
         broadcast("data:changed");
         return task;
     });
 
     ipcMain.handle(
         "db:update-task",
-        (_, id: number, updates: Partial<Task>): Task => {
+        (_, id: unknown, updates: Record<string, unknown>): Task => {
+            const cleanId = requirePositiveId(id, "id");
             const allowed: (keyof Task)[] = [
                 "text",
                 "planned_for",
@@ -113,13 +131,24 @@ export function registerTaskHandlers(): void {
 
             for (const key of allowed) {
                 if (key in updates) {
+                    const v = updates[key];
+
+                    // Validate per column
+                    if (key === "text") {
+                        values.push(requireString(v, "text", 2000));
+                    } else if (key === "priority") {
+                        values.push(requireNumber(v, "priority"));
+                    } else if (key === "project_id") {
+                        values.push(optionalId(v, "project_id"));
+                    } else {
+                        values.push(optionalString(v, key, 10));
+                    }
                     fields.push(`${key} = ?`);
-                    values.push(updates[key] as string | number | null);
                 }
             }
 
             if (fields.length > 0) {
-                values.push(id);
+                values.push(cleanId);
                 db.prepare(
                     `UPDATE tasks SET ${fields.join(", ")} WHERE id = ?`,
                 ).run(...values);
@@ -127,14 +156,15 @@ export function registerTaskHandlers(): void {
 
             const task = db
                 .prepare("SELECT * FROM tasks WHERE id = ?")
-                .get(id) as Task;
+                .get(cleanId) as Task;
             broadcast("data:changed");
             return task;
         },
     );
 
-    ipcMain.handle("db:delete-task", (_, id: number): void => {
-        db.prepare("DELETE FROM tasks WHERE id = ?").run(id);
+    ipcMain.handle("db:delete-task", (_, id: unknown): void => {
+        const cleanId = requirePositiveId(id, "id");
+        db.prepare("DELETE FROM tasks WHERE id = ?").run(cleanId);
         broadcast("data:changed");
     });
 }

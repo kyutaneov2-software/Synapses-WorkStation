@@ -11,9 +11,13 @@ import {
     stopNotificationScheduler,
 } from "./services/notifications";
 import { runAutoBackup } from "./services/backup";
+import { createTray, destroyTray } from "./services/tray";
+import { setLaunchOnStartup } from "./services/startup";
+import { readSettings, writeSettings } from "./services/settings";
+import { setMainWindow } from "./mainWindow";
 
-// Set AppUserModelID BEFORE app.whenReady() — Windows needs this for notifications
-// In dev mode, we point at the Electron binary so Windows routes notifications correctly
+// Set AppUserModelID BEFORE app.whenReady()
+// Windows needs this for notifications to route correctly.
 if (process.platform === "win32") {
     if (!app.isPackaged) {
         electronApp.setAppUserModelId(process.execPath);
@@ -23,6 +27,10 @@ if (process.platform === "win32") {
 } else {
     electronApp.setAppUserModelId("com.synapses.workstation");
 }
+
+// Flag that tracks whether the user is genuinely quitting
+// (via tray menu, Cmd+Q, etc.) vs. just closing the window.
+let isQuitting = false;
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -34,10 +42,27 @@ function createWindow(): void {
         webPreferences: {
             preload: join(__dirname, "../preload/index.js"),
             sandbox: false,
+            contextIsolation: true,
+            nodeIntegration: false,
         },
     });
 
+    setMainWindow(mainWindow);
+
     mainWindow.on("ready-to-show", () => mainWindow.show());
+
+    // Intercept close — hide instead, unless we're really quitting
+    mainWindow.on("close", (e) => {
+        if (!isQuitting) {
+            e.preventDefault();
+            mainWindow.hide();
+            console.log("[main] window hidden — app still running in tray");
+        }
+    });
+
+    mainWindow.on("closed", () => {
+        setMainWindow(null);
+    });
 
     mainWindow.webContents.setWindowOpenHandler((details) => {
         shell.openExternal(details.url);
@@ -57,6 +82,7 @@ app.whenReady().then(() => {
     migrateLegacyJson();
     runAutoBackup();
 
+    // Close any sessions left running from a previous crash
     db.prepare(
         `UPDATE sessions SET ended_at = datetime('now') WHERE ended_at IS NULL`,
     ).run();
@@ -75,22 +101,40 @@ app.whenReady().then(() => {
 
     createWindow();
 
+    createTray();
+
+    // Enable launch on startup by default on first run
+    const settings = readSettings();
+    if (settings.launchOnStartup === undefined) {
+        setLaunchOnStartup(true);
+        writeSettings({ ...settings, launchOnStartup: true });
+    } else {
+        setLaunchOnStartup(settings.launchOnStartup);
+    }
+
     app.on("activate", function () {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
 });
 
+// Mark the app as "really quitting" so the main window's close
+// handler skips the preventDefault and lets the window close.
+app.on("before-quit", () => {
+    isQuitting = true;
+});
+
 app.on("will-quit", () => {
     globalShortcut.unregisterAll();
     stopNotificationScheduler();
-    // Close any active session cleanly
+    destroyTray();
     db.prepare(
         `UPDATE sessions SET ended_at = datetime('now') WHERE ended_at IS NULL`,
     ).run();
 });
 
+// Don't quit when the last window closes — keep running in the tray.
+// The user quits via the tray menu (or Cmd+Q on macOS).
 app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") {
-        app.quit();
-    }
+    // Intentionally empty on Windows/Linux — app keeps running in tray.
+    // On macOS this event never fires anyway (standard behavior).
 });

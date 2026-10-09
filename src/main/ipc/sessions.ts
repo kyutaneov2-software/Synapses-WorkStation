@@ -2,6 +2,7 @@ import { ipcMain } from "electron";
 import db from "../db";
 import { broadcast } from "../services/broadcast";
 import type { Session } from "../../shared/types";
+import { optionalId } from "./validate";
 
 export interface SessionTotals {
     totalSeconds: number;
@@ -26,18 +27,16 @@ function sessionSeconds(row: {
 }
 
 export function registerSessionHandlers(): void {
-    ipcMain.handle("session:start", (_, taskId: number | null): Session => {
-        // End any running session first (only one at a time)
+    ipcMain.handle("session:start", (_, taskId: unknown): Session => {
+        const cleanTaskId = optionalId(taskId, "taskId");
         db.prepare(
             `UPDATE sessions SET ended_at = datetime('now') WHERE ended_at IS NULL`,
         ).run();
-
         const result = db
             .prepare(
                 `INSERT INTO sessions (task_id, started_at) VALUES (?, datetime('now'))`,
             )
-            .run(taskId);
-
+            .run(cleanTaskId);
         const session = db
             .prepare("SELECT * FROM sessions WHERE id = ?")
             .get(result.lastInsertRowid) as Session;

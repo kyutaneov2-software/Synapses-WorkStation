@@ -241,6 +241,17 @@ export function ProjectDetailView({
                         inputClassName="project-client-input"
                         allowEmpty
                     />
+                    <EditableText
+                        value={project.brief ?? ""}
+                        onSave={(newBrief) =>
+                            handleUpdateProject({ brief: newBrief || null })
+                        }
+                        placeholder="+ add a brief description"
+                        className="project-brief"
+                        inputClassName="project-brief-input"
+                        multiline
+                        allowEmpty
+                    />
                 </div>
                 <div className="header-right">
                     {moneySummary}

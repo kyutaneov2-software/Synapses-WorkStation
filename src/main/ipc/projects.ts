@@ -2,6 +2,7 @@ import { ipcMain } from "electron";
 import db from "../db";
 import { broadcast } from "../services/broadcast";
 import type { Project } from "../../shared/types";
+import { requireString, optionalString, requireNumber } from "./validate";
 
 export function registerProjectHandlers(): void {
     ipcMain.handle("db:get-projects", (): Project[] => {
@@ -14,11 +15,13 @@ export function registerProjectHandlers(): void {
 
     ipcMain.handle(
         "db:create-project",
-        (_, title: string, client: string, currency = "USD"): Project => {
+        (_, title: unknown, client: unknown): Project => {
+            const cleanTitle = requireString(title, "title", 200);
+            const cleanClient = optionalString(client, "client", 200) ?? "";
             const stmt = db.prepare(
-                "INSERT INTO projects (title, client, currency) VALUES (?, ?, ?)",
+                "INSERT INTO projects (title, client) VALUES (?, ?)",
             );
-            const result = stmt.run(title, client, currency);
+            const result = stmt.run(cleanTitle, cleanClient);
             const project = db
                 .prepare("SELECT * FROM projects WHERE id = ?")
                 .get(result.lastInsertRowid) as Project;
@@ -47,8 +50,24 @@ export function registerProjectHandlers(): void {
 
             for (const key of allowed) {
                 if (key in updates) {
+                    const v = updates[key];
+
+                    if (
+                        key === "title" ||
+                        key === "client" ||
+                        key === "type" ||
+                        key === "brief" ||
+                        key === "status"
+                    ) {
+                        values.push(optionalString(v, key, 2000));
+                    } else if (key === "hourly_rate") {
+                        values.push(v === null ? null : requireNumber(v, key));
+                    } else if (key === "archived") {
+                        values.push(typeof v === "number" ? v : 0);
+                    } else {
+                        values.push(optionalString(v, key, 20));
+                    }
                     fields.push(`${key} = ?`);
-                    values.push(updates[key] as string | number | null);
                 }
             }
 

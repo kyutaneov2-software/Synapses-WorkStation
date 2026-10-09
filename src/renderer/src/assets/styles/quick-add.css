@@ -1,0 +1,205 @@
+/* ============================================================
+   QUICK ADD — Task composer
+   ============================================================ */
+
+.quick-add-wrapper {
+  background: var(--bg-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+  transition:
+    border-color var(--dur-fast),
+    box-shadow var(--dur-fast);
+  overflow: visible;
+}
+
+.quick-add-wrapper.focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.quick-add-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.quick-add-icon {
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: transform var(--dur) var(--ease-spring);
+}
+
+.quick-add-wrapper.focused .quick-add-icon {
+  transform: rotate(90deg) scale(1.1);
+}
+
+.quick-add-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-0);
+  font-size: 14px;
+  outline: none;
+  min-width: 0;
+  letter-spacing: -0.005em;
+}
+
+.quick-add-input::placeholder {
+  color: var(--text-3);
+}
+
+.quick-add-submit {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 14px;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition:
+    color var(--dur-fast),
+    background var(--dur-fast),
+    transform var(--dur-fast);
+}
+
+.quick-add-submit:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.quick-add-submit:not(:disabled):hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.quick-add-submit:not(:disabled):active {
+  transform: scale(0.9);
+}
+
+/* -------- Metadata row -------- */
+
+.quick-add-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 10px 14px 12px 42px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-2);
+  animation: slide-down var(--dur) var(--ease-out);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.meta-chip {
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition:
+    color var(--dur-fast),
+    border-color var(--dur-fast),
+    background var(--dur-fast);
+}
+
+.meta-chip:hover,
+.meta-chip:focus {
+  color: var(--text-0);
+  border-color: var(--border-strong);
+  background: var(--bg-3);
+}
+
+/* Chips that contain a lucide icon + nested control */
+.meta-chip-select {
+  padding: 5px 10px;
+}
+
+.meta-chip-select select,
+.meta-chip-select input {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  cursor: pointer;
+  max-width: 140px;
+}
+
+.meta-chip-select select option {
+  background: var(--bg-2);
+  color: var(--text-0);
+}
+
+.meta-chip-select input[type='date'] {
+  color-scheme: dark;
+  width: 108px;
+  font-variant-numeric: tabular-nums;
+}
+
+.meta-chip-select input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+/* Priority variants */
+.meta-priority.priority-low {
+  color: var(--accent);
+  border-color: rgba(91, 141, 239, 0.4);
+}
+
+.meta-priority.priority-medium {
+  color: var(--warning);
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.meta-priority.priority-high {
+  color: var(--danger);
+  border-color: rgba(255, 107, 107, 0.4);
+}
+
+.meta-priority .priority-dot {
+  width: 6px;
+  height: 6px;
+  margin: 0;
+}
+
+.meta-priority .priority-dot.priority-none {
+  opacity: 0.5;
+}
+
+.quick-add-hint {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--text-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+}
+
+.quick-add-hint kbd {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-2);
+  font-weight: 500;
+}

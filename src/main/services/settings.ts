@@ -4,6 +4,7 @@ import path from "path";
 
 export interface Settings {
     focusWindowPosition?: { x: number; y: number };
+    launchOnStartup?: boolean;
 }
 
 const settingsPath = path.join(app.getPath("userData"), "settings.json");

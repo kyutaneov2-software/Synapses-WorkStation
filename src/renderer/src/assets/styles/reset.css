@@ -1,0 +1,64 @@
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-variant-numeric: tabular-nums;
+  background-color: var(--bg-0);
+  color: var(--text-0);
+  user-select: none;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+button {
+  font-family: inherit;
+  letter-spacing: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  letter-spacing: inherit;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a32;
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background var(--dur);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a44;
+  background-clip: content-box;
+  border: 2px solid transparent;
+}

@@ -1,0 +1,22 @@
+/* ============================================================
+   ICON INTEGRATION — Lucide SVG tweaks
+   ============================================================ */
+
+.task-checkbox svg,
+.phase-check svg,
+.focus-timer-btn svg,
+.focus-hide svg,
+.focus-empty-check svg,
+.edit-project-btn svg,
+.focus-toggle svg,
+.due-badge svg {
+  display: block;
+}
+
+.focus-toggle {
+  gap: 6px;
+}
+
+.focus-toggle svg {
+  flex-shrink: 0;
+}

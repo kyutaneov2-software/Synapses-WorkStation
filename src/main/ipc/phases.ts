@@ -2,6 +2,7 @@ import { ipcMain } from "electron";
 import db from "../db";
 import { broadcast } from "../services/broadcast";
 import type { ProjectPhase } from "../../shared/types";
+import { requireString, requirePositiveId, requireNumber } from "./validate";
 
 export function registerPhaseHandlers(): void {
     ipcMain.handle("db:get-phases", (_, projectId: number): ProjectPhase[] => {
@@ -18,26 +19,35 @@ export function registerPhaseHandlers(): void {
 
     ipcMain.handle(
         "db:create-phase",
-        (_, projectId: number, name: string, amount: number): ProjectPhase => {
+        (
+            _,
+            projectId: unknown,
+            name: unknown,
+            amount: unknown,
+        ): ProjectPhase => {
+            const cleanProjectId = requirePositiveId(projectId, "projectId");
+            const cleanName = requireString(name, "name", 500);
+            const cleanAmount = requireNumber(amount, "amount");
+
             const project = db
                 .prepare("SELECT currency FROM projects WHERE id = ?")
-                .get(projectId) as { currency: string } | undefined;
+                .get(cleanProjectId) as { currency: string } | undefined;
             const currency = project?.currency ?? "USD";
 
             const maxOrder = db
                 .prepare(
                     "SELECT COALESCE(MAX(sort_order), -1) as max FROM project_phases WHERE project_id = ?",
                 )
-                .get(projectId) as { max: number };
+                .get(cleanProjectId) as { max: number };
 
             const stmt = db.prepare(`
-        INSERT INTO project_phases (project_id, name, amount, currency, sort_order)
-        VALUES (?, ?, ?, ?, ?)
-      `);
+          INSERT INTO project_phases (project_id, name, amount, currency, sort_order)
+          VALUES (?, ?, ?, ?, ?)
+        `);
             const result = stmt.run(
-                projectId,
-                name,
-                amount,
+                cleanProjectId,
+                cleanName,
+                cleanAmount,
                 currency,
                 maxOrder.max + 1,
             );
