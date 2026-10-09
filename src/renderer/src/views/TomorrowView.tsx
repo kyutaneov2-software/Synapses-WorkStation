@@ -91,7 +91,14 @@ export function TomorrowView(): React.JSX.Element {
 
     const handleSetText = async (id: number, text: string): Promise<void> => {
         await window.api.updateTask(id, { text });
-        await load(); // or load() depending on the file
+        await load();
+    };
+
+    const handlePin = async (id: number): Promise<void> => {
+        const task = tasks.find((t) => t.id === id);
+        const isCurrentlyPinned = task?.is_current === 1;
+        await window.api.focusPinTask(isCurrentlyPinned ? null : id);
+        await load();
     };
 
     const projectById = new Map(projects.map((p) => [p.id, p]));
@@ -131,6 +138,7 @@ export function TomorrowView(): React.JSX.Element {
                     onSetDueDate={handleSetDueDate}
                     onSetPriority={handleSetPriority}
                     onSetText={handleSetText}
+                    onPin={handlePin}
                 />
             ))}
 

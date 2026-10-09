@@ -53,6 +53,8 @@ const api = {
         ipcRenderer.invoke("focus:complete", taskId),
     focusQuickAddTomorrow: (text: string) =>
         ipcRenderer.invoke("focus:quick-add-tomorrow", text),
+    focusPinTask: (taskId: number | null) =>
+        ipcRenderer.invoke("focus:pin-task", taskId),
 
     // Sessions
     startSession: (taskId: number | null) =>

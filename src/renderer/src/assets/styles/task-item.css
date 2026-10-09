@@ -240,3 +240,62 @@
   background: var(--danger);
   box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
 }
+
+/* -------- Pinned / Focus state -------- */
+
+.task-item.pinned {
+  background: var(--accent-soft);
+  border-color: rgba(91, 141, 239, 0.25);
+}
+
+.task-item.pinned:hover {
+  background: rgba(91, 141, 239, 0.16);
+  border-color: rgba(91, 141, 239, 0.4);
+}
+
+.task-badge.pinned {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid rgba(91, 141, 239, 0.3);
+}
+
+.task-pin {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  opacity: 0;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    opacity var(--dur-fast),
+    color var(--dur-fast),
+    background var(--dur-fast),
+    transform var(--dur-fast);
+}
+
+.task-item:hover .task-pin {
+  opacity: 1;
+}
+
+.task-pin:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.task-pin:active {
+  transform: scale(0.9);
+}
+
+.task-pin.active {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.task-pin svg {
+  display: block;
+}

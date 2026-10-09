@@ -8,10 +8,12 @@ import { registerDashboardHandlers } from "./dashboard";
 import { registerSessionHandlers } from "./sessions";
 
 const ALL_CHANNELS = [
+    // Projects
     "db:get-projects",
     "db:create-project",
     "db:update-project",
     "db:delete-project",
+    // Tasks
     "db:get-tasks",
     "db:get-tasks-by-view",
     "db:get-tasks-by-project",
@@ -19,21 +21,26 @@ const ALL_CHANNELS = [
     "db:toggle-task",
     "db:update-task",
     "db:delete-task",
+    // Phases
     "db:get-phases",
     "db:create-phase",
     "db:update-phase",
     "db:delete-phase",
+    // Focus window
     "focus:toggle",
     "focus:get-current",
     "focus:complete",
     "focus:quick-add-tomorrow",
-    "db:health-check",
-    "system:test-notification",
-    "dashboard:get-data",
+    "focus:pin-task",
+    // Sessions
     "session:start",
     "session:stop",
     "session:get-active",
     "session:get-totals",
+    // Dashboard
+    "dashboard:get-data",
+    // System
+    "db:health-check",
 ];
 
 function clearExistingHandlers(): void {

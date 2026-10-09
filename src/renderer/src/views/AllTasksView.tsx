@@ -156,7 +156,14 @@ export function AllTasksView(): React.JSX.Element {
 
     const handleSetText = async (id: number, text: string): Promise<void> => {
         await window.api.updateTask(id, { text });
-        await load(); // or load() depending on the file
+        await load();
+    };
+
+    const handlePin = async (id: number): Promise<void> => {
+        const task = tasks.find((t) => t.id === id);
+        const isCurrentlyPinned = task?.is_current === 1;
+        await window.api.focusPinTask(isCurrentlyPinned ? null : id);
+        await load();
     };
 
     const totalCount = tasks.length;
@@ -211,9 +218,9 @@ export function AllTasksView(): React.JSX.Element {
                         Open <span className="chip-count">{openCount}</span>
                     </button>
                     <button
-                        className={`filter-chip ${
-                            statusFilter === "overdue" ? "active" : ""
-                        } ${overdueCount > 0 ? "has-overdue" : ""}`}
+                        className={`filter-chip ${statusFilter === "overdue" ? "active" : ""} ${
+                            overdueCount > 0 ? "has-overdue" : ""
+                        }`}
                         onClick={() => setStatusFilter("overdue")}
                     >
                         Overdue{" "}
@@ -312,6 +319,7 @@ export function AllTasksView(): React.JSX.Element {
                                       onSetDueDate={handleSetDueDate}
                                       onSetPriority={handleSetPriority}
                                       onSetText={handleSetText}
+                                      onPin={handlePin}
                                   />
                               ))}
                           </section>
@@ -331,6 +339,7 @@ export function AllTasksView(): React.JSX.Element {
                           onSetDueDate={handleSetDueDate}
                           onSetPriority={handleSetPriority}
                           onSetText={handleSetText}
+                          onPin={handlePin}
                       />
                   ))}
         </div>

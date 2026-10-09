@@ -105,9 +105,16 @@ export function registerTaskHandlers(): void {
         if (typeof done !== "boolean") {
             throw new Error("Invalid done: expected boolean");
         }
-        db.prepare(
-            `UPDATE tasks SET done = ?, completed_at = ? WHERE id = ?`,
-        ).run(done ? 1 : 0, done ? new Date().toISOString() : null, cleanId);
+        if (done) {
+            // Marking done also clears the pin so the Focus window auto-advances
+            db.prepare(
+                `UPDATE tasks SET done = 1, completed_at = ?, is_current = 0 WHERE id = ?`,
+            ).run(new Date().toISOString(), cleanId);
+        } else {
+            db.prepare(
+                `UPDATE tasks SET done = 0, completed_at = NULL WHERE id = ?`,
+            ).run(cleanId);
+        }
         const task = db
             .prepare("SELECT * FROM tasks WHERE id = ?")
             .get(cleanId) as Task;
@@ -133,7 +140,6 @@ export function registerTaskHandlers(): void {
                 if (key in updates) {
                     const v = updates[key];
 
-                    // Validate per column
                     if (key === "text") {
                         values.push(requireString(v, "text", 2000));
                     } else if (key === "priority") {
@@ -165,6 +171,23 @@ export function registerTaskHandlers(): void {
     ipcMain.handle("db:delete-task", (_, id: unknown): void => {
         const cleanId = requirePositiveId(id, "id");
         db.prepare("DELETE FROM tasks WHERE id = ?").run(cleanId);
+        broadcast("data:changed");
+    });
+
+    ipcMain.handle("focus:pin-task", (_, taskId: unknown): void => {
+        // Clear any existing pin
+        db.prepare(
+            "UPDATE tasks SET is_current = 0 WHERE is_current = 1",
+        ).run();
+
+        // Set the new pin (or leave empty if null)
+        if (taskId !== null && taskId !== undefined) {
+            const cleanId = requirePositiveId(taskId, "taskId");
+            db.prepare("UPDATE tasks SET is_current = 1 WHERE id = ?").run(
+                cleanId,
+            );
+        }
+
         broadcast("data:changed");
     });
 }

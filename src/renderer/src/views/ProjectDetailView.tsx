@@ -139,6 +139,13 @@ export function ProjectDetailView({
         await load();
     };
 
+    const handlePin = async (id: number): Promise<void> => {
+        const task = tasks.find((t) => t.id === id);
+        const isCurrentlyPinned = task?.is_current === 1;
+        await window.api.focusPinTask(isCurrentlyPinned ? null : id);
+        await load();
+    };
+
     const handleAddPhase = async (
         name: string,
         amount: number,
@@ -316,6 +323,7 @@ export function ProjectDetailView({
                                     onSetDueDate={handleSetDueDate}
                                     onSetPriority={handleSetPriority}
                                     onSetText={handleSetText}
+                                    onPin={handlePin}
                                 />
                             ))}
                         </section>
@@ -333,6 +341,7 @@ export function ProjectDetailView({
                                     onSetDueDate={handleSetDueDate}
                                     onSetPriority={handleSetPriority}
                                     onSetText={handleSetText}
+                                    onPin={handlePin}
                                 />
                             ))}
                         </section>

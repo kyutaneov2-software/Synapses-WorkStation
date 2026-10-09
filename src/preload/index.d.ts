@@ -54,6 +54,7 @@ export interface SynapsesAPI {
     focusGetCurrent: () => Promise<Task | null>;
     focusComplete: (taskId: number) => Promise<Task | null>;
     focusQuickAddTomorrow: (text: string) => Promise<void>;
+    focusPinTask: (taskId: number | null) => Promise<void>;
 
     startSession: (taskId: number | null) => Promise<Session>;
     stopSession: () => Promise<void>;

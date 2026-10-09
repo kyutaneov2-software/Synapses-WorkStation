@@ -55,7 +55,14 @@ export function TodayView(): React.JSX.Element {
 
     const handleSetText = async (id: number, text: string): Promise<void> => {
         await window.api.updateTask(id, { text });
-        await reload(); // or load() depending on the file
+        await reload();
+    };
+
+    const handlePin = async (id: number): Promise<void> => {
+        const task = tasks.find((t) => t.id === id);
+        const isCurrentlyPinned = task?.is_current === 1;
+        await window.api.focusPinTask(isCurrentlyPinned ? null : id);
+        await reload();
     };
 
     const overdue = tasks.filter((t) => isOverdue(t.planned_for));
@@ -102,6 +109,7 @@ export function TodayView(): React.JSX.Element {
                             onSetDueDate={handleSetDueDate}
                             onSetPriority={handleSetPriority}
                             onSetText={handleSetText}
+                            onPin={handlePin}
                         />
                     ))}
                 </section>
@@ -126,6 +134,7 @@ export function TodayView(): React.JSX.Element {
                             onSetDueDate={handleSetDueDate}
                             onSetPriority={handleSetPriority}
                             onSetText={handleSetText}
+                            onPin={handlePin}
                         />
                     ))}
                 </section>

@@ -1,4 +1,4 @@
-import { Square, CheckSquare } from "lucide-react";
+import { Square, CheckSquare, Target } from "lucide-react";
 import type { Task, Project } from "../../../../shared/types";
 import { isOverdue } from "../../lib/dates";
 import { DueDatePicker } from "./DueDatePicker";
@@ -13,6 +13,7 @@ interface TaskItemProps {
     onSetDueDate: (id: number, date: string | null) => void;
     onSetPriority: (id: number, priority: number) => void;
     onSetText: (id: number, text: string) => void;
+    onPin: (id: number) => void;
 }
 
 export function TaskItem({
@@ -23,11 +24,15 @@ export function TaskItem({
     onSetDueDate,
     onSetPriority,
     onSetText,
+    onPin,
 }: TaskItemProps): React.JSX.Element {
     const overdue = isOverdue(task.planned_for);
+    const isPinned = task.is_current === 1;
 
     return (
-        <div className={`task-item ${task.done ? "done" : ""}`}>
+        <div
+            className={`task-item ${task.done ? "done" : ""} ${isPinned ? "pinned" : ""}`}
+        >
             <button
                 className="task-checkbox"
                 onClick={() => onToggle(task.id, !task.done)}
@@ -56,6 +61,9 @@ export function TaskItem({
                     {project && (
                         <span className="task-project">{project.title}</span>
                     )}
+                    {isPinned && (
+                        <span className="task-badge pinned">Focused</span>
+                    )}
                     {overdue && (
                         <span className="task-badge overdue">Overdue</span>
                     )}
@@ -65,6 +73,19 @@ export function TaskItem({
                     />
                 </div>
             </div>
+
+            <button
+                className={`task-pin ${isPinned ? "active" : ""}`}
+                onClick={() => onPin(task.id)}
+                title={
+                    isPinned ? "Unpin from Focus window" : "Pin to Focus window"
+                }
+                aria-label={
+                    isPinned ? "Unpin from Focus window" : "Pin to Focus window"
+                }
+            >
+                <Target size={15} strokeWidth={2} />
+            </button>
 
             <button
                 className="task-delete"
