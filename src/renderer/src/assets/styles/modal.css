@@ -26,6 +26,9 @@
     box-shadow: var(--shadow-lg);
     animation: modal-enter var(--dur-slow) var(--ease-spring);
 }
+.modal-panel-wide {
+    max-width: 640px;
+}
 
 @keyframes modal-enter {
     from {

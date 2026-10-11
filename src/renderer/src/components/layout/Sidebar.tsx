@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useProjects } from '../../lib/hooks'
 import { ROUTES } from '../../lib/routes'
+import { projectTypeIcon } from '../../lib/projectIcons'
 
 export function Sidebar(): React.JSX.Element {
     const { projects } = useProjects()
@@ -80,7 +81,10 @@ export function Sidebar(): React.JSX.Element {
                 {projects.map((p) => (
                     <li key={p.id} className={p.id === activeProjectId ? 'active' : ''}>
                         <Link to={ROUTES.commissionsProject(p.id)}>
-                            <span className="project-title">{p.title}</span>
+                            <span className="project-title-row">
+                                {projectTypeIcon(p.type, 13)}
+                                <span className="project-title">{p.title}</span>
+                            </span>
                             <span className="project-client">{p.client}</span>
                         </Link>
                     </li>

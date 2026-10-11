@@ -1,5 +1,13 @@
 import { useState } from 'react'
 import type { Project } from '../../../../shared/types'
+import {
+    PROJECT_TYPES,
+    PROJECT_TYPE_LABELS,
+    CURRENCIES,
+    CURRENCY_SYMBOLS
+} from '../../../../shared/constants'
+import { TechStackPicker } from '../common/TechStackPicker'
+import { ReferenceLinksEditor } from '../common/ReferenceLinksEditor'
 
 interface ProjectEditModalProps {
     project: Project
@@ -16,6 +24,8 @@ export function ProjectEditModal({
 }: ProjectEditModalProps): React.JSX.Element {
     const [title, setTitle] = useState(project.title)
     const [client, setClient] = useState(project.client ?? '')
+    const [clientContact, setClientContact] = useState(project.client_contact ?? '')
+    const [type, setType] = useState<string>(project.type ?? 'other')
     const [status, setStatus] = useState(project.status ?? 'active')
     const [currency, setCurrency] = useState(project.currency ?? 'USD')
     const [startDate, setStartDate] = useState(project.start_date ?? '')
@@ -24,6 +34,8 @@ export function ProjectEditModal({
         project.hourly_rate != null ? String(project.hourly_rate) : ''
     )
     const [brief, setBrief] = useState(project.brief ?? '')
+    const [techStack, setTechStack] = useState<string[]>(project.tech_stack ?? [])
+    const [referenceLinks, setReferenceLinks] = useState(project.reference_links ?? [])
     const [saving, setSaving] = useState(false)
     const [confirmingDelete, setConfirmingDelete] = useState(false)
 
@@ -36,12 +48,16 @@ export function ProjectEditModal({
             await onSave({
                 title: title.trim(),
                 client: client.trim() || null,
+                client_contact: clientContact.trim() || null,
+                type: type as Project['type'],
                 status,
                 currency,
                 start_date: startDate || null,
                 due_date: dueDate || null,
                 hourly_rate: hourlyRate ? parseFloat(hourlyRate) : null,
-                brief: brief.trim() || null
+                brief: brief.trim() || null,
+                tech_stack: techStack.length > 0 ? techStack : null,
+                reference_links: referenceLinks.length > 0 ? referenceLinks : null
             })
             onClose()
         } finally {
@@ -60,7 +76,7 @@ export function ProjectEditModal({
 
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-panel modal-panel-wide" onClick={(e) => e.stopPropagation()}>
                 <form onSubmit={handleSubmit}>
                     <div className="modal-header">
                         <h3>Edit Project</h3>
@@ -86,17 +102,40 @@ export function ProjectEditModal({
                             />
                         </label>
 
-                        <label className="form-field">
-                            <span>Client</span>
-                            <input
-                                type="text"
-                                value={client}
-                                onChange={(e) => setClient(e.target.value)}
-                                placeholder="Optional"
-                            />
-                        </label>
+                        <div className="form-row">
+                            <label className="form-field">
+                                <span>Client</span>
+                                <input
+                                    type="text"
+                                    value={client}
+                                    onChange={(e) => setClient(e.target.value)}
+                                    placeholder="Optional"
+                                />
+                            </label>
+
+                            <label className="form-field">
+                                <span>Client Contact</span>
+                                <input
+                                    type="text"
+                                    value={clientContact}
+                                    onChange={(e) => setClientContact(e.target.value)}
+                                    placeholder="Discord, email, etc."
+                                />
+                            </label>
+                        </div>
 
                         <div className="form-row">
+                            <label className="form-field">
+                                <span>Type</span>
+                                <select value={type} onChange={(e) => setType(e.target.value)}>
+                                    {PROJECT_TYPES.map((t) => (
+                                        <option key={t} value={t}>
+                                            {PROJECT_TYPE_LABELS[t]}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
                             <label className="form-field">
                                 <span>Status</span>
                                 <select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -113,10 +152,11 @@ export function ProjectEditModal({
                                     value={currency}
                                     onChange={(e) => setCurrency(e.target.value)}
                                 >
-                                    <option value="USD">USD — $</option>
-                                    <option value="PHP">PHP — ₱</option>
-                                    <option value="EUR">EUR — €</option>
-                                    <option value="GBP">GBP — £</option>
+                                    {CURRENCIES.map((c) => (
+                                        <option key={c} value={c}>
+                                            {c} — {CURRENCY_SYMBOLS[c]}
+                                        </option>
+                                    ))}
                                 </select>
                             </label>
 
@@ -161,6 +201,19 @@ export function ProjectEditModal({
                                 rows={3}
                             />
                         </label>
+
+                        <div className="form-field">
+                            <span>Tech Stack</span>
+                            <TechStackPicker value={techStack} onChange={setTechStack} />
+                        </div>
+
+                        <div className="form-field">
+                            <span>Reference Links</span>
+                            <ReferenceLinksEditor
+                                value={referenceLinks}
+                                onChange={setReferenceLinks}
+                            />
+                        </div>
                     </div>
 
                     <div className="modal-footer">

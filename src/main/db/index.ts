@@ -54,6 +54,41 @@ export function runMigrations(): void {
         `)
         db.pragma('user_version = 3')
     }
+
+    if (userVersion < 4) {
+        console.log('Running migration to version 4 — commissions expansion...')
+
+        // New columns on projects
+        db.exec(`ALTER TABLE projects ADD COLUMN client_contact TEXT`)
+        db.exec(`ALTER TABLE projects ADD COLUMN tech_stack TEXT`)
+        db.exec(`ALTER TABLE projects ADD COLUMN reference_links TEXT`)
+
+        // Tags (many-to-many)
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS tags (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                color TEXT
+            );
+            CREATE TABLE IF NOT EXISTS project_tags (
+                project_id INTEGER NOT NULL,
+                tag_id INTEGER NOT NULL,
+                PRIMARY KEY (project_id, tag_id),
+                FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
+                FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_project_tags_tag ON project_tags(tag_id);
+        `)
+
+        // Normalize legacy type values ('Personal' from JSON migration, nulls, unknowns)
+        db.exec(`
+            UPDATE projects SET type = 'other'
+            WHERE type IS NULL
+               OR type NOT IN ('mobile_app', 'website', 'desktop_app', 'video', 'illustration', 'writing', 'other')
+        `)
+
+        db.pragma('user_version = 4')
+    }
 }
 
 export default db

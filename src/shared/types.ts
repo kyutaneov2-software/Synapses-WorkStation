@@ -1,8 +1,21 @@
+import type { ProjectType } from './constants'
+
+export interface ReferenceLink {
+    label: string
+    url: string
+}
+
+export interface Tag {
+    id: number
+    name: string
+    color: string | null
+}
+
 export interface Project {
     id: number
     title: string
     client: string | null
-    type: string | null
+    type: ProjectType | null
     brief: string | null
     status: string
     start_date: string | null
@@ -11,6 +24,9 @@ export interface Project {
     currency: string
     created_at: string
     archived: number
+    client_contact: string | null
+    tech_stack: string[] | null
+    reference_links: ReferenceLink[] | null
 }
 
 export interface Task {

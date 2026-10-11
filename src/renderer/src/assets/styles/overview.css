@@ -1,0 +1,112 @@
+/* ─── Project detail tab strip ──────────────────────────────── */
+.project-detail .tabs { gap: 2px; }
+
+/* ─── Overview tab ──────────────────────────────────────────── */
+.overview {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding: 4px 0 24px;
+    max-width: 780px;
+}
+
+.overview-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 18px 32px;
+}
+
+.overview-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.overview-field-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3, #555);
+    font-weight: 500;
+}
+
+.overview-field-value {
+    font-size: 13px;
+    color: var(--text-0, #e7e7ea);
+    word-break: break-word;
+}
+
+.overview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.overview-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3, #555);
+    font-weight: 500;
+}
+
+.overview-empty {
+    font-size: 12px;
+    color: var(--text-3, #555);
+    font-style: italic;
+}
+
+/* ─── Status badge ──────────────────────────────────────────── */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+.status-badge.active {
+    background: rgba(74, 222, 128, 0.12);
+    color: #4ade80;
+}
+.status-badge.paused {
+    background: rgba(251, 146, 60, 0.12);
+    color: #fb923c;
+}
+.status-badge.completed {
+    background: rgba(108, 140, 255, 0.15);
+    color: #6c8cff;
+}
+.status-badge.archived {
+    background: rgba(148, 163, 184, 0.12);
+    color: #94a3b8;
+}
+
+/* ─── Title row with type icon ──────────────────────────────── */
+.project-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.project-title-row > svg {
+    color: var(--text-2, #8888a0);
+    flex-shrink: 0;
+}
+
+/* ─── Sidebar project type icon ─────────────────────────────── */
+.project-list li a .project-title-row {
+    gap: 7px;
+}
+.project-list li a .project-title-row > svg {
+    color: var(--text-3, #555);
+    transition: color 0.15s;
+}
+.project-list li:hover a .project-title-row > svg,
+.project-list li.active a .project-title-row > svg {
+    color: var(--accent, #6c8cff);
+}

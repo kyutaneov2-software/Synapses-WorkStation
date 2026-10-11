@@ -6,6 +6,7 @@ import { registerFocusHandlers } from './focus'
 import { registerSystemHandlers } from './system'
 import { registerDashboardHandlers } from './dashboard'
 import { registerSessionHandlers } from './sessions'
+import { registerTagHandlers } from './tags'
 
 const ALL_CHANNELS = [
     // Projects
@@ -40,7 +41,11 @@ const ALL_CHANNELS = [
     // Dashboard
     'dashboard:get-data',
     // System
-    'db:health-check'
+    'db:health-check',
+    // Tags
+    'db:get-tags',
+    'db:get-project-tags',
+    'db:set-project-tags'
 ]
 
 function clearExistingHandlers(): void {
@@ -59,6 +64,7 @@ export function registerAllIpcHandlers(): void {
     registerSystemHandlers()
     registerDashboardHandlers()
     registerSessionHandlers()
+    registerTagHandlers()
 
     console.log('[ipc] all handlers registered')
 }

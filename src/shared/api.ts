@@ -1,4 +1,12 @@
-import type { Project, Task, ProjectPhase, Session, DashboardData, SessionTotals } from './types'
+import type {
+    Project,
+    Task,
+    ProjectPhase,
+    Session,
+    DashboardData,
+    SessionTotals,
+    Tag
+} from './types'
 
 export interface SynapsesAPI {
     getProjects: () => Promise<Project[]>
@@ -24,6 +32,11 @@ export interface SynapsesAPI {
     createPhase: (projectId: number, name: string, amount: number) => Promise<ProjectPhase>
     updatePhase: (id: number, updates: Record<string, unknown>) => Promise<ProjectPhase>
     deletePhase: (id: number) => Promise<void>
+
+    // Tags
+    getTags: () => Promise<Tag[]>
+    getProjectTags: (projectId: number) => Promise<Tag[]>
+    setProjectTags: (projectId: number, tagNames: string[]) => Promise<Tag[]>
 
     focusToggle: () => Promise<void>
     focusGetCurrent: () => Promise<Task | null>

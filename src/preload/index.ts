@@ -37,6 +37,12 @@ const api: SynapsesAPI = {
         ipcRenderer.invoke('db:update-phase', id, updates),
     deletePhase: (id: number) => ipcRenderer.invoke('db:delete-phase', id),
 
+    // Tags
+    getTags: () => ipcRenderer.invoke('db:get-tags'),
+    getProjectTags: (projectId: number) => ipcRenderer.invoke('db:get-project-tags', projectId),
+    setProjectTags: (projectId: number, tagNames: string[]) =>
+        ipcRenderer.invoke('db:set-project-tags', projectId, tagNames),
+
     // Focus window
     focusToggle: () => ipcRenderer.invoke('focus:toggle'),
     focusGetCurrent: () => ipcRenderer.invoke('focus:get-current'),

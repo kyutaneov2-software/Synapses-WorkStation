@@ -45,3 +45,58 @@ export function priorityLevel(value: number): PriorityLevel {
     if (value === 1) return 'low'
     return 'none'
 }
+
+export const PROJECT_TYPES = [
+    'mobile_app',
+    'website',
+    'desktop_app',
+    'video',
+    'illustration',
+    'writing',
+    'other'
+] as const
+export type ProjectType = (typeof PROJECT_TYPES)[number]
+
+export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+    mobile_app: 'Mobile App',
+    website: 'Website',
+    desktop_app: 'Desktop App',
+    video: 'Video',
+    illustration: 'Illustration',
+    writing: 'Writing',
+    other: 'Other'
+}
+
+export const TECH_STACK_PRESETS = [
+    'TypeScript',
+    'JavaScript',
+    'React',
+    'Next.js',
+    'Vue',
+    'Svelte',
+    'Node.js',
+    'Express',
+    'Python',
+    'Django',
+    'Flask',
+    'Swift',
+    'Kotlin',
+    'Flutter',
+    'React Native',
+    'Electron',
+    'Tailwind CSS',
+    'PostgreSQL',
+    'SQLite',
+    'MongoDB'
+] as const
+
+export const TAG_COLORS = [
+    '#6c8cff', // blue
+    '#a78bfa', // purple
+    '#f472b6', // pink
+    '#fb923c', // orange
+    '#facc15', // yellow
+    '#4ade80', // green
+    '#22d3ee', // cyan
+    '#94a3b8' // slate
+] as const
