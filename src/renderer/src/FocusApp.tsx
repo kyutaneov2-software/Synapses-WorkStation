@@ -1,130 +1,125 @@
-import { useEffect, useRef, useState } from "react";
-import { Play, Pause, X, Check } from "lucide-react";
-import type { Task, Project } from "../../shared/types";
-import { formatHMS } from "./lib/time";
+import { useEffect, useRef, useState } from 'react'
+import { Play, Pause, X, Check } from 'lucide-react'
+import type { Task, Project } from '../../shared/types'
+import { formatHMS } from './lib/time'
+import { parseSqliteMs } from '../../shared/dates'
 
 function FocusApp(): React.JSX.Element {
-    const [task, setTask] = useState<Task | null>(null);
-    const [projectName, setProjectName] = useState<string | null>(null);
-    const [tomorrowInput, setTomorrowInput] = useState("");
-    const [showInput, setShowInput] = useState(false);
-    const [trackingTaskId, setTrackingTaskId] = useState<number | null>(null);
-    const [startedAt, setStartedAt] = useState<number | null>(null);
-    const [elapsed, setElapsed] = useState(0);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const [task, setTask] = useState<Task | null>(null)
+    const [projectName, setProjectName] = useState<string | null>(null)
+    const [tomorrowInput, setTomorrowInput] = useState('')
+    const [showInput, setShowInput] = useState(false)
+    const [trackingTaskId, setTrackingTaskId] = useState<number | null>(null)
+    const [startedAt, setStartedAt] = useState<number | null>(null)
+    const [elapsed, setElapsed] = useState(0)
+    const inputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        let cancelled = false;
+        let cancelled = false
 
-        (async () => {
+        ;(async () => {
             const [t, session] = await Promise.all([
                 window.api.focusGetCurrent(),
-                window.api.getActiveSession(),
-            ]);
-            if (cancelled) return;
-            setTask(t);
+                window.api.getActiveSession()
+            ])
+            if (cancelled) return
+            setTask(t)
             if (session && session.task_id !== null) {
-                setTrackingTaskId(session.task_id);
-                setStartedAt(
-                    new Date(
-                        session.started_at.replace(" ", "T") + "Z",
-                    ).getTime(),
-                );
+                setTrackingTaskId(session.task_id)
+                setStartedAt(parseSqliteMs(session.started_at))
             }
-        })();
+        })()
 
         const onWindowFocus = (): void => {
             window.api.focusGetCurrent().then((t) => {
-                if (!cancelled) setTask(t);
-            });
-        };
-        window.addEventListener("focus", onWindowFocus);
+                if (!cancelled) setTask(t)
+            })
+        }
+        window.addEventListener('focus', onWindowFocus)
 
         const unsubscribe = window.api.onDataChanged(() => {
             window.api.focusGetCurrent().then((t) => {
-                if (!cancelled) setTask(t);
-            });
-        });
+                if (!cancelled) setTask(t)
+            })
+        })
 
         return () => {
-            cancelled = true;
-            window.removeEventListener("focus", onWindowFocus);
-            unsubscribe();
-        };
-    }, []);
+            cancelled = true
+            window.removeEventListener('focus', onWindowFocus)
+            unsubscribe()
+        }
+    }, [])
 
     useEffect(() => {
-        let cancelled = false;
+        let cancelled = false
 
-        (async () => {
+        ;(async () => {
             if (!task || task.project_id === null) {
-                if (!cancelled) setProjectName(null);
-                return;
+                if (!cancelled) setProjectName(null)
+                return
             }
-            const projects: Project[] = await window.api.getProjects();
-            if (cancelled) return;
-            const match = projects.find((p) => p.id === task.project_id);
-            setProjectName(match?.title ?? null);
-        })();
+            const projects: Project[] = await window.api.getProjects()
+            if (cancelled) return
+            const match = projects.find((p) => p.id === task.project_id)
+            setProjectName(match?.title ?? null)
+        })()
 
         return () => {
-            cancelled = true;
-        };
-    }, [task]);
+            cancelled = true
+        }
+    }, [task])
 
     useEffect(() => {
-        if (startedAt === null) return;
+        if (startedAt === null) return
 
         const tick = (): void => {
-            setElapsed(Math.floor((Date.now() - startedAt) / 1000));
-        };
-        tick();
-        const id = setInterval(tick, 1000);
-        return () => clearInterval(id);
-    }, [startedAt]);
+            setElapsed(Math.floor((Date.now() - startedAt) / 1000))
+        }
+        tick()
+        const id = setInterval(tick, 1000)
+        return () => clearInterval(id)
+    }, [startedAt])
 
     const handleComplete = async (): Promise<void> => {
-        if (!task) return;
+        if (!task) return
         if (trackingTaskId === task.id) {
-            await window.api.stopSession();
-            setTrackingTaskId(null);
-            setStartedAt(null);
+            await window.api.stopSession()
+            setTrackingTaskId(null)
+            setStartedAt(null)
         }
-        const next = await window.api.focusComplete(task.id);
-        setTask(next);
-    };
+        const next = await window.api.focusComplete(task.id)
+        setTask(next)
+    }
 
     const handleToggleTimer = async (): Promise<void> => {
-        if (!task) return;
+        if (!task) return
 
         if (trackingTaskId === task.id) {
-            await window.api.stopSession();
-            setTrackingTaskId(null);
-            setStartedAt(null);
+            await window.api.stopSession()
+            setTrackingTaskId(null)
+            setStartedAt(null)
         } else {
-            const session = await window.api.startSession(task.id);
-            setTrackingTaskId(task.id);
-            setStartedAt(
-                new Date(session.started_at.replace(" ", "T") + "Z").getTime(),
-            );
+            const session = await window.api.startSession(task.id)
+            setTrackingTaskId(task.id)
+            setStartedAt(parseSqliteMs(session.started_at))
         }
-    };
+    }
 
     const handleAddTomorrow = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault();
-        const text = tomorrowInput.trim();
-        if (!text) return;
-        await window.api.focusQuickAddTomorrow(text);
-        setTomorrowInput("");
-        setShowInput(false);
-    };
+        e.preventDefault()
+        const text = tomorrowInput.trim()
+        if (!text) return
+        await window.api.focusQuickAddTomorrow(text)
+        setTomorrowInput('')
+        setShowInput(false)
+    }
 
     const toggleInput = (): void => {
-        setShowInput((s) => !s);
-        setTimeout(() => inputRef.current?.focus(), 50);
-    };
+        setShowInput((s) => !s)
+        setTimeout(() => inputRef.current?.focus(), 50)
+    }
 
-    const isTracking = task !== null && trackingTaskId === task.id;
+    const isTracking = task !== null && trackingTaskId === task.id
 
     return (
         <div className="focus-shell">
@@ -144,11 +139,7 @@ function FocusApp(): React.JSX.Element {
                             <div className="focus-text" title={task.text}>
                                 {task.text}
                             </div>
-                            {projectName && (
-                                <div className="focus-project">
-                                    {projectName}
-                                </div>
-                            )}
+                            {projectName && <div className="focus-project">{projectName}</div>}
                         </div>
                     </div>
                 ) : (
@@ -156,9 +147,7 @@ function FocusApp(): React.JSX.Element {
                         <span className="focus-empty-check">
                             <Check size={15} strokeWidth={3} />
                         </span>
-                        <span className="focus-empty-text">
-                            All clear for today
-                        </span>
+                        <span className="focus-empty-text">All clear for today</span>
                     </div>
                 )}
             </div>
@@ -166,18 +155,13 @@ function FocusApp(): React.JSX.Element {
             {isTracking && (
                 <div className="focus-timer-badge no-drag">
                     <span className="focus-timer-dot" />
-                    <span className="focus-timer-time">
-                        {formatHMS(elapsed)}
-                    </span>
+                    <span className="focus-timer-time">{formatHMS(elapsed)}</span>
                 </div>
             )}
 
             <div className="focus-bottom">
                 {showInput ? (
-                    <form
-                        onSubmit={handleAddTomorrow}
-                        className="focus-form no-drag"
-                    >
+                    <form onSubmit={handleAddTomorrow} className="focus-form no-drag">
                         <input
                             ref={inputRef}
                             type="text"
@@ -196,12 +180,10 @@ function FocusApp(): React.JSX.Element {
                 <div className="focus-actions no-drag">
                     {task && (
                         <button
-                            className={`focus-timer-btn ${isTracking ? "active" : ""}`}
+                            className={`focus-timer-btn ${isTracking ? 'active' : ''}`}
                             onClick={handleToggleTimer}
-                            title={isTracking ? "Stop timer" : "Start timer"}
-                            aria-label={
-                                isTracking ? "Stop timer" : "Start timer"
-                            }
+                            title={isTracking ? 'Stop timer' : 'Start timer'}
+                            aria-label={isTracking ? 'Stop timer' : 'Start timer'}
                         >
                             {isTracking ? (
                                 <Pause size={11} strokeWidth={2.5} />
@@ -221,7 +203,7 @@ function FocusApp(): React.JSX.Element {
                 </div>
             </div>
         </div>
-    );
+    )
 }
 
-export default FocusApp;
+export default FocusApp

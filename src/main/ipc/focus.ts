@@ -3,6 +3,7 @@ import db from '../db'
 import { broadcast } from '../services/broadcast'
 import { toggleFocusWindow } from '../focusWindow'
 import type { Task } from '../../shared/types'
+import { tomorrowStr } from '../../shared/dates'
 
 export function registerFocusHandlers(): void {
     ipcMain.handle('focus:toggle', () => toggleFocusWindow())
@@ -66,12 +67,7 @@ export function registerFocusHandlers(): void {
     })
 
     ipcMain.handle('focus:quick-add-tomorrow', (_, text: string): void => {
-        const t = new Date()
-        t.setDate(t.getDate() + 1)
-        const dateStr = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(
-            2,
-            '0'
-        )}-${String(t.getDate()).padStart(2, '0')}`
+        const dateStr = tomorrowStr()
 
         db.prepare('INSERT INTO tasks (text, planned_for, done) VALUES (?, ?, 0)').run(
             text,

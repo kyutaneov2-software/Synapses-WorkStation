@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo, useCallback } from 'react'
-import type { Task, Project, NewTaskOptions } from '../../../shared/types'
+import { useMemo, useState } from 'react'
+import type { NewTaskOptions, Task } from '../../../shared/types'
+import { useProjects, useTasksByView } from '../lib/hooks'
 import { TaskItem } from '../components/tasks/TaskItem'
 import { QuickAdd } from '../components/common/QuickAdd'
 import { isOverdue } from '../lib/dates'
@@ -8,55 +9,14 @@ type StatusFilter = 'all' | 'open' | 'done' | 'overdue'
 type SortBy = 'recent' | 'due' | 'priority'
 
 export function AllTasksView(): React.JSX.Element {
-    const [tasks, setTasks] = useState<Task[]>([])
-    const [projects, setProjects] = useState<Project[]>([])
-    const [loading, setLoading] = useState(true)
+    const { tasks, loading } = useTasksByView('all')
+    const { projects } = useProjects()
 
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('open')
     const [projectFilter, setProjectFilter] = useState<number | 'all' | 'inbox'>('all')
     const [sortBy, setSortBy] = useState<SortBy>('recent')
     const [groupByProject, setGroupByProject] = useState(true)
-
-    const load = useCallback(async (): Promise<void> => {
-        const [t, p] = await Promise.all([
-            window.api.getTasksByView('all'),
-            window.api.getProjects()
-        ])
-        setTasks(t)
-        setProjects(p)
-        setLoading(false)
-    }, [])
-
-    useEffect(() => {
-        let cancelled = false
-
-        ;(async () => {
-            const [t, p] = await Promise.all([
-                window.api.getTasksByView('all'),
-                window.api.getProjects()
-            ])
-            if (!cancelled) {
-                setTasks(t)
-                setProjects(p)
-                setLoading(false)
-            }
-        })()
-
-        const unsubscribe = window.api.onDataChanged(() => {
-            window.api.getTasksByView('all').then((t) => {
-                if (!cancelled) setTasks(t)
-            })
-            window.api.getProjects().then((p) => {
-                if (!cancelled) setProjects(p)
-            })
-        })
-
-        return () => {
-            cancelled = true
-            unsubscribe()
-        }
-    }, [])
 
     const projectById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects])
 
@@ -73,7 +33,7 @@ export function AllTasksView(): React.JSX.Element {
         } else if (statusFilter === 'done') {
             result = result.filter((t) => t.done)
         } else if (statusFilter === 'overdue') {
-            result = result.filter((t) => !t.done && isOverdue(t.planned_for))
+            result = result.filter((t) => !t.done && isOverdue(t.due_date))
         }
 
         if (projectFilter === 'inbox') {
@@ -117,45 +77,38 @@ export function AllTasksView(): React.JSX.Element {
             options.dueDate,
             options.priority
         )
-        await load()
     }
 
     const handleToggle = async (id: number, done: boolean): Promise<void> => {
         await window.api.toggleTask(id, done)
-        await load()
     }
 
     const handleDelete = async (id: number): Promise<void> => {
         await window.api.deleteTask(id)
-        await load()
     }
 
     const handleSetDueDate = async (id: number, date: string | null): Promise<void> => {
         await window.api.updateTask(id, { due_date: date })
-        await load()
     }
 
     const handleSetPriority = async (id: number, priority: number): Promise<void> => {
         await window.api.updateTask(id, { priority })
-        await load()
     }
 
     const handleSetText = async (id: number, text: string): Promise<void> => {
         await window.api.updateTask(id, { text })
-        await load()
     }
 
     const handlePin = async (id: number): Promise<void> => {
         const task = tasks.find((t) => t.id === id)
         const isCurrentlyPinned = task?.is_current === 1
         await window.api.focusPinTask(isCurrentlyPinned ? null : id)
-        await load()
     }
 
     const totalCount = tasks.length
     const openCount = tasks.filter((t) => !t.done).length
     const doneCount = tasks.filter((t) => t.done).length
-    const overdueCount = tasks.filter((t) => !t.done && isOverdue(t.planned_for)).length
+    const overdueCount = tasks.filter((t) => !t.done && isOverdue(t.due_date)).length
 
     if (loading)
         return (

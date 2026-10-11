@@ -1,7 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import type { SynapsesAPI } from '../shared/api'
 
-const api = {
+const api: SynapsesAPI = {
     // Projects
     getProjects: () => ipcRenderer.invoke('db:get-projects'),
     createProject: (title: string, client: string) =>

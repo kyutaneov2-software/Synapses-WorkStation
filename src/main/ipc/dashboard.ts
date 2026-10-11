@@ -1,16 +1,7 @@
 import { ipcMain } from 'electron'
 import db from '../db'
 import type { Project, Task, ProjectPhase, DashboardData } from '../../shared/types'
-
-function parseSqliteDate(s: string): number {
-    return new Date(s.replace(' ', 'T') + 'Z').getTime()
-}
-
-function sessionSeconds(row: { started_at: string; ended_at: string | null }): number {
-    const start = parseSqliteDate(row.started_at)
-    const end = row.ended_at ? parseSqliteDate(row.ended_at) : Date.now()
-    return Math.max(0, Math.floor((end - start) / 1000))
-}
+import { parseSqliteDate, sessionSeconds } from '../../shared/dates'
 
 export function registerDashboardHandlers(): void {
     ipcMain.handle('dashboard:get-data', (): DashboardData => {
@@ -46,7 +37,7 @@ export function registerDashboardHandlers(): void {
 
         for (const row of rows) {
             const secs = sessionSeconds(row)
-            const startDate = new Date(parseSqliteDate(row.started_at))
+            const startDate = parseSqliteDate(row.started_at)
 
             totalSeconds += secs
             if (startDate >= weekStart) thisWeekSeconds += secs

@@ -26,7 +26,7 @@ export function TaskItem({
     onSetText,
     onPin
 }: TaskItemProps): React.JSX.Element {
-    const overdue = isOverdue(task.planned_for)
+    const overdue = isOverdue(task.due_date)
     const isPinned = task.is_current === 1
 
     return (

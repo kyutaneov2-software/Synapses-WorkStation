@@ -1,53 +1,12 @@
-import { useEffect, useState, useCallback } from 'react'
-import type { Task, Project, NewTaskOptions } from '../../../shared/types'
+import type { NewTaskOptions } from '../../../shared/types'
+import { useProjects, useTasksByView } from '../lib/hooks'
 import { TaskItem } from '../components/tasks/TaskItem'
 import { QuickAdd } from '../components/common/QuickAdd'
 import { tomorrowStr } from '../lib/dates'
 
 export function TomorrowView(): React.JSX.Element {
-    const [tasks, setTasks] = useState<Task[]>([])
-    const [projects, setProjects] = useState<Project[]>([])
-    const [loading, setLoading] = useState(true)
-
-    const load = useCallback(async (): Promise<void> => {
-        const [t, p] = await Promise.all([
-            window.api.getTasksByView('tomorrow'),
-            window.api.getProjects()
-        ])
-        setTasks(t)
-        setProjects(p)
-        setLoading(false)
-    }, [])
-
-    useEffect(() => {
-        let cancelled = false
-
-        ;(async () => {
-            const [t, p] = await Promise.all([
-                window.api.getTasksByView('tomorrow'),
-                window.api.getProjects()
-            ])
-            if (!cancelled) {
-                setTasks(t)
-                setProjects(p)
-                setLoading(false)
-            }
-        })()
-
-        const unsubscribe = window.api.onDataChanged(() => {
-            window.api.getTasksByView('tomorrow').then((t) => {
-                if (!cancelled) setTasks(t)
-            })
-            window.api.getProjects().then((p) => {
-                if (!cancelled) setProjects(p)
-            })
-        })
-
-        return () => {
-            cancelled = true
-            unsubscribe()
-        }
-    }, [])
+    const { tasks, loading } = useTasksByView('tomorrow')
+    const { projects } = useProjects()
 
     const handleAdd = async (text: string, options: NewTaskOptions): Promise<void> => {
         await window.api.createTask(
@@ -57,39 +16,32 @@ export function TomorrowView(): React.JSX.Element {
             options.dueDate,
             options.priority
         )
-        await load()
     }
 
     const handleToggle = async (id: number, done: boolean): Promise<void> => {
         await window.api.toggleTask(id, done)
-        await load()
     }
 
     const handleDelete = async (id: number): Promise<void> => {
         await window.api.deleteTask(id)
-        await load()
     }
 
     const handleSetDueDate = async (id: number, date: string | null): Promise<void> => {
         await window.api.updateTask(id, { due_date: date })
-        await load()
     }
 
     const handleSetPriority = async (id: number, priority: number): Promise<void> => {
         await window.api.updateTask(id, { priority })
-        await load()
     }
 
     const handleSetText = async (id: number, text: string): Promise<void> => {
         await window.api.updateTask(id, { text })
-        await load()
     }
 
     const handlePin = async (id: number): Promise<void> => {
         const task = tasks.find((t) => t.id === id)
         const isCurrentlyPinned = task?.is_current === 1
         await window.api.focusPinTask(isCurrentlyPinned ? null : id)
-        await load()
     }
 
     const projectById = new Map(projects.map((p) => [p.id, p]))

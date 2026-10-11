@@ -38,6 +38,22 @@ export function runMigrations(): void {
     `)
         db.pragma('user_version = 2')
     }
+
+    if (userVersion < 3) {
+        console.log('Running migration to version 3 — indexes...')
+        db.exec(`
+            CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(project_id);
+            CREATE INDEX IF NOT EXISTS idx_tasks_planned ON tasks(planned_for);
+            CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(due_date);
+            CREATE INDEX IF NOT EXISTS idx_tasks_done ON tasks(done);
+            CREATE INDEX IF NOT EXISTS idx_tasks_current ON tasks(is_current) WHERE is_current = 1;
+            CREATE INDEX IF NOT EXISTS idx_phases_project ON project_phases(project_id);
+            CREATE INDEX IF NOT EXISTS idx_sessions_task ON sessions(task_id);
+            CREATE INDEX IF NOT EXISTS idx_sessions_open ON sessions(ended_at) WHERE ended_at IS NULL;
+            CREATE INDEX IF NOT EXISTS idx_attachments_project ON attachments(project_id);
+        `)
+        db.pragma('user_version = 3')
+    }
 }
 
 export default db

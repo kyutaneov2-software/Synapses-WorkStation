@@ -1,13 +1,9 @@
-import { useEffect, useState, useMemo } from 'react'
-import type { Project, DashboardData } from '../../../shared/types'
+import { useMemo } from 'react'
+import type { Project } from '../../../shared/types'
 import { formatHM } from '../lib/time'
-
-const CURRENCY_SYMBOLS: Record<string, string> = {
-    USD: '$',
-    PHP: '₱',
-    EUR: '€',
-    GBP: '£'
-}
+import { useDashboard } from '../lib/hooks'
+import { CURRENCY_SYMBOLS } from '../../../shared/constants'
+import { isOverdue } from '../lib/dates'
 
 interface DeadlineItem {
     id: string
@@ -46,27 +42,7 @@ function isThisMonth(isoString: string): boolean {
 }
 
 export function DashboardView(): React.JSX.Element {
-    const [data, setData] = useState<DashboardData | null>(null)
-
-    useEffect(() => {
-        let cancelled = false
-
-        ;(async () => {
-            const d = await window.api.getDashboardData()
-            if (!cancelled) setData(d)
-        })()
-
-        const unsubscribe = window.api.onDataChanged(() => {
-            window.api.getDashboardData().then((d) => {
-                if (!cancelled) setData(d)
-            })
-        })
-
-        return () => {
-            cancelled = true
-            unsubscribe()
-        }
-    }, [])
+    const { data } = useDashboard()
 
     const displayCurrency = useMemo(() => {
         if (!data || data.projects.length === 0) return 'USD'
@@ -122,10 +98,7 @@ export function DashboardView(): React.JSX.Element {
 
         const earnedThisMonth = thisMonth.reduce((s, p) => s + p.amount, 0)
 
-        const overdueTasks = tasks.filter((t) => {
-            if (t.done || !t.planned_for) return false
-            return new Date(t.planned_for + 'T00:00:00') < today
-        }).length
+        const overdueTasks = tasks.filter((t) => !t.done && isOverdue(t.due_date)).length
 
         const overdueProjects = projects.filter((p) => {
             if (!p.due_date || p.status === 'completed') return false
@@ -163,6 +136,7 @@ export function DashboardView(): React.JSX.Element {
 
         for (const t of data.tasks) {
             if (t.done) continue
+            if (!t.due_date) continue
             const dateStr = t.due_date || t.planned_for
             if (!dateStr) continue
             const d = new Date(dateStr + 'T00:00:00')

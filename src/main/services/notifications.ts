@@ -2,6 +2,7 @@ import { Notification } from 'electron'
 import schedule from 'node-schedule'
 import db from '../db'
 import type { Task, Project } from '../../shared/types'
+import { todayStr } from '../../shared/dates'
 
 interface DueItem {
     text: string
@@ -9,13 +10,8 @@ interface DueItem {
     isProject: boolean
 }
 
-function getTodayStr(): string {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
 function getDueToday(): DueItem[] {
-    const today = getTodayStr()
+    const today = todayStr()
     const items: DueItem[] = []
 
     const tasks = db
@@ -61,7 +57,7 @@ function getDueToday(): DueItem[] {
 }
 
 function getOverdue(): DueItem[] {
-    const today = getTodayStr()
+    const today = todayStr()
     const items: DueItem[] = []
 
     const tasks = db
@@ -71,9 +67,9 @@ function getOverdue(): DueItem[] {
         FROM tasks t
         LEFT JOIN projects p ON t.project_id = p.id
         WHERE t.done = 0
-          AND t.planned_for IS NOT NULL
-          AND t.planned_for < ?
-        ORDER BY t.planned_for ASC
+          AND t.due_date IS NOT NULL
+          AND t.due_date < ?
+        ORDER BY t.due_date ASC
       `
         )
         .all(today) as (Task & { project_title: string | null })[]

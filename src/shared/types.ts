@@ -54,12 +54,6 @@ export interface Session {
     ended_at: string | null
 }
 
-export interface DashboardData {
-    projects: Project[]
-    tasks: Task[]
-    phases: ProjectPhase[]
-}
-
 export interface NewTaskOptions {
     projectId: number | null
     plannedFor: string | null
@@ -77,4 +71,12 @@ export interface DashboardData {
         thisMonthSeconds: number
         byProject: Record<number, number>
     }
+}
+
+export interface SessionTotals {
+    totalSeconds: number
+    thisWeekSeconds: number
+    thisMonthSeconds: number
+    byProject: Record<number, number>
+    byTask: Record<number, number>
 }

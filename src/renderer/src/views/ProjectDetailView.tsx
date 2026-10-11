@@ -1,11 +1,14 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState } from 'react'
 import { Settings } from 'lucide-react'
-import type { Project, Task, ProjectPhase, NewTaskOptions } from '../../../shared/types'
+import type { Project, NewTaskOptions } from '../../../shared/types'
+import { usePhases, useProjects, useTasksByProject } from '../lib/hooks'
 import { TaskItem } from '../components/tasks/TaskItem'
 import { QuickAdd } from '../components/common/QuickAdd'
 import { PhaseList } from '../components/phases/PhaseList'
 import { EditableText } from '../components/common/EditableText'
 import { ProjectEditModal } from '../components/projects/ProjectEditModal'
+import { todayStr } from '../lib/dates'
+import { CURRENCY_SYMBOLS } from '../../../shared/constants'
 
 interface ProjectDetailViewProps {
     projectId: number
@@ -14,115 +17,52 @@ interface ProjectDetailViewProps {
 
 type Tab = 'tasks' | 'phases' | 'attachments'
 
-const CURRENCY_SYMBOLS: Record<string, string> = {
-    USD: '$',
-    PHP: '₱',
-    EUR: '€',
-    GBP: '£'
-}
-
-function todayStr(): string {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
 export function ProjectDetailView({
     projectId,
     onDeleted
 }: ProjectDetailViewProps): React.JSX.Element {
-    const [project, setProject] = useState<Project | null>(null)
-    const [tasks, setTasks] = useState<Task[]>([])
-    const [phases, setPhases] = useState<ProjectPhase[]>([])
+    const { projects, loading: projectsLoading } = useProjects()
+    const { tasks, loading: tasksLoading } = useTasksByProject(projectId)
+    const { phases, loading: phasesLoading } = usePhases(projectId)
+
     const [activeTab, setActiveTab] = useState<Tab>('tasks')
-    const [loading, setLoading] = useState(true)
     const [showEdit, setShowEdit] = useState(false)
 
-    const load = useCallback(async (): Promise<void> => {
-        const [projects, t, p] = await Promise.all([
-            window.api.getProjects(),
-            window.api.getTasksByProject(projectId),
-            window.api.getPhases(projectId)
-        ])
-        setProject(projects.find((proj) => proj.id === projectId) ?? null)
-        setTasks(t)
-        setPhases(p)
-        setLoading(false)
-    }, [projectId])
-
-    useEffect(() => {
-        let cancelled = false
-
-        ;(async () => {
-            const [projects, t, p] = await Promise.all([
-                window.api.getProjects(),
-                window.api.getTasksByProject(projectId),
-                window.api.getPhases(projectId)
-            ])
-            if (cancelled) return
-            setProject(projects.find((proj) => proj.id === projectId) ?? null)
-            setTasks(t)
-            setPhases(p)
-            setLoading(false)
-        })()
-
-        const unsubscribe = window.api.onDataChanged(() => {
-            window.api.getProjects().then((projects) => {
-                if (!cancelled) setProject(projects.find((proj) => proj.id === projectId) ?? null)
-            })
-            window.api.getTasksByProject(projectId).then((t) => {
-                if (!cancelled) setTasks(t)
-            })
-            window.api.getPhases(projectId).then((p) => {
-                if (!cancelled) setPhases(p)
-            })
-        })
-
-        return () => {
-            cancelled = true
-            unsubscribe()
-        }
-    }, [projectId])
+    const loading = projectsLoading || tasksLoading || phasesLoading
+    const project = projects.find((p) => p.id === projectId) ?? null
 
     const handleAddTask = async (text: string, options: NewTaskOptions): Promise<void> => {
         await window.api.createTask(text, projectId, todayStr(), options.dueDate, options.priority)
-        await load()
     }
 
     const handleToggleTask = async (id: number, done: boolean): Promise<void> => {
         await window.api.toggleTask(id, done)
-        await load()
     }
 
     const handleDeleteTask = async (id: number): Promise<void> => {
         await window.api.deleteTask(id)
-        await load()
     }
 
     const handleSetDueDate = async (id: number, date: string | null): Promise<void> => {
         await window.api.updateTask(id, { due_date: date })
-        await load()
     }
 
     const handleSetPriority = async (id: number, priority: number): Promise<void> => {
         await window.api.updateTask(id, { priority })
-        await load()
     }
 
     const handleSetText = async (id: number, text: string): Promise<void> => {
         await window.api.updateTask(id, { text })
-        await load()
     }
 
     const handlePin = async (id: number): Promise<void> => {
         const task = tasks.find((t) => t.id === id)
         const isCurrentlyPinned = task?.is_current === 1
         await window.api.focusPinTask(isCurrentlyPinned ? null : id)
-        await load()
     }
 
     const handleAddPhase = async (name: string, amount: number): Promise<void> => {
         await window.api.createPhase(projectId, name, amount)
-        await load()
     }
 
     const handleUpdatePhase = async (
@@ -130,17 +70,14 @@ export function ProjectDetailView({
         updates: Record<string, unknown>
     ): Promise<void> => {
         await window.api.updatePhase(id, updates)
-        await load()
     }
 
     const handleDeletePhase = async (id: number): Promise<void> => {
         await window.api.deletePhase(id)
-        await load()
     }
 
     const handleUpdateProject = async (updates: Partial<Project>): Promise<void> => {
         await window.api.updateProject(projectId, updates)
-        await load()
     }
 
     const handleDeleteProject = async (): Promise<void> => {
