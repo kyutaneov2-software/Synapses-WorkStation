@@ -1,37 +1,20 @@
-import { useEffect, useState } from 'react'
-import type { Project } from '../../../../shared/types'
+import { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useProjects } from '../../lib/hooks'
+import { ROUTES } from '../../lib/routes'
 
-interface SidebarProps {
-    onSelectProject: (id: number) => void
-    activeProjectId: number | null
-}
+export function Sidebar(): React.JSX.Element {
+    const { projects } = useProjects()
+    const navigate = useNavigate()
+    const location = useLocation()
 
-export function Sidebar({ onSelectProject, activeProjectId }: SidebarProps): React.JSX.Element {
-    const [projects, setProjects] = useState<Project[]>([])
     const [creating, setCreating] = useState(false)
     const [title, setTitle] = useState('')
     const [client, setClient] = useState('')
     const [submitting, setSubmitting] = useState(false)
 
-    useEffect(() => {
-        let cancelled = false
-
-        ;(async () => {
-            const p = await window.api.getProjects()
-            if (!cancelled) setProjects(p)
-        })()
-
-        const unsubscribe = window.api.onDataChanged(() => {
-            window.api.getProjects().then((p) => {
-                if (!cancelled) setProjects(p)
-            })
-        })
-
-        return () => {
-            cancelled = true
-            unsubscribe()
-        }
-    }, [])
+    const match = location.pathname.match(/^\/commissions\/project\/(\d+)/)
+    const activeProjectId = match ? Number(match[1]) : null
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault()
@@ -44,7 +27,7 @@ export function Sidebar({ onSelectProject, activeProjectId }: SidebarProps): Rea
             setTitle('')
             setClient('')
             setCreating(false)
-            onSelectProject(project.id)
+            navigate(ROUTES.commissionsProject(project.id))
         } finally {
             setSubmitting(false)
         }
@@ -95,13 +78,11 @@ export function Sidebar({ onSelectProject, activeProjectId }: SidebarProps): Rea
 
             <ul className="project-list">
                 {projects.map((p) => (
-                    <li
-                        key={p.id}
-                        className={p.id === activeProjectId ? 'active' : ''}
-                        onClick={() => onSelectProject(p.id)}
-                    >
-                        <span className="project-title">{p.title}</span>
-                        <span className="project-client">{p.client}</span>
+                    <li key={p.id} className={p.id === activeProjectId ? 'active' : ''}>
+                        <Link to={ROUTES.commissionsProject(p.id)}>
+                            <span className="project-title">{p.title}</span>
+                            <span className="project-client">{p.client}</span>
+                        </Link>
                     </li>
                 ))}
                 {projects.length === 0 && !creating && (

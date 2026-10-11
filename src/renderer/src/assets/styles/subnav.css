@@ -1,0 +1,29 @@
+.subnav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 12px 20px 0;
+    border-bottom: 1px solid var(--border, #23232a);
+}
+
+.subnav-tab {
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--text-2, #8888a0);
+    text-decoration: none;
+    border-radius: 6px 6px 0 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition:
+        color 0.15s,
+        border-color 0.15s;
+}
+
+.subnav-tab:hover {
+    color: var(--text-0, #e7e7ea);
+}
+
+.subnav-tab.active {
+    color: var(--text-0, #e7e7ea);
+    border-bottom-color: var(--accent, #6c8cff);
+}

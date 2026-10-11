@@ -1,0 +1,66 @@
+.app-shell {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg-0);
+}
+
+.icon-rail {
+    width: 56px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px 0;
+    background: var(--bg-1, #0f0f12);
+    border-right: 1px solid var(--border, #23232a);
+}
+
+.icon-rail-top,
+.icon-rail-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.icon-rail-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: var(--radius-md, 8px);
+    background: transparent;
+    color: var(--text-2, #8888a0);
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.icon-rail-btn:hover {
+    background: var(--bg-2, #1a1a1f);
+    color: var(--text-0, #e7e7ea);
+}
+
+.icon-rail-btn.active {
+    background: var(--bg-3, #22222a);
+    color: var(--accent, #6c8cff);
+}
+
+.space-layout {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    height: 100vh;
+}
+
+.space-layout .main-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
