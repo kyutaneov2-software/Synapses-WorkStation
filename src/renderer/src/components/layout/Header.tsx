@@ -1,23 +1,20 @@
-import { Zap } from "lucide-react";
+import { Zap } from 'lucide-react'
 
-type View = "today" | "tomorrow" | "projects" | "all" | "dashboard";
+type View = 'today' | 'tomorrow' | 'projects' | 'all' | 'dashboard'
 
 interface HeaderProps {
-    activeView: View;
-    onNavigate: (view: View) => void;
+    activeView: View
+    onNavigate: (view: View) => void
 }
 
-export function Header({
-    activeView,
-    onNavigate,
-}: HeaderProps): React.JSX.Element {
+export function Header({ activeView, onNavigate }: HeaderProps): React.JSX.Element {
     const tabs: { key: View; label: string }[] = [
-        { key: "today", label: "Today" },
-        { key: "tomorrow", label: "Tomorrow" },
-        { key: "projects", label: "Projects" },
-        { key: "all", label: "All Tasks" },
-        { key: "dashboard", label: "Dashboard" },
-    ];
+        { key: 'today', label: 'Today' },
+        { key: 'tomorrow', label: 'Tomorrow' },
+        { key: 'projects', label: 'Projects' },
+        { key: 'all', label: 'All Tasks' },
+        { key: 'dashboard', label: 'Dashboard' }
+    ]
 
     return (
         <header className="topbar">
@@ -25,7 +22,7 @@ export function Header({
                 {tabs.map((t) => (
                     <button
                         key={t.key}
-                        className={activeView === t.key ? "active" : ""}
+                        className={activeView === t.key ? 'active' : ''}
                         onClick={() => onNavigate(t.key)}
                     >
                         {t.label}
@@ -41,5 +38,5 @@ export function Header({
                 Focus
             </button>
         </header>
-    );
+    )
 }

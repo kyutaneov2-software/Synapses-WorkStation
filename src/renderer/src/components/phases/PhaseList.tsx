@@ -1,74 +1,68 @@
-import { useState } from "react";
-import { Square, CheckSquare } from "lucide-react";
-import type { ProjectPhase } from "../../../../shared/types";
-import { EditableText } from "../common/EditableText";
+import { useState } from 'react'
+import { Square, CheckSquare } from 'lucide-react'
+import type { ProjectPhase } from '../../../../shared/types'
+import { EditableText } from '../common/EditableText'
 
 interface PhaseListProps {
-    phases: ProjectPhase[];
-    currency: string;
-    onAdd: (name: string, amount: number) => Promise<void>;
-    onUpdate: (id: number, updates: Record<string, unknown>) => Promise<void>;
-    onDelete: (id: number) => Promise<void>;
+    phases: ProjectPhase[]
+    currency: string
+    onAdd: (name: string, amount: number) => Promise<void>
+    onUpdate: (id: number, updates: Record<string, unknown>) => Promise<void>
+    onDelete: (id: number) => Promise<void>
 }
 
 const SYMBOLS: Record<string, string> = {
-    USD: "$",
-    PHP: "₱",
-    EUR: "€",
-    GBP: "£",
-};
+    USD: '$',
+    PHP: '₱',
+    EUR: '€',
+    GBP: '£'
+}
 
 export function PhaseList({
     phases,
     currency,
     onAdd,
     onUpdate,
-    onDelete,
+    onDelete
 }: PhaseListProps): React.JSX.Element {
-    const [adding, setAdding] = useState(false);
-    const [name, setName] = useState("");
-    const [amount, setAmount] = useState("");
+    const [adding, setAdding] = useState(false)
+    const [name, setName] = useState('')
+    const [amount, setAmount] = useState('')
 
-    const symbol = SYMBOLS[currency] || currency;
+    const symbol = SYMBOLS[currency] || currency
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault();
-        const trimmed = name.trim();
-        const parsed = parseFloat(amount);
-        if (!trimmed || isNaN(parsed)) return;
+        e.preventDefault()
+        const trimmed = name.trim()
+        const parsed = parseFloat(amount)
+        if (!trimmed || isNaN(parsed)) return
 
-        await onAdd(trimmed, parsed);
-        setName("");
-        setAmount("");
-        setAdding(false);
-    };
+        await onAdd(trimmed, parsed)
+        setName('')
+        setAmount('')
+        setAdding(false)
+    }
 
     const handleTogglePaid = async (phase: ProjectPhase): Promise<void> => {
         await onUpdate(phase.id, {
             paid: phase.paid ? 0 : 1,
-            paid_at: phase.paid ? null : new Date().toISOString(),
-        });
-    };
+            paid_at: phase.paid ? null : new Date().toISOString()
+        })
+    }
 
-    const handleAmountChange = async (
-        phase: ProjectPhase,
-        newAmount: number,
-    ): Promise<void> => {
-        if (isNaN(newAmount) || newAmount === phase.amount) return;
-        await onUpdate(phase.id, { amount: newAmount });
-    };
+    const handleAmountChange = async (phase: ProjectPhase, newAmount: number): Promise<void> => {
+        if (isNaN(newAmount) || newAmount === phase.amount) return
+        await onUpdate(phase.id, { amount: newAmount })
+    }
 
     return (
         <div className="phase-list">
             {phases.map((phase) => (
-                <div
-                    key={phase.id}
-                    className={`phase-item ${phase.paid ? "paid" : ""}`}
-                >
+                <div key={phase.id} className={`phase-item ${phase.paid ? 'paid' : ''}`}>
                     <button
                         className="phase-check"
                         onClick={() => handleTogglePaid(phase)}
-                        title={phase.paid ? "Mark unpaid" : "Mark paid"}
+                        title={phase.paid ? 'Mark unpaid' : 'Mark paid'}
                     >
                         {phase.paid ? (
                             <CheckSquare size={18} strokeWidth={2} />
@@ -80,16 +74,13 @@ export function PhaseList({
                     <div className="phase-name-wrap">
                         <EditableText
                             value={phase.name}
-                            onSave={(newName) =>
-                                onUpdate(phase.id, { name: newName })
-                            }
+                            onSave={(newName) => onUpdate(phase.id, { name: newName })}
                             className="phase-name"
                             inputClassName="phase-name-input-inline"
                         />
                         {phase.paid_at && (
                             <span className="phase-paid-date">
-                                Paid{" "}
-                                {new Date(phase.paid_at).toLocaleDateString()}
+                                Paid {new Date(phase.paid_at).toLocaleDateString()}
                             </span>
                         )}
                     </div>
@@ -101,12 +92,11 @@ export function PhaseList({
                             className="phase-amount-input"
                             defaultValue={phase.amount}
                             onBlur={(e) => {
-                                const v = parseFloat(e.target.value);
-                                if (!isNaN(v)) handleAmountChange(phase, v);
+                                const v = parseFloat(e.target.value)
+                                if (!isNaN(v)) handleAmountChange(phase, v)
                             }}
                             onKeyDown={(e) => {
-                                if (e.key === "Enter")
-                                    (e.target as HTMLInputElement).blur();
+                                if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
                             }}
                         />
                         <span className="currency-code">{currency}</span>
@@ -123,10 +113,7 @@ export function PhaseList({
             ))}
 
             {adding ? (
-                <form
-                    className="phase-item phase-add-form"
-                    onSubmit={handleSubmit}
-                >
+                <form className="phase-item phase-add-form" onSubmit={handleSubmit}>
                     <span className="phase-check">
                         <Square size={18} strokeWidth={2} />
                     </span>
@@ -156,22 +143,19 @@ export function PhaseList({
                         type="button"
                         className="phase-cancel"
                         onClick={() => {
-                            setAdding(false);
-                            setName("");
-                            setAmount("");
+                            setAdding(false)
+                            setName('')
+                            setAmount('')
                         }}
                     >
                         Cancel
                     </button>
                 </form>
             ) : (
-                <button
-                    className="phase-add-btn"
-                    onClick={() => setAdding(true)}
-                >
+                <button className="phase-add-btn" onClick={() => setAdding(true)}>
                     + Add payment phase
                 </button>
             )}
         </div>
-    );
+    )
 }

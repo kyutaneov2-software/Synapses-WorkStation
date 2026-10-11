@@ -1,71 +1,71 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react'
 
 interface EditableTextProps {
-    value: string;
-    onSave: (newValue: string) => Promise<void> | void;
-    placeholder?: string;
-    className?: string;
-    inputClassName?: string;
-    multiline?: boolean;
-    allowEmpty?: boolean;
+    value: string
+    onSave: (newValue: string) => Promise<void> | void
+    placeholder?: string
+    className?: string
+    inputClassName?: string
+    multiline?: boolean
+    allowEmpty?: boolean
 }
 
 export function EditableText({
     value,
     onSave,
-    placeholder = "Click to edit",
-    className = "",
-    inputClassName = "",
+    placeholder = 'Click to edit',
+    className = '',
+    inputClassName = '',
     multiline = false,
-    allowEmpty = false,
+    allowEmpty = false
 }: EditableTextProps): React.JSX.Element {
-    const [editing, setEditing] = useState(false);
-    const [draft, setDraft] = useState(value);
-    const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+    const [editing, setEditing] = useState(false)
+    const [draft, setDraft] = useState(value)
+    const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
 
     useEffect(() => {
         if (editing && inputRef.current) {
-            inputRef.current.focus();
-            inputRef.current.select();
+            inputRef.current.focus()
+            inputRef.current.select()
         }
-    }, [editing]);
+    }, [editing])
 
     const startEditing = (): void => {
-        setDraft(value);
-        setEditing(true);
-    };
+        setDraft(value)
+        setEditing(true)
+    }
 
     const commit = async (): Promise<void> => {
-        const trimmed = draft.trim();
-        const final = allowEmpty ? trimmed : trimmed || value;
+        const trimmed = draft.trim()
+        const final = allowEmpty ? trimmed : trimmed || value
 
         if (final !== value) {
-            await onSave(final);
+            await onSave(final)
         }
-        setEditing(false);
-    };
+        setEditing(false)
+    }
 
     const cancel = (): void => {
-        setDraft(value);
-        setEditing(false);
-    };
+        setDraft(value)
+        setEditing(false)
+    }
 
     const handleKeyDown = (
-        e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+        e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
     ): void => {
-        if (e.key === "Enter" && !multiline) {
-            e.preventDefault();
-            commit();
+        if (e.key === 'Enter' && !multiline) {
+            e.preventDefault()
+            commit()
         }
-        if (e.key === "Escape") {
-            e.preventDefault();
-            cancel();
+        if (e.key === 'Escape') {
+            e.preventDefault()
+            cancel()
         }
-        if (e.key === "Enter" && multiline && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            commit();
+        if (e.key === 'Enter' && multiline && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault()
+            commit()
         }
-    };
+    }
 
     if (editing) {
         if (multiline) {
@@ -79,7 +79,7 @@ export function EditableText({
                     onKeyDown={handleKeyDown}
                     rows={3}
                 />
-            );
+            )
         }
         return (
             <input
@@ -91,17 +91,17 @@ export function EditableText({
                 onBlur={commit}
                 onKeyDown={handleKeyDown}
             />
-        );
+        )
     }
 
-    const isEmpty = !value || value.trim() === "";
+    const isEmpty = !value || value.trim() === ''
     return (
         <span
-            className={`editable-text ${className} ${isEmpty ? "empty" : ""}`}
+            className={`editable-text ${className} ${isEmpty ? 'empty' : ''}`}
             onClick={startEditing}
             title="Click to edit"
         >
             {isEmpty ? placeholder : value}
         </span>
-    );
+    )
 }

@@ -1,22 +1,22 @@
-import { Notification } from "electron";
-import schedule from "node-schedule";
-import db from "../db";
-import type { Task, Project } from "../../shared/types";
+import { Notification } from 'electron'
+import schedule from 'node-schedule'
+import db from '../db'
+import type { Task, Project } from '../../shared/types'
 
 interface DueItem {
-    text: string;
-    projectTitle?: string;
-    isProject: boolean;
+    text: string
+    projectTitle?: string
+    isProject: boolean
 }
 
 function getTodayStr(): string {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function getDueToday(): DueItem[] {
-    const today = getTodayStr();
-    const items: DueItem[] = [];
+    const today = getTodayStr()
+    const items: DueItem[] = []
 
     const tasks = db
         .prepare(
@@ -27,16 +27,16 @@ function getDueToday(): DueItem[] {
         WHERE t.due_date = ?
           AND t.done = 0
         ORDER BY t.priority DESC
-      `,
+      `
         )
-        .all(today) as (Task & { project_title: string | null })[];
+        .all(today) as (Task & { project_title: string | null })[]
 
     for (const t of tasks) {
         items.push({
             text: t.text,
             projectTitle: t.project_title ?? undefined,
-            isProject: false,
-        });
+            isProject: false
+        })
     }
 
     const projects = db
@@ -46,23 +46,23 @@ function getDueToday(): DueItem[] {
         WHERE due_date = ?
           AND status != 'completed'
           AND archived = 0
-      `,
+      `
         )
-        .all(today) as Project[];
+        .all(today) as Project[]
 
     for (const p of projects) {
         items.push({
             text: p.title,
-            isProject: true,
-        });
+            isProject: true
+        })
     }
 
-    return items;
+    return items
 }
 
 function getOverdue(): DueItem[] {
-    const today = getTodayStr();
-    const items: DueItem[] = [];
+    const today = getTodayStr()
+    const items: DueItem[] = []
 
     const tasks = db
         .prepare(
@@ -74,92 +74,86 @@ function getOverdue(): DueItem[] {
           AND t.planned_for IS NOT NULL
           AND t.planned_for < ?
         ORDER BY t.planned_for ASC
-      `,
+      `
         )
-        .all(today) as (Task & { project_title: string | null })[];
+        .all(today) as (Task & { project_title: string | null })[]
 
     for (const t of tasks) {
         items.push({
             text: t.text,
             projectTitle: t.project_title ?? undefined,
-            isProject: false,
-        });
+            isProject: false
+        })
     }
 
-    return items;
+    return items
 }
 
 function showDeadlineNotification(): void {
-    const items = getDueToday();
+    const items = getDueToday()
 
     if (items.length === 0) {
-        console.log(
-            "[notifications] Nothing due today. Skipping morning notice.",
-        );
-        return;
+        console.log('[notifications] Nothing due today. Skipping morning notice.')
+        return
     }
 
     if (items.length === 1) {
-        const item = items[0];
+        const item = items[0]
         new Notification({
-            title: item.isProject ? "Project due today" : "Task due today",
-            body: item.projectTitle
-                ? `${item.text} — ${item.projectTitle}`
-                : item.text,
-        }).show();
-        return;
+            title: item.isProject ? 'Project due today' : 'Task due today',
+            body: item.projectTitle ? `${item.text} — ${item.projectTitle}` : item.text
+        }).show()
+        return
     }
 
     const preview = items
         .slice(0, 3)
         .map((i) => `- ${i.text}`)
-        .join("\n");
-    const more = items.length > 3 ? `\nand ${items.length - 3} more` : "";
+        .join('\n')
+    const more = items.length > 3 ? `\nand ${items.length - 3} more` : ''
 
     new Notification({
         title: `${items.length} things due today`,
-        body: `${preview}${more}`,
-    }).show();
+        body: `${preview}${more}`
+    }).show()
 }
 
 function showOverdueNotification(): void {
-    const items = getOverdue();
+    const items = getOverdue()
 
     if (items.length === 0) {
-        console.log(
-            "[notifications] Nothing overdue. Skipping evening notice.",
-        );
-        return;
+        console.log('[notifications] Nothing overdue. Skipping evening notice.')
+        return
     }
 
     if (items.length === 1) {
         new Notification({
-            title: "1 task overdue",
-            body: items[0].text,
-        }).show();
-        return;
+            title: '1 task overdue',
+            body: items[0].text
+        }).show()
+        return
     }
 
     new Notification({
         title: `${items.length} tasks overdue`,
-        body: "Open Synapses WorkStation to see what slipped.",
-    }).show();
+        body: 'Open Synapses WorkStation to see what slipped.'
+    }).show()
 }
 
 export function startNotificationScheduler(): void {
-    schedule.scheduleJob("0 8 * * *", () => {
-        console.log("[notifications] Morning deadline check running...");
-        showDeadlineNotification();
-    });
+    schedule.scheduleJob('0 8 * * *', () => {
+        console.log('[notifications] Morning deadline check running...')
+        showDeadlineNotification()
+    })
 
-    schedule.scheduleJob("0 17 * * *", () => {
-        console.log("[notifications] Evening overdue check running...");
-        showOverdueNotification();
-    });
+    schedule.scheduleJob('0 17 * * *', () => {
+        console.log('[notifications] Evening overdue check running...')
+        showOverdueNotification()
+    })
 
-    console.log("[notifications] Scheduler started (8 AM + 5 PM local time)");
+    console.log('[notifications] Scheduler started (8 AM + 5 PM local time)')
 }
 
 export function stopNotificationScheduler(): void {
-    schedule.gracefulShutdown();
+    schedule.gracefulShutdown()
 }

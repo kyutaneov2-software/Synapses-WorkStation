@@ -10,13 +10,13 @@
 .edit-project-btn svg,
 .focus-toggle svg,
 .due-badge svg {
-  display: block;
+    display: block;
 }
 
 .focus-toggle {
-  gap: 6px;
+    gap: 6px;
 }
 
 .focus-toggle svg {
-  flex-shrink: 0;
+    flex-shrink: 0;
 }

@@ -1,37 +1,37 @@
-import { useState } from "react";
-import type { Project } from "../../../../shared/types";
+import { useState } from 'react'
+import type { Project } from '../../../../shared/types'
 
 interface ProjectEditModalProps {
-    project: Project;
-    onSave: (updates: Partial<Project>) => Promise<void>;
-    onDelete: () => Promise<void>;
-    onClose: () => void;
+    project: Project
+    onSave: (updates: Partial<Project>) => Promise<void>
+    onDelete: () => Promise<void>
+    onClose: () => void
 }
 
 export function ProjectEditModal({
     project,
     onSave,
     onDelete,
-    onClose,
+    onClose
 }: ProjectEditModalProps): React.JSX.Element {
-    const [title, setTitle] = useState(project.title);
-    const [client, setClient] = useState(project.client ?? "");
-    const [status, setStatus] = useState(project.status ?? "active");
-    const [currency, setCurrency] = useState(project.currency ?? "USD");
-    const [startDate, setStartDate] = useState(project.start_date ?? "");
-    const [dueDate, setDueDate] = useState(project.due_date ?? "");
+    const [title, setTitle] = useState(project.title)
+    const [client, setClient] = useState(project.client ?? '')
+    const [status, setStatus] = useState(project.status ?? 'active')
+    const [currency, setCurrency] = useState(project.currency ?? 'USD')
+    const [startDate, setStartDate] = useState(project.start_date ?? '')
+    const [dueDate, setDueDate] = useState(project.due_date ?? '')
     const [hourlyRate, setHourlyRate] = useState(
-        project.hourly_rate != null ? String(project.hourly_rate) : "",
-    );
-    const [brief, setBrief] = useState(project.brief ?? "");
-    const [saving, setSaving] = useState(false);
-    const [confirmingDelete, setConfirmingDelete] = useState(false);
+        project.hourly_rate != null ? String(project.hourly_rate) : ''
+    )
+    const [brief, setBrief] = useState(project.brief ?? '')
+    const [saving, setSaving] = useState(false)
+    const [confirmingDelete, setConfirmingDelete] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault();
-        if (!title.trim() || saving) return;
+        e.preventDefault()
+        if (!title.trim() || saving) return
 
-        setSaving(true);
+        setSaving(true)
         try {
             await onSave({
                 title: title.trim(),
@@ -41,22 +41,22 @@ export function ProjectEditModal({
                 start_date: startDate || null,
                 due_date: dueDate || null,
                 hourly_rate: hourlyRate ? parseFloat(hourlyRate) : null,
-                brief: brief.trim() || null,
-            });
-            onClose();
+                brief: brief.trim() || null
+            })
+            onClose()
         } finally {
-            setSaving(false);
+            setSaving(false)
         }
-    };
+    }
 
     const handleDelete = async (): Promise<void> => {
         if (!confirmingDelete) {
-            setConfirmingDelete(true);
-            return;
+            setConfirmingDelete(true)
+            return
         }
-        await onDelete();
-        onClose();
-    };
+        await onDelete()
+        onClose()
+    }
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -99,10 +99,7 @@ export function ProjectEditModal({
                         <div className="form-row">
                             <label className="form-field">
                                 <span>Status</span>
-                                <select
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value)}
-                                >
+                                <select value={status} onChange={(e) => setStatus(e.target.value)}>
                                     <option value="active">Active</option>
                                     <option value="paused">Paused</option>
                                     <option value="completed">Completed</option>
@@ -114,9 +111,7 @@ export function ProjectEditModal({
                                 <span>Currency</span>
                                 <select
                                     value={currency}
-                                    onChange={(e) =>
-                                        setCurrency(e.target.value)
-                                    }
+                                    onChange={(e) => setCurrency(e.target.value)}
                                 >
                                     <option value="USD">USD — $</option>
                                     <option value="PHP">PHP — ₱</option>
@@ -130,9 +125,7 @@ export function ProjectEditModal({
                                 <input
                                     type="number"
                                     value={hourlyRate}
-                                    onChange={(e) =>
-                                        setHourlyRate(e.target.value)
-                                    }
+                                    onChange={(e) => setHourlyRate(e.target.value)}
                                     placeholder="0"
                                     step="0.01"
                                 />
@@ -145,9 +138,7 @@ export function ProjectEditModal({
                                 <input
                                     type="date"
                                     value={startDate}
-                                    onChange={(e) =>
-                                        setStartDate(e.target.value)
-                                    }
+                                    onChange={(e) => setStartDate(e.target.value)}
                                 />
                             </label>
 
@@ -175,19 +166,13 @@ export function ProjectEditModal({
                     <div className="modal-footer">
                         <button
                             type="button"
-                            className={`btn-danger ${confirmingDelete ? "confirming" : ""}`}
+                            className={`btn-danger ${confirmingDelete ? 'confirming' : ''}`}
                             onClick={handleDelete}
                         >
-                            {confirmingDelete
-                                ? "Click again to confirm"
-                                : "Delete Project"}
+                            {confirmingDelete ? 'Click again to confirm' : 'Delete Project'}
                         </button>
                         <div className="modal-footer-right">
-                            <button
-                                type="button"
-                                className="btn-ghost"
-                                onClick={onClose}
-                            >
+                            <button type="button" className="btn-ghost" onClick={onClose}>
                                 Cancel
                             </button>
                             <button
@@ -195,12 +180,12 @@ export function ProjectEditModal({
                                 className="btn-primary"
                                 disabled={!title.trim() || saving}
                             >
-                                {saving ? "Saving…" : "Save"}
+                                {saving ? 'Saving…' : 'Save'}
                             </button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
-    );
+    )
 }

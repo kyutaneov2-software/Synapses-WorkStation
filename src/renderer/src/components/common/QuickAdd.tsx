@@ -1,123 +1,111 @@
-import { useEffect, useRef, useState } from "react";
-import { Folder, Calendar } from "lucide-react";
-import type { Project, NewTaskOptions } from "../../../../shared/types";
-import {
-    PRIORITY_VALUES,
-    priorityLevel,
-    type PriorityLevel,
-} from "../../../../shared/constants";
+import { useEffect, useRef, useState } from 'react'
+import { Folder, Calendar } from 'lucide-react'
+import type { Project, NewTaskOptions } from '../../../../shared/types'
+import { PRIORITY_VALUES, priorityLevel, type PriorityLevel } from '../../../../shared/constants'
 
 interface QuickAddProps {
-    onAdd: (text: string, options: NewTaskOptions) => Promise<void>;
-    placeholder?: string;
-    projects?: Project[];
-    defaultProjectId?: number | null;
-    defaultPlannedFor?: string | null;
-    hideProject?: boolean;
-    hidePlannedFor?: boolean;
+    onAdd: (text: string, options: NewTaskOptions) => Promise<void>
+    placeholder?: string
+    projects?: Project[]
+    defaultProjectId?: number | null
+    defaultPlannedFor?: string | null
+    hideProject?: boolean
+    hidePlannedFor?: boolean
 }
 
 function todayStr(): string {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function tomorrowStr(): string {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const d = new Date()
+    d.setDate(d.getDate() + 1)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-const PRIORITY_CYCLE: PriorityLevel[] = ["none", "low", "medium", "high"];
+const PRIORITY_CYCLE: PriorityLevel[] = ['none', 'low', 'medium', 'high']
 
 export function QuickAdd({
     onAdd,
-    placeholder = "Add a task…",
+    placeholder = 'Add a task…',
     projects = [],
     defaultProjectId = null,
     defaultPlannedFor = null,
     hideProject = false,
-    hidePlannedFor = false,
+    hidePlannedFor = false
 }: QuickAddProps): React.JSX.Element {
-    const [text, setText] = useState("");
-    const [submitting, setSubmitting] = useState(false);
-    const [focused, setFocused] = useState(false);
+    const [text, setText] = useState('')
+    const [submitting, setSubmitting] = useState(false)
+    const [focused, setFocused] = useState(false)
 
-    const [projectId, setProjectId] = useState<number | null>(defaultProjectId);
-    const [plannedFor, setPlannedFor] = useState<string | null>(
-        defaultPlannedFor,
-    );
-    const [dueDate, setDueDate] = useState<string | null>(null);
-    const [priority, setPriority] = useState(0);
+    const [projectId, setProjectId] = useState<number | null>(defaultProjectId)
+    const [plannedFor, setPlannedFor] = useState<string | null>(defaultPlannedFor)
+    const [dueDate, setDueDate] = useState<string | null>(null)
+    const [priority, setPriority] = useState(0)
 
-    const wrapperRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        if (!focused) return;
+        if (!focused) return
         const handler = (e: MouseEvent): void => {
-            if (
-                wrapperRef.current &&
-                !wrapperRef.current.contains(e.target as Node)
-            ) {
-                setFocused(false);
+            if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+                setFocused(false)
             }
-        };
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
-    }, [focused]);
+        }
+        document.addEventListener('mousedown', handler)
+        return () => document.removeEventListener('mousedown', handler)
+    }, [focused])
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault();
-        const trimmed = text.trim();
-        if (!trimmed || submitting) return;
+        e.preventDefault()
+        const trimmed = text.trim()
+        if (!trimmed || submitting) return
 
-        setSubmitting(true);
+        setSubmitting(true)
         try {
             await onAdd(trimmed, {
                 projectId,
                 plannedFor,
                 dueDate,
-                priority,
-            });
-            setText("");
-            setDueDate(null);
-            setFocused(false);
-            inputRef.current?.blur();
+                priority
+            })
+            setText('')
+            setDueDate(null)
+            setFocused(false)
+            inputRef.current?.blur()
         } finally {
-            setSubmitting(false);
+            setSubmitting(false)
         }
-    };
+    }
 
     const handleKeyDown = (e: React.KeyboardEvent): void => {
-        if (e.key === "Escape") {
-            setText("");
-            setFocused(false);
-            inputRef.current?.blur();
+        if (e.key === 'Escape') {
+            setText('')
+            setFocused(false)
+            inputRef.current?.blur()
         }
-    };
+    }
 
     const cyclePriority = (): void => {
-        const current = priorityLevel(priority);
-        const idx = PRIORITY_CYCLE.indexOf(current);
-        const next = PRIORITY_CYCLE[(idx + 1) % PRIORITY_CYCLE.length];
-        setPriority(PRIORITY_VALUES[next]);
-    };
+        const current = priorityLevel(priority)
+        const idx = PRIORITY_CYCLE.indexOf(current)
+        const next = PRIORITY_CYCLE[(idx + 1) % PRIORITY_CYCLE.length]
+        setPriority(PRIORITY_VALUES[next])
+    }
 
-    const level = priorityLevel(priority);
+    const level = priorityLevel(priority)
 
     const plannedForLabel =
         plannedFor === todayStr()
-            ? "Today"
+            ? 'Today'
             : plannedFor === tomorrowStr()
-              ? "Tomorrow"
-              : (plannedFor ?? "No plan");
+              ? 'Tomorrow'
+              : (plannedFor ?? 'No plan')
 
     return (
-        <div
-            ref={wrapperRef}
-            className={`quick-add-wrapper ${focused ? "focused" : ""}`}
-        >
+        <div ref={wrapperRef} className={`quick-add-wrapper ${focused ? 'focused' : ''}`}>
             <form onSubmit={handleSubmit} className="quick-add-main">
                 <span className="quick-add-icon">+</span>
                 <input
@@ -147,16 +135,10 @@ export function QuickAdd({
                         <label className="meta-chip meta-chip-select">
                             <Folder size={12} strokeWidth={2} />
                             <select
-                                value={
-                                    projectId === null
-                                        ? "inbox"
-                                        : String(projectId)
-                                }
+                                value={projectId === null ? 'inbox' : String(projectId)}
                                 onChange={(e) =>
                                     setProjectId(
-                                        e.target.value === "inbox"
-                                            ? null
-                                            : Number(e.target.value),
+                                        e.target.value === 'inbox' ? null : Number(e.target.value)
                                     )
                                 }
                                 title="Project"
@@ -175,7 +157,7 @@ export function QuickAdd({
                         <Calendar size={12} strokeWidth={2} />
                         <input
                             type="date"
-                            value={dueDate ?? ""}
+                            value={dueDate ?? ''}
                             onChange={(e) => setDueDate(e.target.value || null)}
                             title="Due date"
                         />
@@ -188,22 +170,16 @@ export function QuickAdd({
                         title="Priority (click to cycle)"
                     >
                         <span className={`priority-dot priority-${level}`} />
-                        {level === "none"
-                            ? "Priority"
-                            : level[0].toUpperCase() + level.slice(1)}
+                        {level === 'none' ? 'Priority' : level[0].toUpperCase() + level.slice(1)}
                     </button>
 
                     {!hidePlannedFor && (
                         <label className="meta-chip meta-chip-select">
                             <Calendar size={12} strokeWidth={2} />
                             <select
-                                value={plannedFor ?? "none"}
+                                value={plannedFor ?? 'none'}
                                 onChange={(e) =>
-                                    setPlannedFor(
-                                        e.target.value === "none"
-                                            ? null
-                                            : e.target.value,
-                                    )
+                                    setPlannedFor(e.target.value === 'none' ? null : e.target.value)
                                 }
                                 title="Planned for"
                             >
@@ -220,5 +196,5 @@ export function QuickAdd({
                 </div>
             )}
         </div>
-    );
+    )
 }
