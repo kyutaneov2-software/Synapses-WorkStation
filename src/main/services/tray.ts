@@ -1,5 +1,5 @@
 import { app, Menu, Tray, nativeImage } from 'electron'
-import trayIcon from '../../../resources/icon.png?asset'
+import trayIcon from '../../../resources/synapses-Icon.png?asset'
 import { toggleFocusWindow, getFocusWindow, createFocusWindow } from '../focusWindow'
 import { showMainWindow, getMainWindow } from '../mainWindow'
 
