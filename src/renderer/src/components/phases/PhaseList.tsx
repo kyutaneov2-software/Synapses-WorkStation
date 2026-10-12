@@ -2,20 +2,15 @@ import { useState } from 'react'
 import { Square, CheckSquare } from 'lucide-react'
 import type { ProjectPhase } from '../../../../shared/types'
 import { EditableText } from '../common/EditableText'
+import { CURRENCY_SYMBOLS } from '../../../../shared/constants'
+import { parseMoney } from '../../../../shared/money'
 
 interface PhaseListProps {
     phases: ProjectPhase[]
     currency: string
-    onAdd: (name: string, amount: number) => Promise<void>
+    onAdd: (name: string, amountCents: number) => Promise<void>
     onUpdate: (id: number, updates: Record<string, unknown>) => Promise<void>
     onDelete: (id: number) => Promise<void>
-}
-
-const SYMBOLS: Record<string, string> = {
-    USD: '$',
-    PHP: '₱',
-    EUR: '€',
-    GBP: '£'
 }
 
 export function PhaseList({
@@ -29,15 +24,15 @@ export function PhaseList({
     const [name, setName] = useState('')
     const [amount, setAmount] = useState('')
 
-    const symbol = SYMBOLS[currency] || currency
+    const symbol = CURRENCY_SYMBOLS[currency] || currency
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault()
         const trimmed = name.trim()
-        const parsed = parseFloat(amount)
-        if (!trimmed || isNaN(parsed)) return
+        const cents = parseMoney(amount)
+        if (!trimmed || cents === null) return
 
-        await onAdd(trimmed, parsed)
+        await onAdd(trimmed, cents)
         setName('')
         setAmount('')
         setAdding(false)
@@ -46,13 +41,13 @@ export function PhaseList({
     const handleTogglePaid = async (phase: ProjectPhase): Promise<void> => {
         await onUpdate(phase.id, {
             paid: phase.paid ? 0 : 1,
-            paid_at: phase.paid ? null : new Date().toISOString()
+            paid_at: phase.paid ? null : new Date().toISOString().slice(0, 19).replace('T', ' ')
         })
     }
 
-    const handleAmountChange = async (phase: ProjectPhase, newAmount: number): Promise<void> => {
-        if (isNaN(newAmount) || newAmount === phase.amount) return
-        await onUpdate(phase.id, { amount: newAmount })
+    const handleAmountChange = async (phase: ProjectPhase, newCents: number): Promise<void> => {
+        if (newCents === phase.amount_cents) return
+        await onUpdate(phase.id, { amount_cents: newCents })
     }
 
     return (
@@ -80,7 +75,10 @@ export function PhaseList({
                         />
                         {phase.paid_at && (
                             <span className="phase-paid-date">
-                                Paid {new Date(phase.paid_at).toLocaleDateString()}
+                                Paid{' '}
+                                {new Date(
+                                    phase.paid_at.replace(' ', 'T') + 'Z'
+                                ).toLocaleDateString()}
                             </span>
                         )}
                     </div>
@@ -90,10 +88,11 @@ export function PhaseList({
                         <input
                             type="number"
                             className="phase-amount-input"
-                            defaultValue={phase.amount}
+                            defaultValue={phase.amount_cents / 100}
+                            step="0.01"
                             onBlur={(e) => {
-                                const v = parseFloat(e.target.value)
-                                if (!isNaN(v)) handleAmountChange(phase, v)
+                                const cents = parseMoney(e.target.value)
+                                if (cents !== null) handleAmountChange(phase, cents)
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
@@ -131,6 +130,7 @@ export function PhaseList({
                             type="number"
                             className="phase-amount-input"
                             placeholder="0"
+                            step="0.01"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
                         />

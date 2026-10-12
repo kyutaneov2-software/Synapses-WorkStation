@@ -14,7 +14,7 @@ interface ProjectRow {
     status: string
     start_date: string | null
     due_date: string | null
-    hourly_rate: number | null
+    hourly_rate_cents: number | null // ← renamed
     currency: string
     created_at: string
     archived: number
@@ -71,7 +71,7 @@ export function registerProjectHandlers(): void {
             'status',
             'start_date',
             'due_date',
-            'hourly_rate',
+            'hourly_rate_cents', // ← renamed
             'currency',
             'archived',
             'client_contact',
@@ -129,8 +129,17 @@ export function registerProjectHandlers(): void {
                 key === 'client_contact'
             ) {
                 values.push(optionalString(v, key, 2000))
-            } else if (key === 'hourly_rate') {
-                values.push(v === null ? null : requireNumber(v, key))
+            } else if (key === 'hourly_rate_cents') {
+                // ← renamed branch
+                if (v === null) {
+                    values.push(null)
+                } else {
+                    const n = requireNumber(v, key)
+                    if (!Number.isInteger(n) || n < 0) {
+                        throw new Error('Invalid hourly_rate_cents: expected non-negative integer')
+                    }
+                    values.push(n)
+                }
             } else if (key === 'archived') {
                 values.push(typeof v === 'number' ? v : 0)
             } else {

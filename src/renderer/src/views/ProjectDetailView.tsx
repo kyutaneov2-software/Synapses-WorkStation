@@ -9,8 +9,9 @@ import { EditableText } from '../components/common/EditableText'
 import { ProjectEditModal } from '../components/projects/ProjectEditModal'
 import { TagInput } from '../components/common/TagInput'
 import { todayStr } from '../lib/dates'
-import { CURRENCY_SYMBOLS, PROJECT_TYPE_LABELS } from '../../../shared/constants'
+import { PROJECT_TYPE_LABELS } from '../../../shared/constants'
 import { projectTypeIcon } from '../lib/projectIcons'
+import { formatMoney } from '../../../shared/money'
 
 interface ProjectDetailViewProps {
     projectId: number
@@ -111,27 +112,19 @@ export function ProjectDetailView({
             </div>
         )
 
-    const total = phases.reduce((sum, p) => sum + (p.amount || 0), 0)
-    const paid = phases.filter((p) => p.paid).reduce((sum, p) => sum + (p.amount || 0), 0)
+    const total = phases.reduce((sum, p) => sum + (p.amount_cents || 0), 0)
+    const paid = phases.filter((p) => p.paid).reduce((sum, p) => sum + (p.amount_cents || 0), 0)
     const remaining = total - paid
     const currency = project.currency || 'USD'
-    const symbol = CURRENCY_SYMBOLS[currency] || currency
 
     const moneySummary = total > 0 && (
         <div className="money-summary">
-            <span className="money-paid">
-                {symbol}
-                {paid.toLocaleString()}
-            </span>
+            <span className="money-paid">{formatMoney(paid, currency)}</span>
             <span className="money-sep">/</span>
-            <span className="money-total">
-                {symbol}
-                {total.toLocaleString()}
-            </span>
+            <span className="money-total">{formatMoney(total, currency)}</span>
             <span className="money-dot">·</span>
             <span className={`money-remaining ${remaining > 0 ? 'owed' : 'clear'}`}>
-                {symbol}
-                {remaining.toLocaleString()} {remaining > 0 ? 'remaining' : 'paid in full'}
+                {formatMoney(remaining, currency)} {remaining > 0 ? 'remaining' : 'paid in full'}
             </span>
             <span className="money-currency">{currency}</span>
         </div>
@@ -258,8 +251,8 @@ export function ProjectDetailView({
                             <div className="overview-field">
                                 <span className="overview-field-label">Hourly Rate</span>
                                 <span className="overview-field-value">
-                                    {project.hourly_rate
-                                        ? `${symbol}${project.hourly_rate.toLocaleString()}/hr`
+                                    {project.hourly_rate_cents
+                                        ? `${formatMoney(project.hourly_rate_cents, currency)}/hr`
                                         : '—'}
                                 </span>
                             </div>

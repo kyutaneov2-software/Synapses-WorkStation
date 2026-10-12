@@ -19,10 +19,14 @@ export function registerPhaseHandlers(): void {
 
     ipcMain.handle(
         'db:create-phase',
-        (_, projectId: unknown, name: unknown, amount: unknown): ProjectPhase => {
+        (_, projectId: unknown, name: unknown, amountCents: unknown): ProjectPhase => {
             const cleanProjectId = requirePositiveId(projectId, 'projectId')
             const cleanName = requireString(name, 'name', 500)
-            const cleanAmount = requireNumber(amount, 'amount')
+            const cleanAmountCents = requireNumber(amountCents, 'amountCents')
+
+            if (!Number.isInteger(cleanAmountCents) || cleanAmountCents < 0) {
+                throw new Error('Invalid amountCents: expected non-negative integer')
+            }
 
             const project = db
                 .prepare('SELECT currency FROM projects WHERE id = ?')
@@ -36,13 +40,13 @@ export function registerPhaseHandlers(): void {
                 .get(cleanProjectId) as { max: number }
 
             const stmt = db.prepare(`
-          INSERT INTO project_phases (project_id, name, amount, currency, sort_order)
-          VALUES (?, ?, ?, ?, ?)
-        `)
+                INSERT INTO project_phases (project_id, name, amount_cents, currency, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+            `)
             const result = stmt.run(
                 cleanProjectId,
                 cleanName,
-                cleanAmount,
+                cleanAmountCents,
                 currency,
                 maxOrder.max + 1
             )
@@ -59,7 +63,7 @@ export function registerPhaseHandlers(): void {
         (_, id: number, updates: Partial<ProjectPhase>): ProjectPhase => {
             const allowed: (keyof ProjectPhase)[] = [
                 'name',
-                'amount',
+                'amount_cents',
                 'paid',
                 'paid_at',
                 'sort_order'

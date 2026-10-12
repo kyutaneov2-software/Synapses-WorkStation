@@ -20,7 +20,7 @@ export interface Project {
     status: string
     start_date: string | null
     due_date: string | null
-    hourly_rate: number | null
+    hourly_rate_cents: number | null
     currency: string
     created_at: string
     archived: number
@@ -46,7 +46,7 @@ export interface ProjectPhase {
     id: number
     project_id: number
     name: string
-    amount: number
+    amount_cents: number
     currency: string
     paid: number
     paid_at: string | null

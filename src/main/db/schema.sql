@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS projects (
     status TEXT DEFAULT 'active',
     start_date TEXT,
     due_date TEXT,
-    hourly_rate REAL,
+    hourly_rate_cents INTEGER,          -- was: hourly_rate REAL
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     archived INTEGER DEFAULT 0
 );
@@ -16,13 +16,14 @@ CREATE TABLE IF NOT EXISTS project_phases (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
     name TEXT NOT NULL,
-    amount REAL DEFAULT 0,
+    amount_cents INTEGER DEFAULT 0,     -- was: amount REAL
     currency TEXT DEFAULT 'USD',
     paid INTEGER DEFAULT 0,
     paid_at DATETIME,
     sort_order INTEGER DEFAULT 0,
     FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
 );
+
 
 CREATE TABLE IF NOT EXISTS tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

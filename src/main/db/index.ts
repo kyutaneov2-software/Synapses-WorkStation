@@ -89,6 +89,34 @@ export function runMigrations(): void {
 
         db.pragma('user_version = 4')
     }
+
+    if (userVersion < 5) {
+        console.log('Running migration to version 5 — money as integer cents...')
+
+        // project_phases.amount (REAL) → amount_cents (INTEGER)
+        const phaseCols = db.prepare('PRAGMA table_info(project_phases)').all() as {
+            name: string
+        }[]
+        if (phaseCols.some((c) => c.name === 'amount')) {
+            db.exec(`ALTER TABLE project_phases ADD COLUMN amount_cents INTEGER DEFAULT 0`)
+            db.exec(`UPDATE project_phases SET amount_cents = CAST(ROUND(amount * 100) AS INTEGER)`)
+            db.exec(`ALTER TABLE project_phases DROP COLUMN amount`)
+            console.log('  Converted project_phases.amount → amount_cents')
+        }
+
+        // projects.hourly_rate (REAL) → hourly_rate_cents (INTEGER)
+        const projCols = db.prepare('PRAGMA table_info(projects)').all() as { name: string }[]
+        if (projCols.some((c) => c.name === 'hourly_rate')) {
+            db.exec(`ALTER TABLE projects ADD COLUMN hourly_rate_cents INTEGER`)
+            db.exec(
+                `UPDATE projects SET hourly_rate_cents = CAST(ROUND(hourly_rate * 100) AS INTEGER) WHERE hourly_rate IS NOT NULL`
+            )
+            db.exec(`ALTER TABLE projects DROP COLUMN hourly_rate`)
+            console.log('  Converted projects.hourly_rate → hourly_rate_cents')
+        }
+
+        db.pragma('user_version = 5')
+    }
 }
 
 export default db

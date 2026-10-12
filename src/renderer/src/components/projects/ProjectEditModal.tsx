@@ -8,6 +8,7 @@ import {
 } from '../../../../shared/constants'
 import { TechStackPicker } from '../common/TechStackPicker'
 import { ReferenceLinksEditor } from '../common/ReferenceLinksEditor'
+import { parseMoney } from '../../../../shared/money'
 
 interface ProjectEditModalProps {
     project: Project
@@ -31,7 +32,7 @@ export function ProjectEditModal({
     const [startDate, setStartDate] = useState(project.start_date ?? '')
     const [dueDate, setDueDate] = useState(project.due_date ?? '')
     const [hourlyRate, setHourlyRate] = useState(
-        project.hourly_rate != null ? String(project.hourly_rate) : ''
+        project.hourly_rate_cents != null ? String(project.hourly_rate_cents / 100) : ''
     )
     const [brief, setBrief] = useState(project.brief ?? '')
     const [techStack, setTechStack] = useState<string[]>(project.tech_stack ?? [])
@@ -54,7 +55,7 @@ export function ProjectEditModal({
                 currency,
                 start_date: startDate || null,
                 due_date: dueDate || null,
-                hourly_rate: hourlyRate ? parseFloat(hourlyRate) : null,
+                hourly_rate_cents: hourlyRate.trim() ? parseMoney(hourlyRate) : null,
                 brief: brief.trim() || null,
                 tech_stack: techStack.length > 0 ? techStack : null,
                 reference_links: referenceLinks.length > 0 ? referenceLinks : null

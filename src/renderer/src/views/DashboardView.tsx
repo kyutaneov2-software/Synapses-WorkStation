@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import type { Project } from '../../../shared/types'
 import { formatHM } from '../lib/time'
 import { useDashboard } from '../lib/hooks'
-import { CURRENCY_SYMBOLS } from '../../../shared/constants'
 import { isOverdue } from '../lib/dates'
+import { formatMoney } from '../../../shared/money'
 
 interface DeadlineItem {
     id: string
@@ -61,8 +61,6 @@ export function DashboardView(): React.JSX.Element {
         return best
     }, [data])
 
-    const symbol = CURRENCY_SYMBOLS[displayCurrency] || displayCurrency
-
     const stats = useMemo(() => {
         if (!data) {
             return {
@@ -90,13 +88,13 @@ export function DashboardView(): React.JSX.Element {
             return proj?.currency === displayCurrency
         })
 
-        const earned = relevant.filter((p) => p.paid).reduce((s, p) => s + p.amount, 0)
+        const earned = relevant.filter((p) => p.paid).reduce((s, p) => s + p.amount_cents, 0)
 
-        const outstanding = relevant.filter((p) => !p.paid).reduce((s, p) => s + p.amount, 0)
+        const outstanding = relevant.filter((p) => !p.paid).reduce((s, p) => s + p.amount_cents, 0)
 
         const thisMonth = relevant.filter((p) => p.paid && p.paid_at && isThisMonth(p.paid_at))
 
-        const earnedThisMonth = thisMonth.reduce((s, p) => s + p.amount, 0)
+        const earnedThisMonth = thisMonth.reduce((s, p) => s + p.amount_cents, 0)
 
         const overdueTasks = tasks.filter((t) => !t.done && isOverdue(t.due_date)).length
 
@@ -180,8 +178,8 @@ export function DashboardView(): React.JSX.Element {
                 )
                 const moneyPaid = projectPhases
                     .filter((p) => p.paid)
-                    .reduce((s, p) => s + p.amount, 0)
-                const moneyTotal = projectPhases.reduce((s, p) => s + p.amount, 0)
+                    .reduce((s, p) => s + p.amount_cents, 0)
+                const moneyTotal = projectPhases.reduce((s, p) => s + p.amount_cents, 0)
                 return {
                     project,
                     tasksTotal: projectTasks.length,
@@ -223,10 +221,7 @@ export function DashboardView(): React.JSX.Element {
             <div className="stat-grid">
                 <div className="stat-card stat-green">
                     <span className="stat-label">Earned</span>
-                    <span className="stat-value">
-                        {symbol}
-                        {stats.earned.toLocaleString()}
-                    </span>
+                    <span className="stat-value">{formatMoney(stats.earned, displayCurrency)}</span>
                     <span className="stat-sub">
                         {stats.paidCount} phase
                         {stats.paidCount === 1 ? '' : 's'} paid
@@ -236,8 +231,7 @@ export function DashboardView(): React.JSX.Element {
                 <div className="stat-card stat-amber">
                     <span className="stat-label">Outstanding</span>
                     <span className="stat-value">
-                        {symbol}
-                        {stats.outstanding.toLocaleString()}
+                        {formatMoney(stats.outstanding, displayCurrency)}
                     </span>
                     <span className="stat-sub">
                         {stats.unpaidCount} phase
@@ -248,8 +242,7 @@ export function DashboardView(): React.JSX.Element {
                 <div className="stat-card stat-blue">
                     <span className="stat-label">This Month</span>
                     <span className="stat-value">
-                        {symbol}
-                        {stats.earnedThisMonth.toLocaleString()}
+                        {formatMoney(stats.earnedThisMonth, displayCurrency)}
                     </span>
                     <span className="stat-sub">
                         {stats.thisMonthCount} payment
@@ -363,16 +356,13 @@ export function DashboardView(): React.JSX.Element {
                     <div className="health-list">
                         {projectHealth.map((h) => {
                             const projectSeconds = data.sessionTotals.byProject[h.project.id] ?? 0
-                            const projectSymbol =
-                                CURRENCY_SYMBOLS[h.project.currency] || h.project.currency
                             return (
                                 <div key={h.project.id} className="health-row">
                                     <div className="health-header">
                                         <span className="health-title">{h.project.title}</span>
                                         <span className="health-money">
-                                            {projectSymbol}
-                                            {h.moneyPaid.toLocaleString()} / {projectSymbol}
-                                            {h.moneyTotal.toLocaleString()}
+                                            {formatMoney(h.moneyPaid, h.project.currency)} /{' '}
+                                            {formatMoney(h.moneyTotal, h.project.currency)}
                                             {h.moneyTotal > 0 && h.moneyPaid === h.moneyTotal && (
                                                 <span className="health-paid-check"> ✓</span>
                                             )}
