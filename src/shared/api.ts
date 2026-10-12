@@ -5,7 +5,9 @@ import type {
     Session,
     DashboardData,
     SessionTotals,
-    Tag
+    Tag,
+    Note,
+    NoteSummary
 } from './types'
 
 export interface SynapsesAPI {
@@ -53,4 +55,12 @@ export interface SynapsesAPI {
     getDashboardData: () => Promise<DashboardData>
 
     onDataChanged: (callback: () => void) => () => void
+
+    // Notes
+    getNotes: () => Promise<NoteSummary[]>
+    getNotesByProject: (projectId: number) => Promise<NoteSummary[]>
+    getNote: (id: number) => Promise<Note>
+    createNote: (title: string, projectId: number | null) => Promise<Note>
+    updateNote: (id: number, updates: Record<string, unknown>) => Promise<Note>
+    deleteNote: (id: number) => Promise<void>
 }

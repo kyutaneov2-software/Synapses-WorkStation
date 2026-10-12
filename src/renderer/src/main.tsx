@@ -23,6 +23,7 @@ import './assets/styles/overview.css'
 import './assets/styles/empty-state.css'
 import './assets/styles/all-tasks.css'
 import './assets/styles/dashboard.css'
+import './assets/styles/notes.css'
 import './assets/styles/icons.css'
 import './assets/styles/responsive.css'
 

@@ -43,6 +43,18 @@ const api: SynapsesAPI = {
     setProjectTags: (projectId: number, tagNames: string[]) =>
         ipcRenderer.invoke('db:set-project-tags', projectId, tagNames),
 
+    // Notes
+    // Notes
+    getNotes: () => ipcRenderer.invoke('db:get-notes'),
+    getNotesByProject: (projectId: number) =>
+        ipcRenderer.invoke('db:get-notes-by-project', projectId),
+    getNote: (id: number) => ipcRenderer.invoke('db:get-note', id),
+    createNote: (title: string, projectId: number | null) =>
+        ipcRenderer.invoke('db:create-note', title, projectId),
+    updateNote: (id: number, updates: Record<string, unknown>) =>
+        ipcRenderer.invoke('db:update-note', id, updates),
+    deleteNote: (id: number) => ipcRenderer.invoke('db:delete-note', id),
+
     // Focus window
     focusToggle: () => ipcRenderer.invoke('focus:toggle'),
     focusGetCurrent: () => ipcRenderer.invoke('focus:get-current'),

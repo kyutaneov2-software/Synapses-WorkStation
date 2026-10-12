@@ -117,6 +117,28 @@ export function runMigrations(): void {
 
         db.pragma('user_version = 5')
     }
+
+    if (userVersion < 6) {
+        console.log('Running migration to version 6 — notes...')
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS notes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL DEFAULT '',
+                body TEXT NOT NULL DEFAULT '',
+                topics TEXT,
+                project_id INTEGER,
+                pinned INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_notes_project ON notes(project_id);
+            CREATE INDEX IF NOT EXISTS idx_notes_updated ON notes(updated_at DESC);
+        `)
+
+        db.pragma('user_version = 6')
+    }
 }
 
 export default db

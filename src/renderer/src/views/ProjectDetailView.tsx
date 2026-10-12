@@ -7,6 +7,7 @@ import { QuickAdd } from '../components/common/QuickAdd'
 import { PhaseList } from '../components/phases/PhaseList'
 import { EditableText } from '../components/common/EditableText'
 import { ProjectEditModal } from '../components/projects/ProjectEditModal'
+import { ProjectNotesList } from '../components/notes/ProjectNotesList'
 import { TagInput } from '../components/common/TagInput'
 import { todayStr } from '../lib/dates'
 import { PROJECT_TYPE_LABELS } from '../../../shared/constants'
@@ -394,9 +395,7 @@ export function ProjectDetailView({
 
             {activeTab === 'notes' && (
                 <div className="tab-content">
-                    <div className="empty-state">
-                        <p>Project notes are coming in a future phase.</p>
-                    </div>
+                    <ProjectNotesList projectId={projectId} />
                 </div>
             )}
         </div>

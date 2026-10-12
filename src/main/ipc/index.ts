@@ -7,6 +7,7 @@ import { registerSystemHandlers } from './system'
 import { registerDashboardHandlers } from './dashboard'
 import { registerSessionHandlers } from './sessions'
 import { registerTagHandlers } from './tags'
+import { registerNoteHandlers } from './notes'
 
 const ALL_CHANNELS = [
     // Projects
@@ -45,7 +46,14 @@ const ALL_CHANNELS = [
     // Tags
     'db:get-tags',
     'db:get-project-tags',
-    'db:set-project-tags'
+    'db:set-project-tags',
+    // Notes
+    'db:get-notes',
+    'db:get-notes-by-project',
+    'db:get-note',
+    'db:create-note',
+    'db:update-note',
+    'db:delete-note'
 ]
 
 function clearExistingHandlers(): void {
@@ -65,6 +73,7 @@ export function registerAllIpcHandlers(): void {
     registerDashboardHandlers()
     registerSessionHandlers()
     registerTagHandlers()
+    registerNoteHandlers()
 
     console.log('[ipc] all handlers registered')
 }

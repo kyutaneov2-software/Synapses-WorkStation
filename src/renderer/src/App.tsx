@@ -16,7 +16,7 @@ function App(): React.JSX.Element {
                     <Route path="/" element={<Navigate to="/commissions/today" replace />} />
                     <Route path="/commissions/*" element={<CommissionsSpace />} />
                     <Route path="/home" element={<HomeSpace />} />
-                    <Route path="/notes" element={<NotesSpace />} />
+                    <Route path="/notes/*" element={<NotesSpace />} />
                     <Route path="/schedule" element={<ScheduleSpace />} />
                     <Route path="/goals" element={<GoalsSpace />} />
                     <Route path="/settings" element={<SettingsSpace />} />

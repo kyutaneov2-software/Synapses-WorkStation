@@ -1,0 +1,277 @@
+/* ─── Notes layout ──────────────────────────────────────────── */
+.notes-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-1, #0f0f12);
+    border-right: 1px solid var(--border, #23232a);
+    overflow: hidden;
+}
+
+.notes-sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 14px 10px;
+}
+
+.notes-search {
+    flex: 1;
+    padding: 7px 10px;
+    background: var(--bg-2, #1a1a1f);
+    color: var(--text-0, #e7e7ea);
+    border: 1px solid var(--border, #23232a);
+    border-radius: 7px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+}
+.notes-search:focus { border-color: var(--accent, #6c8cff); }
+
+.notes-new-btn {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent, #6c8cff);
+    color: #fff;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+.notes-new-btn:hover { filter: brightness(1.1); }
+
+.notes-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 8px 12px;
+}
+
+.notes-group-label {
+    padding: 10px 8px 6px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3, #555);
+    font-weight: 500;
+}
+
+.note-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 9px 10px;
+    margin-bottom: 2px;
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s;
+    width: 100%;
+    color: inherit;
+    font-family: inherit;
+}
+.note-item:hover { background: var(--bg-2, #1a1a1f); }
+.note-item.active { background: var(--bg-3, #22222a); }
+
+.note-item-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-0, #e7e7ea);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.note-item-title svg { flex-shrink: 0; color: var(--accent, #6c8cff); }
+
+.note-item-preview {
+    font-size: 11px;
+    color: var(--text-3, #555);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.note-item-meta {
+    font-size: 10px;
+    color: var(--text-3, #555);
+    margin-top: 2px;
+}
+
+/* ─── Note editor ──────────────────────────────────────────── */
+.note-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 24px 36px 20px;
+    overflow: hidden;
+}
+
+.note-editor-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.note-editor-title {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: none;
+    color: var(--text-0, #e7e7ea);
+    font-family: inherit;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    padding: 0;
+}
+.note-editor-title::placeholder { color: var(--text-3, #555); }
+
+.note-save-status {
+    font-size: 11px;
+    color: var(--text-3, #555);
+    flex-shrink: 0;
+    min-width: 60px;
+    text-align: right;
+    transition: opacity 0.3s;
+}
+.note-save-status.saving { color: var(--accent, #6c8cff); }
+
+.note-editor-body {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: none;
+    resize: none;
+    color: var(--text-1, #b8b8c4);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 0;
+    min-height: 0;
+}
+.note-editor-body::placeholder { color: var(--text-3, #555); }
+
+.note-editor-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border, #23232a);
+}
+
+.note-editor-footer .tag-input-wrap { flex: 1; min-width: 200px; }
+
+.note-project-select {
+    padding: 6px 10px;
+    background: var(--bg-2, #1a1a1f);
+    color: var(--text-0, #e7e7ea);
+    border: 1px solid var(--border, #23232a);
+    border-radius: 7px;
+    font-size: 12px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+}
+
+.note-editor-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.note-icon-btn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-2, #1a1a1f);
+    color: var(--text-2, #8888a0);
+    border: 1px solid var(--border, #23232a);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.note-icon-btn:hover { color: var(--text-0, #e7e7ea); border-color: var(--text-3, #555); }
+.note-icon-btn.active { color: var(--accent, #6c8cff); border-color: var(--accent, #6c8cff); }
+.note-icon-btn.danger:hover { color: #ff6b6b; border-color: #ff6b6b; }
+
+.note-delete-confirm {
+    font-size: 11px;
+    color: var(--text-2, #8888a0);
+    padding: 0 8px;
+}
+
+/* ─── Empty states ─────────────────────────────────────────── */
+.notes-empty-list {
+    padding: 24px 16px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-3, #555);
+}
+
+.note-editor-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-3, #555);
+    font-size: 13px;
+}
+.note-editor-empty svg { opacity: 0.4; }
+
+.project-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.project-notes-new {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    background: var(--accent, #6c8cff);
+    color: #fff;
+    border: 0;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+.project-notes-new:hover:not(:disabled) { filter: brightness(1.1); }
+.project-notes-new:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.project-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.project-notes .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 36px 0;
+    color: var(--text-3, #555);
+    font-size: 12px;
+}

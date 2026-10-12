@@ -96,3 +96,25 @@ export interface SessionTotals {
     byProject: Record<number, number>
     byTask: Record<number, number>
 }
+
+export interface Note {
+    id: number
+    title: string
+    body: string
+    topics: string[] | null
+    project_id: number | null
+    pinned: number
+    created_at: string
+    updated_at: string
+}
+
+/** Lightweight row for the sidebar list — body is truncated to a preview. */
+export interface NoteSummary {
+    id: number
+    title: string
+    preview: string
+    project_id: number | null
+    pinned: number
+    created_at: string
+    updated_at: string
+}
