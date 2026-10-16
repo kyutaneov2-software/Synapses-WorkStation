@@ -82,12 +82,12 @@ function FocusApp(): React.JSX.Element {
 
     const handleComplete = async (): Promise<void> => {
         if (!task) return
-        if (trackingTaskId === task.id) {
-            await window.api.stopSession()
-            setTrackingTaskId(null)
-            setStartedAt(null)
-        }
+        // focus:complete already stops any active session bound to this task
+        // (or unbound) and marks the task done in a single IPC call. No need
+        // to also call stopSession here.
         const next = await window.api.focusComplete(task.id)
+        setTrackingTaskId(null)
+        setStartedAt(null)
         setTask(next)
     }
 
