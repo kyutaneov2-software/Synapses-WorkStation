@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Pin, Trash2 } from 'lucide-react'
 import type { Note } from '../../../../shared/types'
@@ -8,6 +8,10 @@ import { TagInput } from '../common/TagInput'
 interface NoteEditorProps {
     noteId: number
 }
+
+const SAVE_DEBOUNCE_MS = 500
+const SAVED_INDICATOR_MS = 1200
+const DELETE_CONFIRM_MS = 3000
 
 export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
     const navigate = useNavigate()
@@ -24,45 +28,97 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
     const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
     const [confirmingDelete, setConfirmingDelete] = useState(false)
 
-    const loadedRef = useRef(false)
+    // Unmount guard — every setState after an `await` must check this.
+    const aliveRef = useRef(true)
+    // Last-confirmed DB state. Diff base for autosave.
+    const noteRef = useRef<Note | null>(null)
+    // Debounce timer for the autosave.
     const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    // Separate timer for the "Saved" indicator so it never fights the debounce.
+    const indicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    // Accumulated patch built fresh on every effect run.
     const pendingRef = useRef<Partial<Note>>({})
 
-    // ── Load the note once on mount / when id changes ────────
+    // ── Lifecycle: unmount guard ────────────────────────────
+    useEffect(() => {
+        aliveRef.current = true
+        return () => {
+            aliveRef.current = false
+        }
+    }, [])
+
+    // ── Load ────────────────────────────────────────────────
     useEffect(() => {
         let cancelled = false
-        loadedRef.current = false
 
-        window.api.getNote(noteId).then((n) => {
-            if (cancelled) return
-            setNote(n)
-            setTitle(n.title)
-            setBody(n.body)
-            setTopics(n.topics ?? [])
-            setProjectId(n.project_id)
-            setLoading(false)
-            // Mark loaded on next tick so the autosave effect skips the initial set
-            setTimeout(() => {
-                if (!cancelled) loadedRef.current = true
-            }, 0)
-        })
+        window.api
+            .getNote(noteId)
+            .then((n) => {
+                if (cancelled) return
+                noteRef.current = n
+                setNote(n)
+                setTitle(n.title)
+                setBody(n.body)
+                setTopics(n.topics ?? [])
+                setProjectId(n.project_id)
+                setLoading(false)
+            })
+            .catch((e) => {
+                if (cancelled) return
+                console.error('[NoteEditor] load failed:', e)
+                setNote(null)
+                setLoading(false)
+            })
 
         return () => {
             cancelled = true
         }
     }, [noteId])
 
-    // ── Autosave ─────────────────────────────────────────────
+    // ── Save flush ──────────────────────────────────────────
+    const flushSave = useCallback(async (): Promise<void> => {
+        const toSave = pendingRef.current
+        pendingRef.current = {}
+        if (Object.keys(toSave).length === 0) return
+        if (!aliveRef.current) return
+
+        setSaveState('saving')
+
+        try {
+            const updated = await window.api.updateNote(noteId, toSave)
+            if (!aliveRef.current) return
+
+            noteRef.current = updated
+            setNote(updated)
+            setSaveState('saved')
+
+            if (indicatorTimerRef.current) clearTimeout(indicatorTimerRef.current)
+            indicatorTimerRef.current = setTimeout(() => {
+                if (aliveRef.current) setSaveState('idle')
+            }, SAVED_INDICATOR_MS)
+        } catch (e) {
+            if (!aliveRef.current) return
+            console.error('[NoteEditor] save failed:', e)
+            // Re-queue so the next edit or unmount retries.
+            pendingRef.current = { ...toSave, ...pendingRef.current }
+            setSaveState('idle')
+        }
+    }, [noteId])
+
+    // ── Autosave ────────────────────────────────────────────
+    // Note: `note` is intentionally NOT in deps. We diff against
+    // `noteRef.current` so the effect doesn't re-run when a save resolves.
     useEffect(() => {
-        if (!loadedRef.current) return
+        const base = noteRef.current
+        if (!base) return
 
         const patch: Partial<Note> = {}
-        if (title !== note?.title) patch.title = title
-        if (body !== note?.body) patch.body = body
-        if (projectId !== note?.project_id) patch.project_id = projectId
+        if (title !== base.title) patch.title = title
+        if (body !== base.body) patch.body = body
+        if (projectId !== base.project_id) patch.project_id = projectId
         const currentTopics = topics.length > 0 ? topics : null
-        const noteTopics = note?.topics ?? null
-        if (JSON.stringify(currentTopics) !== JSON.stringify(noteTopics)) {
+        const baseTopics = base.topics ?? null
+        if (JSON.stringify(currentTopics) !== JSON.stringify(baseTopics)) {
             patch.topics = currentTopics as Note['topics']
         }
 
@@ -71,44 +127,65 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
         pendingRef.current = patch
 
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-        saveTimerRef.current = setTimeout(async () => {
-            setSaveState('saving') // ← moved inside timer
-            const toSave = pendingRef.current
-            pendingRef.current = {}
-            const updated = await window.api.updateNote(noteId, toSave)
-            setNote(updated)
-            setSaveState('saved')
-            setTimeout(() => setSaveState('idle'), 1200)
-        }, 500)
+        saveTimerRef.current = setTimeout(() => {
+            void flushSave()
+        }, SAVE_DEBOUNCE_MS)
 
         return () => {
-            if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+            if (saveTimerRef.current) {
+                clearTimeout(saveTimerRef.current)
+                saveTimerRef.current = null
+            }
         }
-    }, [title, body, topics, projectId, note, noteId])
+    }, [title, body, topics, projectId, flushSave])
 
-    // ── Flush pending save on unmount ────────────────────────
+    // ── Unmount flush ───────────────────────────────────────
     useEffect(() => {
         return () => {
-            if (Object.keys(pendingRef.current).length > 0) {
-                window.api.updateNote(noteId, pendingRef.current)
+            if (saveTimerRef.current) {
+                clearTimeout(saveTimerRef.current)
+                saveTimerRef.current = null
+            }
+            if (indicatorTimerRef.current) {
+                clearTimeout(indicatorTimerRef.current)
+                indicatorTimerRef.current = null
+            }
+            const leftover = pendingRef.current
+            pendingRef.current = {}
+            if (Object.keys(leftover).length > 0) {
+                // Fire-and-forget. Component is unmounting, no setState.
+                window.api.updateNote(noteId, leftover).catch((e) => {
+                    console.error('[NoteEditor] unmount flush failed:', e)
+                })
             }
         }
     }, [noteId])
 
+    // ── Actions ─────────────────────────────────────────────
     const handleTogglePin = async (): Promise<void> => {
         if (!note) return
-        const updated = await window.api.updateNote(noteId, { pinned: note.pinned ? 0 : 1 })
-        setNote(updated)
+        try {
+            const updated = await window.api.updateNote(noteId, { pinned: note.pinned ? 0 : 1 })
+            if (!aliveRef.current) return
+            noteRef.current = updated
+            setNote(updated)
+        } catch (e) {
+            console.error('[NoteEditor] toggle pin failed:', e)
+        }
     }
 
     const handleDelete = async (): Promise<void> => {
         if (!confirmingDelete) {
             setConfirmingDelete(true)
-            setTimeout(() => setConfirmingDelete(false), 3000)
+            setTimeout(() => setConfirmingDelete(false), DELETE_CONFIRM_MS)
             return
         }
-        await window.api.deleteNote(noteId)
-        navigate('/notes')
+        try {
+            await window.api.deleteNote(noteId)
+            if (aliveRef.current) navigate('/notes')
+        } catch (e) {
+            console.error('[NoteEditor] delete failed:', e)
+        }
     }
 
     if (loading) {
