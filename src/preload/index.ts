@@ -31,8 +31,8 @@ const api: SynapsesAPI = {
 
     // Phases
     getPhases: (projectId: number) => ipcRenderer.invoke('db:get-phases', projectId),
-    createPhase: (projectId: number, name: string, amount: number) =>
-        ipcRenderer.invoke('db:create-phase', projectId, name, amount),
+    createPhase: (projectId: number, name: string, amountCents: number) =>
+        ipcRenderer.invoke('db:create-phase', projectId, name, amountCents),
     updatePhase: (id: number, updates: Record<string, unknown>) =>
         ipcRenderer.invoke('db:update-phase', id, updates),
     deletePhase: (id: number) => ipcRenderer.invoke('db:delete-phase', id),

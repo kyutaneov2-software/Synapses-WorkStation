@@ -72,8 +72,8 @@ export function ProjectDetailView({
         await window.api.focusPinTask(isCurrentlyPinned ? null : id)
     }
 
-    const handleAddPhase = async (name: string, amount: number): Promise<void> => {
-        await window.api.createPhase(projectId, name, amount)
+    const handleAddPhase = async (name: string, amountCents: number): Promise<void> => {
+        await window.api.createPhase(projectId, name, amountCents)
     }
 
     const handleUpdatePhase = async (

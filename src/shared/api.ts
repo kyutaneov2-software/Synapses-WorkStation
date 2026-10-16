@@ -31,7 +31,7 @@ export interface SynapsesAPI {
     deleteTask: (id: number) => Promise<void>
 
     getPhases: (projectId: number) => Promise<ProjectPhase[]>
-    createPhase: (projectId: number, name: string, amount: number) => Promise<ProjectPhase>
+    createPhase: (projectId: number, name: string, amountCents: number) => Promise<ProjectPhase>
     updatePhase: (id: number, updates: Record<string, unknown>) => Promise<ProjectPhase>
     deletePhase: (id: number) => Promise<void>
 
