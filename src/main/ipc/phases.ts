@@ -60,7 +60,13 @@ export function registerPhaseHandlers(): void {
 
     ipcMain.handle(
         'db:update-phase',
-        (_, id: number, updates: Partial<ProjectPhase>): ProjectPhase => {
+        (_, id: unknown, updates: Partial<ProjectPhase>): ProjectPhase => {
+            const cleanId = requirePositiveId(id, 'id')
+
+            if (!updates || typeof updates !== 'object') {
+                throw new Error('Invalid updates: expected object')
+            }
+
             const allowed: (keyof ProjectPhase)[] = [
                 'name',
                 'amount_cents',
@@ -72,14 +78,40 @@ export function registerPhaseHandlers(): void {
             const values: (string | number | null)[] = []
 
             for (const key of allowed) {
-                if (key in updates) {
-                    fields.push(`${key} = ?`)
-                    values.push(updates[key] as string | number | null)
+                if (!(key in updates)) continue
+                const v = updates[key]
+
+                if (key === 'name') {
+                    values.push(requireString(v, 'name', 500))
+                } else if (key === 'amount_cents') {
+                    const n = requireNumber(v, 'amount_cents')
+                    if (!Number.isInteger(n) || n < 0) {
+                        throw new Error('Invalid amount_cents: expected non-negative integer')
+                    }
+                    values.push(n)
+                } else if (key === 'paid') {
+                    if (typeof v === 'boolean') values.push(v ? 1 : 0)
+                    else if (v === 0 || v === 1) values.push(v)
+                    else throw new Error('Invalid paid: expected boolean or 0/1')
+                } else if (key === 'paid_at') {
+                    if (v === null || v === undefined || v === '') {
+                        values.push(null)
+                    } else {
+                        values.push(requireString(v, 'paid_at', 30))
+                    }
+                } else if (key === 'sort_order') {
+                    const n = requireNumber(v, 'sort_order')
+                    if (!Number.isInteger(n)) {
+                        throw new Error('Invalid sort_order: expected integer')
+                    }
+                    values.push(n)
                 }
+
+                fields.push(`${key} = ?`)
             }
 
             if (fields.length > 0) {
-                values.push(id)
+                values.push(cleanId)
                 db.prepare(`UPDATE project_phases SET ${fields.join(', ')} WHERE id = ?`).run(
                     ...values
                 )
@@ -87,7 +119,7 @@ export function registerPhaseHandlers(): void {
 
             const phase = db
                 .prepare('SELECT * FROM project_phases WHERE id = ?')
-                .get(id) as ProjectPhase
+                .get(cleanId) as ProjectPhase
             broadcast('data:changed')
             return phase
         }
