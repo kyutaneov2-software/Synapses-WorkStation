@@ -7,7 +7,7 @@ function NoteEditorRoute(): React.JSX.Element {
     const { id } = useParams<{ id: string }>()
     const noteId = Number(id)
 
-    if (!id || Number.isNaN(noteId)) {
+    if (!id || !Number.isInteger(noteId) || noteId <= 0) {
         return <Navigate to="/notes" replace />
     }
 

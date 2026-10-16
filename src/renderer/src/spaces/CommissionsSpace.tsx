@@ -12,7 +12,7 @@ function ProjectDetailRoute(): React.JSX.Element {
     const navigate = useNavigate()
     const projectId = Number(id)
 
-    if (!id || Number.isNaN(projectId)) {
+    if (!id || !Number.isInteger(projectId) || projectId <= 0) {
         return <Navigate to={ROUTES.commissionsToday} replace />
     }
 
