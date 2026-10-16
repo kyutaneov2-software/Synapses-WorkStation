@@ -24,6 +24,8 @@ export function createFocusWindow(): BrowserWindow {
         x: pos.x,
         y: pos.y,
         frame: false,
+        transparent: true, // ← new
+        backgroundColor: '#00000000', // ← new (fully transparent)
         alwaysOnTop: true,
         skipTaskbar: true,
         resizable: false,

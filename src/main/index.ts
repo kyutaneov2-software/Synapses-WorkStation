@@ -1,7 +1,5 @@
-import { app, shell, BrowserWindow, globalShortcut } from 'electron'
-import { join } from 'path'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import { app, globalShortcut } from 'electron'
+import { electronApp, optimizer } from '@electron-toolkit/utils'
 import db, { runMigrations } from './db'
 import { migrateLegacyJson } from './db/migrateJson'
 import { toggleFocusWindow } from './focusWindow'
@@ -11,7 +9,7 @@ import { runAutoBackup } from './services/backup'
 import { createTray, destroyTray } from './services/tray'
 import { setLaunchOnStartup } from './services/startup'
 import { readSettings, writeSettings } from './services/settings'
-import { setMainWindow } from './mainWindow'
+import { setQuitting, createMainWindow, getMainWindow } from './mainWindow'
 
 // Set AppUserModelID BEFORE app.whenReady()
 // Windows needs this for notifications to route correctly.
@@ -23,54 +21,6 @@ if (process.platform === 'win32') {
     }
 } else {
     electronApp.setAppUserModelId('com.synapses.workstation')
-}
-
-// Flag that tracks whether the user is genuinely quitting
-// (via tray menu, Cmd+Q, etc.) vs. just closing the window.
-let isQuitting = false
-
-function createWindow(): void {
-    const mainWindow = new BrowserWindow({
-        width: 1000,
-        height: 700,
-        show: false,
-        autoHideMenuBar: true,
-        ...(process.platform === 'linux' ? { icon } : {}),
-        webPreferences: {
-            preload: join(__dirname, '../preload/index.js'),
-            sandbox: false,
-            contextIsolation: true,
-            nodeIntegration: false
-        }
-    })
-
-    setMainWindow(mainWindow)
-
-    mainWindow.on('ready-to-show', () => mainWindow.show())
-
-    // Intercept close — hide instead, unless we're really quitting
-    mainWindow.on('close', (e) => {
-        if (!isQuitting) {
-            e.preventDefault()
-            mainWindow.hide()
-            console.log('[main] window hidden — app still running in tray')
-        }
-    })
-
-    mainWindow.on('closed', () => {
-        setMainWindow(null)
-    })
-
-    mainWindow.webContents.setWindowOpenHandler((details) => {
-        shell.openExternal(details.url)
-        return { action: 'deny' }
-    })
-
-    if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-    } else {
-        mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-    }
 }
 
 app.whenReady().then(() => {
@@ -94,7 +44,7 @@ app.whenReady().then(() => {
         toggleFocusWindow()
     })
 
-    createWindow()
+    createMainWindow()
 
     createTray()
 
@@ -107,15 +57,15 @@ app.whenReady().then(() => {
         setLaunchOnStartup(settings.launchOnStartup)
     }
 
-    app.on('activate', function () {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    app.on('activate', () => {
+        if (!getMainWindow()) createMainWindow()
     })
 })
 
 // Mark the app as "really quitting" so the main window's close
 // handler skips the preventDefault and lets the window close.
 app.on('before-quit', () => {
-    isQuitting = true
+    setQuitting(true)
 })
 
 app.on('will-quit', () => {

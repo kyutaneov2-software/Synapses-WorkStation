@@ -1,6 +1,8 @@
+// src/main/services/backup.ts
 import fs from 'fs'
 import path from 'path'
 import { app } from 'electron'
+import db from '../db'
 
 const MAX_BACKUPS = 10
 
@@ -25,7 +27,12 @@ export function runAutoBackup(): void {
         }
 
         const dest = path.join(backupDir, `task-notes-${timestamp()}.db`)
-        fs.copyFileSync(source, dest)
+
+        // VACUUM INTO produces a clean, fully-consistent copy of the DB,
+        // including any commits still sitting in the WAL. It refuses to
+        // overwrite an existing file — our timestamped name guarantees
+        // uniqueness, so that's fine.
+        db.exec(`VACUUM INTO '${dest.replace(/'/g, "''")}'`)
         console.log('[backup] Created:', path.basename(dest))
 
         const entries = fs

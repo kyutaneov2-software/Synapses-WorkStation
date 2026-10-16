@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { Project } from '../../../shared/types'
 import { formatHM } from '../lib/time'
 import { useDashboard } from '../lib/hooks'
-import { isOverdue } from '../lib/dates'
+import { isOverdue, parseSqliteMs } from '../lib/dates'
 import { formatMoney } from '../../../shared/money'
 
 interface DeadlineItem {
@@ -35,8 +35,8 @@ function daysAway(dateStr: string): number {
     return Math.round((d.getTime() - todayMidnight().getTime()) / 86400000)
 }
 
-function isThisMonth(isoString: string): boolean {
-    const d = new Date(isoString)
+function isThisMonth(sqliteTs: string): boolean {
+    const d = new Date(parseSqliteMs(sqliteTs))
     const now = new Date()
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
 }
@@ -105,9 +105,10 @@ export function DashboardView(): React.JSX.Element {
 
         const openTasks = tasks.filter((t) => !t.done).length
 
-        const doneThisWeek = tasks.filter(
-            (t) => t.done && t.completed_at && new Date(t.completed_at) >= weekAgo
-        ).length
+        const doneThisWeek = tasks.filter((t) => {
+            if (!t.done || !t.completed_at) return false
+            return parseSqliteMs(t.completed_at) >= weekAgo.getTime()
+        }).length
 
         return {
             earned,

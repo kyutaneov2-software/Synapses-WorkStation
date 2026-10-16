@@ -21,11 +21,18 @@ export function tomorrowStr(): string {
 /**
  * Parse a SQLite timestamp.
  *
- * SQLite's `datetime('now')` returns "YYYY-MM-DD HH:MM:SS" in UTC,
- * with no timezone suffix. `new Date("2026-10-11 14:30:00")` parses
- * as LOCAL on V8, which is wrong. Adding "Z" forces UTC interpretation.
+ * Accepts two formats:
+ *   1. SQLite `datetime('now')` → "YYYY-MM-DD HH:MM:SS" (UTC, no suffix)
+ *   2. Full ISO 8601           → "YYYY-MM-DDTHH:MM:SS.sssZ" (UTC, with Z)
+ *
+ * `new Date("2026-10-11 14:30:00")` parses as LOCAL on V8, which is
+ * wrong for format #1. Appending "Z" forces UTC interpretation.
+ * Format #2 is already unambiguous, so we trust it as-is.
  */
 export function parseSqliteDate(s: string): Date {
+    if (/[zZ]$|[+-]\d{2}:?\d{2}$/.test(s)) {
+        return new Date(s)
+    }
     return new Date(s.replace(' ', 'T') + 'Z')
 }
 

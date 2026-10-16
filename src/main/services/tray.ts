@@ -1,7 +1,7 @@
 import { app, Menu, Tray, nativeImage } from 'electron'
 import trayIcon from '../../../resources/synapses-Icon.png?asset'
 import { toggleFocusWindow, getFocusWindow, createFocusWindow } from '../focusWindow'
-import { showMainWindow, getMainWindow } from '../mainWindow'
+import { showMainWindow } from '../mainWindow'
 
 let tray: Tray | null = null
 
@@ -28,16 +28,7 @@ export function createTray(): Tray {
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show Main Window',
-            click: (): void => {
-                const win = getMainWindow()
-                if (win && !win.isDestroyed()) {
-                    showMainWindow()
-                } else {
-                    // Window was fully closed (not just hidden) — recreate it
-                    // by emulating activate behavior
-                    showMainWindow()
-                }
-            }
+            click: (): void => showMainWindow()
         },
         {
             label: 'Toggle Focus Window',

@@ -7,36 +7,43 @@ import schemaSql from './schema.sql?raw'
 const dbPath = path.join(app.getPath('userData'), 'task-notes.db')
 const db: DatabaseType = new Database(dbPath)
 
-// Enable WAL mode for better performance
+// WAL mode is safe to set at any time.
 db.pragma('journal_mode = WAL')
 
+// NOTE: foreign_keys is intentionally left at its default (OFF) during
+// migrations. It must be enabled *after* migrations complete, because
+// (a) PRAGMA foreign_keys is a no-op inside a transaction, and
+// (b) we want the orphan-cleanup migration to be able to run freely.
+
 export function runMigrations(): void {
-    const userVersion = db.pragma('user_version', { simple: true }) as number
+    // Use a mutable variable so each migration updates the tracker.
+    // This is the fix for the "re-run every migration" bug.
+    let userVersion = db.pragma('user_version', { simple: true }) as number
 
     if (userVersion < 1) {
         console.log('Running migration to version 1...')
         db.exec(schemaSql)
         db.pragma('user_version = 1')
+        userVersion = 1
     }
 
     if (userVersion < 2) {
         console.log('Running migration to version 2 — project currency...')
-        // Add currency column to projects
         db.exec(`ALTER TABLE projects ADD COLUMN currency TEXT DEFAULT 'USD'`)
-        // Backfill from existing phases
         db.exec(`
-      UPDATE projects
-      SET currency = (
-        SELECT currency FROM project_phases
-        WHERE project_phases.project_id = projects.id
-        ORDER BY sort_order ASC
-        LIMIT 1
-      )
-      WHERE EXISTS (
-        SELECT 1 FROM project_phases WHERE project_phases.project_id = projects.id
-      )
-    `)
+            UPDATE projects
+            SET currency = (
+                SELECT currency FROM project_phases
+                WHERE project_phases.project_id = projects.id
+                ORDER BY sort_order ASC
+                LIMIT 1
+            )
+            WHERE EXISTS (
+                SELECT 1 FROM project_phases WHERE project_phases.project_id = projects.id
+            )
+        `)
         db.pragma('user_version = 2')
+        userVersion = 2
     }
 
     if (userVersion < 3) {
@@ -53,17 +60,15 @@ export function runMigrations(): void {
             CREATE INDEX IF NOT EXISTS idx_attachments_project ON attachments(project_id);
         `)
         db.pragma('user_version = 3')
+        userVersion = 3
     }
 
     if (userVersion < 4) {
         console.log('Running migration to version 4 — commissions expansion...')
-
-        // New columns on projects
         db.exec(`ALTER TABLE projects ADD COLUMN client_contact TEXT`)
         db.exec(`ALTER TABLE projects ADD COLUMN tech_stack TEXT`)
         db.exec(`ALTER TABLE projects ADD COLUMN reference_links TEXT`)
 
-        // Tags (many-to-many)
         db.exec(`
             CREATE TABLE IF NOT EXISTS tags (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,7 +85,6 @@ export function runMigrations(): void {
             CREATE INDEX IF NOT EXISTS idx_project_tags_tag ON project_tags(tag_id);
         `)
 
-        // Normalize legacy type values ('Personal' from JSON migration, nulls, unknowns)
         db.exec(`
             UPDATE projects SET type = 'other'
             WHERE type IS NULL
@@ -88,12 +92,12 @@ export function runMigrations(): void {
         `)
 
         db.pragma('user_version = 4')
+        userVersion = 4
     }
 
     if (userVersion < 5) {
         console.log('Running migration to version 5 — money as integer cents...')
 
-        // project_phases.amount (REAL) → amount_cents (INTEGER)
         const phaseCols = db.prepare('PRAGMA table_info(project_phases)').all() as {
             name: string
         }[]
@@ -104,7 +108,6 @@ export function runMigrations(): void {
             console.log('  Converted project_phases.amount → amount_cents')
         }
 
-        // projects.hourly_rate (REAL) → hourly_rate_cents (INTEGER)
         const projCols = db.prepare('PRAGMA table_info(projects)').all() as { name: string }[]
         if (projCols.some((c) => c.name === 'hourly_rate')) {
             db.exec(`ALTER TABLE projects ADD COLUMN hourly_rate_cents INTEGER`)
@@ -116,11 +119,11 @@ export function runMigrations(): void {
         }
 
         db.pragma('user_version = 5')
+        userVersion = 5
     }
 
     if (userVersion < 6) {
         console.log('Running migration to version 6 — notes...')
-
         db.exec(`
             CREATE TABLE IF NOT EXISTS notes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -136,9 +139,53 @@ export function runMigrations(): void {
             CREATE INDEX IF NOT EXISTS idx_notes_project ON notes(project_id);
             CREATE INDEX IF NOT EXISTS idx_notes_updated ON notes(updated_at DESC);
         `)
-
         db.pragma('user_version = 6')
+        userVersion = 6
     }
+
+    if (userVersion < 7) {
+        console.log('Running migration to version 7 — orphan cleanup before FK enforcement...')
+
+        // Because foreign keys have never been enforced, existing databases
+        // may contain rows whose parent has been deleted. Turning on FK
+        // enforcement won't retroactively break anything, but it's cleaner
+        // to remove the orphans now while we have a chance.
+        //
+        // Order matters: delete children of orphans first, then the orphan
+        // parents themselves.
+        const cleanup = db.transaction(() => {
+            // Leaf-level orphans (no children of their own)
+            db.exec(`DELETE FROM project_phases WHERE project_id NOT IN (SELECT id FROM projects)`)
+            db.exec(`DELETE FROM attachments WHERE project_id NOT IN (SELECT id FROM projects)`)
+            db.exec(
+                `DELETE FROM notes WHERE project_id IS NOT NULL AND project_id NOT IN (SELECT id FROM projects)`
+            )
+            db.exec(
+                `DELETE FROM project_tags WHERE project_id NOT IN (SELECT id FROM projects) OR tag_id NOT IN (SELECT id FROM tags)`
+            )
+            // Sessions whose task is already gone
+            db.exec(
+                `DELETE FROM sessions WHERE task_id IS NOT NULL AND task_id NOT IN (SELECT id FROM tasks)`
+            )
+            // Now tasks whose project is gone (this may orphan more sessions)
+            db.exec(
+                `DELETE FROM tasks WHERE project_id IS NOT NULL AND project_id NOT IN (SELECT id FROM projects)`
+            )
+            // And finally those newly orphaned sessions
+            db.exec(
+                `DELETE FROM sessions WHERE task_id IS NOT NULL AND task_id NOT IN (SELECT id FROM tasks)`
+            )
+        })
+        cleanup()
+
+        db.pragma('user_version = 7')
+        userVersion = 7
+    }
+
+    // Enable foreign key enforcement for the rest of the app's lifetime.
+    // Must be outside a transaction — it's a silent no-op inside one.
+    db.pragma('foreign_keys = ON')
+    console.log(`[db] migrations complete (v${userVersion}), foreign_keys = ON`)
 }
 
 export default db
