@@ -1,5 +1,5 @@
 import { Notification } from 'electron'
-import schedule from 'node-schedule'
+import schedule, { type Job } from 'node-schedule'
 import db from '../db'
 import type { Task, Project } from '../../shared/types'
 import { todayStr } from '../../shared/dates'
@@ -136,13 +136,21 @@ function showOverdueNotification(): void {
     }).show()
 }
 
+let morningJob: Job | null = null
+let eveningJob: Job | null = null
+
 export function startNotificationScheduler(): void {
-    schedule.scheduleJob('0 8 * * *', () => {
+    if (morningJob || eveningJob) {
+        console.warn('[notifications] scheduler already started, skipping')
+        return
+    }
+
+    morningJob = schedule.scheduleJob('0 8 * * *', () => {
         console.log('[notifications] Morning deadline check running...')
         showDeadlineNotification()
     })
 
-    schedule.scheduleJob('0 17 * * *', () => {
+    eveningJob = schedule.scheduleJob('0 17 * * *', () => {
         console.log('[notifications] Evening overdue check running...')
         showOverdueNotification()
     })
@@ -151,5 +159,9 @@ export function startNotificationScheduler(): void {
 }
 
 export function stopNotificationScheduler(): void {
-    schedule.gracefulShutdown()
+    morningJob?.cancel()
+    eveningJob?.cancel()
+    morningJob = null
+    eveningJob = null
+    console.log('[notifications] Scheduler stopped')
 }
