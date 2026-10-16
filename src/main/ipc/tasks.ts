@@ -152,17 +152,4 @@ export function registerTaskHandlers(): void {
         db.prepare('DELETE FROM tasks WHERE id = ?').run(cleanId)
         broadcast('data:changed')
     })
-
-    ipcMain.handle('focus:pin-task', (_, taskId: unknown): void => {
-        // Clear any existing pin
-        db.prepare('UPDATE tasks SET is_current = 0 WHERE is_current = 1').run()
-
-        // Set the new pin (or leave empty if null)
-        if (taskId !== null && taskId !== undefined) {
-            const cleanId = requirePositiveId(taskId, 'taskId')
-            db.prepare('UPDATE tasks SET is_current = 1 WHERE id = ?').run(cleanId)
-        }
-
-        broadcast('data:changed')
-    })
 }
