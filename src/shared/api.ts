@@ -52,6 +52,7 @@ export interface SynapsesAPI {
     getSessionTotals: () => Promise<SessionTotals>
 
     healthCheck: () => Promise<{ alive: number }>
+    testNotification: () => Promise<void>
     getDashboardData: () => Promise<DashboardData>
 
     onDataChanged: (callback: () => void) => () => void

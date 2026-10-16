@@ -53,7 +53,10 @@ const ALL_CHANNELS = [
     'db:get-note',
     'db:create-note',
     'db:update-note',
-    'db:delete-note'
+    'db:delete-note',
+    // System
+    'db:health-check',
+    'system:test-notification'
 ]
 
 function clearExistingHandlers(): void {

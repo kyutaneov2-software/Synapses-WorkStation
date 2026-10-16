@@ -70,6 +70,7 @@ const api: SynapsesAPI = {
 
     // System
     healthCheck: () => ipcRenderer.invoke('db:health-check'),
+    testNotification: () => ipcRenderer.invoke('system:test-notification'),
     getDashboardData: () => ipcRenderer.invoke('dashboard:get-data'),
 
     // Cross-window event subscription
