@@ -96,6 +96,26 @@ function getOverdue(): DueItem[] {
         })
     }
 
+    const projects = db
+        .prepare(
+            `
+        SELECT * FROM projects
+        WHERE due_date IS NOT NULL
+          AND due_date < ?
+          AND status != 'completed'
+          AND archived = 0
+        ORDER BY due_date ASC
+      `
+        )
+        .all(today) as Project[]
+
+    for (const p of projects) {
+        items.push({
+            text: p.title,
+            isProject: true
+        })
+    }
+
     return items
 }
 
@@ -131,6 +151,7 @@ function showDeadlineNotification(): void {
 
 function showOverdueNotification(): void {
     if (!canNotify()) return
+
     const items = getOverdue()
 
     if (items.length === 0) {
@@ -139,15 +160,25 @@ function showOverdueNotification(): void {
     }
 
     if (items.length === 1) {
+        const item = items[0]
         new Notification({
-            title: '1 task overdue',
-            body: items[0].text
+            title: item.isProject ? 'Project overdue' : 'Task overdue',
+            body: item.projectTitle ? `${item.text} — ${item.projectTitle}` : item.text
         }).show()
         return
     }
 
+    const taskCount = items.filter((i) => !i.isProject).length
+    const projectCount = items.filter((i) => i.isProject).length
+    const summary =
+        projectCount === 0
+            ? `${taskCount} tasks overdue`
+            : taskCount === 0
+              ? `${projectCount} project${projectCount === 1 ? '' : 's'} overdue`
+              : `${taskCount} task${taskCount === 1 ? '' : 's'} and ${projectCount} project${projectCount === 1 ? '' : 's'} overdue`
+
     new Notification({
-        title: `${items.length} tasks overdue`,
+        title: summary,
         body: 'Open Synapses WorkStation to see what slipped.'
     }).show()
 }
