@@ -10,6 +10,20 @@ interface DueItem {
     isProject: boolean
 }
 
+let notificationsSupported: boolean | null = null
+
+function canNotify(): boolean {
+    if (notificationsSupported === null) {
+        notificationsSupported = Notification.isSupported()
+        if (!notificationsSupported) {
+            console.warn(
+                '[notifications] system does not support notifications — scheduled alerts will be skipped'
+            )
+        }
+    }
+    return notificationsSupported
+}
+
 function getDueToday(): DueItem[] {
     const today = todayStr()
     const items: DueItem[] = []
@@ -86,6 +100,7 @@ function getOverdue(): DueItem[] {
 }
 
 function showDeadlineNotification(): void {
+    if (!canNotify()) return
     const items = getDueToday()
 
     if (items.length === 0) {
@@ -115,6 +130,7 @@ function showDeadlineNotification(): void {
 }
 
 function showOverdueNotification(): void {
+    if (!canNotify()) return
     const items = getOverdue()
 
     if (items.length === 0) {
