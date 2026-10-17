@@ -1,0 +1,757 @@
+/* ============================================================
+   SCHEDULE
+   ============================================================ */
+
+   .schedule-layout {
+    display: flex;
+    flex: 1; /* This tells the layout to fill the remaining space next to the IconRail */
+    min-width: 0; /* Prevents flex blowout and allows the grid to scroll properly */
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg-0);
+    padding: 16px;
+    gap: 16px;
+}
+
+/* ── LEFT: sidebar ────────────────────────────────────────── */
+
+.schedule-sidebar {
+    /* Instead of width: 280px and flex-shrink: 0 */
+    flex: 1;
+    min-width: 260px;
+    max-width: 340px; /* Prevents it from taking up half the screen on ultrawide monitors */
+
+    background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    z-index: 10;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.schedule-sidebar-top {
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Mini month */
+
+.mini-month {
+    padding: 4px 0;
+}
+
+.mini-month-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.mini-month-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-0);
+}
+
+.mini-month-nav {
+    display: flex;
+    gap: 2px;
+}
+
+.mini-month-nav button {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.mini-month-nav button:hover {
+    background: var(--bg-3);
+    color: var(--text-0);
+}
+
+.mini-month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.mini-month-weekday {
+    font-size: 9.5px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text-3);
+    padding: 4px 0;
+    text-transform: uppercase;
+}
+
+.mini-month-day {
+    aspect-ratio: 1;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-1);
+    cursor: pointer;
+    transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mini-month-day:hover {
+    background: var(--bg-3);
+    color: var(--text-0);
+    transform: scale(1.1);
+}
+
+.mini-month-day.muted {
+    color: var(--text-3);
+    opacity: 0.4;
+}
+
+.mini-month-day.in-week {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.mini-month-day.today {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* Notes */
+
+.schedule-notes-section {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.schedule-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.schedule-note-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-1);
+    font-size: 12px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: all var(--dur-fast);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.schedule-note-item:hover {
+    background: var(--bg-3);
+    border-color: var(--border-strong);
+    color: var(--text-0);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.schedule-note-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.schedule-add-note-btn {
+    background: none;
+    border: none;
+    color: var(--text-2);
+    font-size: 11px;
+    padding: 4px 0;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: color var(--dur-fast);
+}
+
+.schedule-add-note-btn:hover {
+    color: var(--accent);
+}
+
+.schedule-sidebar-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+}
+
+.schedule-sidebar-text {
+    font-size: 11.5px;
+    color: var(--text-2);
+    line-height: 1.5;
+}
+
+/* Detail panel inside sidebar */
+
+.schedule-detail-section {
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    background: var(--bg-1);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+    /* Ensures bottom corners match the sidebar panel */
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
+}
+
+.block-detail {
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.block-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.block-detail-kicker {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+}
+
+.block-detail-close {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--dur-fast);
+}
+
+.block-detail-close:hover {
+    background: var(--bg-3);
+    color: var(--danger);
+}
+
+.block-detail-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-0);
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.block-detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.block-detail-field > span {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-2);
+}
+
+.block-detail-field input,
+.block-detail-field select {
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+    color: var(--text-0);
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    font-size: 12.5px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.block-detail-field input:focus,
+.block-detail-field select:focus {
+    border-color: var(--accent);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 0 3px var(--accent-soft);
+}
+
+.block-detail-field input[type='date'],
+.block-detail-field input[type='time'] {
+    color-scheme: dark;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.block-detail-row {
+    display: flex;
+    gap: 8px;
+}
+
+.block-detail-row .block-detail-field {
+    flex: 1;
+}
+
+.block-detail-readout {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 12px;
+    color: var(--text-2);
+}
+
+.block-detail-readout strong {
+    color: var(--text-0);
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.block-detail-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.block-detail-focus {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.block-detail-actions .btn-ghost,
+.block-detail-actions .btn-danger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 12px;
+    font-size: 12px;
+}
+
+/* ── RIGHT: main column ───────────────────────────────────── */
+
+.schedule-main {
+    /* flex: 1 takes the rest of the space, removing max-width allows it to stretch */
+    flex: 3;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(circle at top left, rgba(91, 141, 239, 0.04), transparent 40%), var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Toolbar */
+
+.schedule-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+    background: rgba(22, 22, 26, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 20;
+}
+
+.schedule-toolbar-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.schedule-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: var(--text-0);
+}
+
+.schedule-subtitle {
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+}
+
+.schedule-view-toggle {
+    display: flex;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2px;
+    gap: 2px;
+    flex-shrink: 0;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.schedule-view-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text-2);
+    padding: 5px 14px;
+    border-radius: calc(var(--radius) - 2px);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--dur-fast);
+}
+
+.schedule-view-toggle button:hover {
+    color: var(--text-0);
+}
+
+.schedule-view-toggle button.active {
+    background: var(--bg-3);
+    color: var(--text-0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.schedule-toolbar-nav {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.schedule-toolbar-nav button {
+    height: 32px;
+    min-width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all var(--dur-fast);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.schedule-toolbar-nav button:hover {
+    background: var(--bg-3);
+    color: var(--text-0);
+    border-color: var(--border-strong);
+}
+
+.schedule-today-btn {
+    padding: 0 14px;
+}
+
+/* Grid Scroll Container */
+
+.schedule-grid-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto; /* Scrolls both x and y if needed */
+    background: var(--bg-0);
+}
+
+/* Headers (Sticky) */
+
+.schedule-grid-headers {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--bg-1);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.3);
+    min-width: 100%;
+    width: max-content;
+}
+
+.schedule-day-header-spacer {
+    width: 64px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    position: sticky;
+    left: 0;
+    background: var(--bg-1);
+    z-index: 31;
+}
+
+.schedule-day-header {
+    flex: 1;
+    min-width: 100px; /* Prevents columns from shrinking too much */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 12px 4px;
+    border-left: 1px solid var(--border);
+}
+
+.schedule-day-header:first-of-type {
+    border-left: none;
+}
+
+.schedule-day-header-weekday {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+}
+
+.schedule-day-header-date {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-1);
+    font-family: var(--font-mono);
+}
+
+.schedule-day-header.today {
+    background: linear-gradient(180deg, var(--accent-soft) 0%, transparent 100%);
+}
+
+.schedule-day-header.today .schedule-day-header-weekday,
+.schedule-day-header.today .schedule-day-header-date {
+    color: var(--accent);
+}
+
+/* Grid Body */
+
+.schedule-grid {
+    display: flex;
+    position: relative;
+    min-width: 100%;
+    width: max-content;
+}
+
+.schedule-time-gutter {
+    width: 64px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    background: var(--bg-1);
+    position: sticky;
+    left: 0;
+    z-index: 20;
+}
+
+.schedule-hour-label {
+    font-size: 10px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+    text-align: right;
+    padding-right: 10px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border-subtle);
+    box-sizing: border-box;
+}
+
+.schedule-days {
+    display: flex;
+    flex: 1;
+}
+
+.schedule-day {
+    flex: 1;
+    min-width: 100px; /* Matches header min-width */
+    position: relative;
+    border-left: 1px solid var(--border);
+    background-image: repeating-linear-gradient(
+        to bottom,
+        var(--border-subtle) 0,
+        var(--border-subtle) 1px,
+        transparent 1px,
+        transparent 56px
+    );
+    cursor: pointer;
+    transition: background-color var(--dur-fast);
+}
+
+.schedule-day:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.schedule-day:first-child {
+    border-left: none;
+}
+
+.schedule-day.today {
+    background-color: rgba(91, 141, 239, 0.03);
+}
+
+/* Current Time Line */
+
+.schedule-now-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--danger);
+    z-index: 20;
+    pointer-events: none;
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
+}
+
+.schedule-now-line::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--danger);
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.6);
+}
+
+/* Blocks */
+
+.schedule-block {
+    position: absolute;
+    background: linear-gradient(180deg, var(--bg-3) 0%, var(--bg-2) 100%);
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 6px 8px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text-0);
+    overflow: hidden;
+    transition: transform var(--dur-fast), border-color var(--dur-fast), box-shadow var(--dur-fast);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    cursor: grab;
+}
+
+.schedule-block:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    z-index: 50 !important;
+}
+
+.schedule-block.selected {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, var(--accent-soft) 0%, var(--bg-2) 100%);
+    box-shadow: 0 0 0 2px var(--accent-soft), 0 6px 16px rgba(0, 0, 0, 0.4);
+    z-index: 60 !important;
+}
+
+.schedule-block.done {
+    opacity: 0.5;
+}
+
+.schedule-block.done .schedule-block-title {
+    text-decoration: line-through;
+}
+
+.schedule-block-title {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow: hidden;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+}
+
+.schedule-block-project {
+    font-size: 10px;
+    color: var(--text-2);
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-block-project::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+}
+
+.schedule-block-time {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-3);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-block.dragging {
+    cursor: grabbing;
+    opacity: 0.6;
+    pointer-events: none; /* Let the mouse events fall through to the grid underneath */
+}
+
+.schedule-block-resize-handle {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    cursor: ns-resize;
+}
+
+.schedule-block-resize-handle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+/* Add this to prevent text selection while dragging */
+.schedule-grid-scroll.is-dragging {
+    user-select: none;
+    cursor: grabbing;
+}

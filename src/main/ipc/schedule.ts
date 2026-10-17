@@ -61,21 +61,23 @@ export function registerScheduleHandlers(): void {
             return db
                 .prepare(
                     `
-                    SELECT
-                        b.id,
-                        b.task_id,
-                        b.start_at,
-                        b.end_at,
-                        b.created_at,
-                        t.text AS task_text,
-                        t.done AS task_done,
-                        t.project_id AS task_project_id
-                    FROM schedule_blocks b
-                    JOIN tasks t ON t.id = b.task_id
-                    WHERE date(b.start_at) >= date(?)
-                      AND date(b.start_at) <= date(?)
-                    ORDER BY b.start_at ASC
-                `
+                SELECT
+                    b.id,
+                    b.task_id,
+                    b.start_at,
+                    b.end_at,
+                    b.created_at,
+                    t.text AS task_text,
+                    t.done AS task_done,
+                    t.project_id AS task_project_id,
+                    p.title AS task_project_title
+                FROM schedule_blocks b
+                JOIN tasks t ON t.id = b.task_id
+                LEFT JOIN projects p ON p.id = t.project_id
+                WHERE date(b.start_at) >= date(?)
+                  AND date(b.start_at) <= date(?)
+                ORDER BY b.start_at ASC
+            `
                 )
                 .all(from, to) as ScheduleBlockWithTask[]
         }

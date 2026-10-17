@@ -187,4 +187,5 @@ export interface ScheduleBlockWithTask extends ScheduleBlock {
     task_text: string
     task_done: 0 | 1
     task_project_id: number | null
+    task_project_title: string | null // ← new
 }
