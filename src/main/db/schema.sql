@@ -72,3 +72,16 @@ CREATE TABLE IF NOT EXISTS notes (
 
 CREATE INDEX IF NOT EXISTS idx_notes_project ON notes(project_id);
 CREATE INDEX IF NOT EXISTS idx_notes_updated ON notes(updated_at DESC);
+
+
+CREATE TABLE IF NOT EXISTS schedule_blocks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id INTEGER NOT NULL,
+    start_at TEXT NOT NULL,
+    end_at TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_blocks_task ON schedule_blocks(task_id);
+CREATE INDEX IF NOT EXISTS idx_blocks_start ON schedule_blocks(start_at);

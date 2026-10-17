@@ -69,6 +69,15 @@ const api: SynapsesAPI = {
     getActiveSession: () => ipcRenderer.invoke('session:get-active'),
     getSessionTotals: () => ipcRenderer.invoke('session:get-totals'),
 
+    // Schedule
+    getScheduleRange: (fromDate: string, toDate: string) =>
+        ipcRenderer.invoke('db:get-schedule-range', fromDate, toDate),
+    createBlock: (taskId: number, startAt: string, endAt: string) =>
+        ipcRenderer.invoke('db:create-block', taskId, startAt, endAt),
+    updateBlock: (id: number, startAt: string, endAt: string) =>
+        ipcRenderer.invoke('db:update-block', id, startAt, endAt),
+    deleteBlock: (id: number) => ipcRenderer.invoke('db:delete-block', id),
+
     // System
     healthCheck: () => ipcRenderer.invoke('db:health-check'),
     testNotification: () => ipcRenderer.invoke('system:test-notification'),

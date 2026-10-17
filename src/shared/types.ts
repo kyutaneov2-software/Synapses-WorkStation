@@ -166,3 +166,25 @@ export interface NoteSummary {
     created_at: string
     updated_at: string
 }
+
+// ── Schedule ──────────────────────────────────────────────
+
+export interface ScheduleBlock {
+    id: number
+    task_id: number
+    start_at: string // "YYYY-MM-DD HH:MM" local
+    end_at: string // "YYYY-MM-DD HH:MM" local
+    created_at: string
+}
+
+export interface ScheduleBlockUpdate {
+    start_at?: string
+    end_at?: string
+}
+
+/** Block joined with its task's display fields — used by the Week view. */
+export interface ScheduleBlockWithTask extends ScheduleBlock {
+    task_text: string
+    task_done: 0 | 1
+    task_project_id: number | null
+}

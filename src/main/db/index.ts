@@ -182,6 +182,26 @@ export function runMigrations(): void {
         userVersion = 7
     }
 
+    if (userVersion < 8) {
+        console.log('Running migration to version 8 — schedule blocks...')
+
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS schedule_blocks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_id INTEGER NOT NULL,
+                start_at TEXT NOT NULL,        -- "YYYY-MM-DD HH:MM" (local, no TZ suffix)
+                end_at TEXT NOT NULL,          -- "YYYY-MM-DD HH:MM"
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_blocks_task ON schedule_blocks(task_id);
+            CREATE INDEX IF NOT EXISTS idx_blocks_start ON schedule_blocks(start_at);
+        `)
+
+        db.pragma('user_version = 8')
+        userVersion = 8
+    }
+
     // Enable foreign key enforcement for the rest of the app's lifetime.
     // Must be outside a transaction — it's a silent no-op inside one.
     db.pragma('foreign_keys = ON')

@@ -8,6 +8,7 @@ import { registerDashboardHandlers } from './dashboard'
 import { registerSessionHandlers } from './sessions'
 import { registerTagHandlers } from './tags'
 import { registerNoteHandlers } from './notes'
+import { registerScheduleHandlers } from './schedule'
 
 const ALL_CHANNELS = [
     // Projects
@@ -57,7 +58,12 @@ const ALL_CHANNELS = [
     'db:delete-note',
     // System
     'db:health-check',
-    'system:test-notification'
+    'system:test-notification',
+    // Schedule
+    'db:get-schedule-range',
+    'db:create-block',
+    'db:update-block',
+    'db:delete-block'
 ]
 
 function clearExistingHandlers(): void {
@@ -76,6 +82,7 @@ export function registerAllIpcHandlers(): void {
     registerSystemHandlers()
     registerDashboardHandlers()
     registerSessionHandlers()
+    registerScheduleHandlers()
     registerTagHandlers()
     registerNoteHandlers()
 
