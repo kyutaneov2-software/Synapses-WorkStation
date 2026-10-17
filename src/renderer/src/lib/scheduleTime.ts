@@ -4,8 +4,8 @@
  * integer minutes — no Date math, no timezone conversion.
  */
 
-export const START_HOUR = 6
-export const END_HOUR = 22
+export const START_HOUR = 0 // 12:00 AM
+export const END_HOUR = 24 // 12:00 AM next day
 export const HOURS_SHOWN = END_HOUR - START_HOUR
 export const ROW_HEIGHT = 56
 export const SNAP_MINUTES = 15

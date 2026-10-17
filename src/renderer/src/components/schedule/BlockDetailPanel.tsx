@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { Play, Trash2, X } from 'lucide-react'
-import type { ScheduleBlockWithTask, Task } from '../../../../shared/types'
+import type {
+    ScheduleBlockWithTask,
+    Task,
+    ScheduleBlockInput,
+    EventType
+} from '../../../../shared/types'
 import { blockDayKey } from '../../lib/scheduleTime'
 
 interface BlockDetailPanelProps {
@@ -9,7 +14,7 @@ interface BlockDetailPanelProps {
     defaultStart?: string
     defaultEnd?: string
     tasks: Task[]
-    onSave: (taskId: number, startAt: string, endAt: string) => Promise<void>
+    onSave: (input: ScheduleBlockInput) => Promise<void>
     onDelete?: () => Promise<void>
     onStartFocus?: (taskId: number) => Promise<void>
     onClose: () => void
@@ -26,27 +31,38 @@ export function BlockDetailPanel({
     onStartFocus,
     onClose
 }: BlockDetailPanelProps): React.JSX.Element {
-    // Values are derived from props at mount time. If the parent needs to
-    // swap to a different block, it remounts this component via `key`, so
-    // these initializers re-run. No effect needed — see ScheduleView.
     const startStr = block?.start_at ?? defaultStart ?? ''
     const endStr = block?.end_at ?? defaultEnd ?? ''
 
-    const [taskId, setTaskId] = useState<number>(block?.task_id ?? tasks[0]?.id ?? 0)
+    const [eventType, setEventType] = useState<EventType>(block?.event_type ?? 'task')
+    const [taskId, setTaskId] = useState<number | null>(block?.task_id ?? tasks[0]?.id ?? null)
+    const [title, setTitle] = useState(block?.title ?? '')
+
     const [date, setDate] = useState<string>(() => blockDayKey(startStr))
     const [startTime, setStartTime] = useState<string>(() => startStr.slice(11, 16))
     const [endTime, setEndTime] = useState<string>(() => endStr.slice(11, 16))
+
     const [saving, setSaving] = useState(false)
     const [confirmingDelete, setConfirmingDelete] = useState(false)
 
     const handleSave = async (): Promise<void> => {
-        if (!date || !startTime || !endTime || !taskId) return
+        if (!date || !startTime || !endTime) return
+        if (eventType === 'task' && !taskId) return
+        if (eventType !== 'task' && !title.trim()) return
+
         const startAt = `${date} ${startTime}`
         const endAt = `${date} ${endTime}`
         if (endAt <= startAt) return
+
         setSaving(true)
         try {
-            await onSave(taskId, startAt, endAt)
+            await onSave({
+                taskId: eventType === 'task' ? taskId : null,
+                title: eventType !== 'task' ? title.trim() : null,
+                eventType,
+                startAt,
+                endAt
+            })
             onClose()
         } finally {
             setSaving(false)
@@ -77,100 +93,155 @@ export function BlockDetailPanel({
     })()
 
     return (
-        <aside className="block-detail">
-            <div className="block-detail-header">
-                <span className="block-detail-kicker">
-                    {mode === 'new' ? 'New block' : 'Selected'}
-                </span>
-                <button className="block-detail-close" onClick={onClose} aria-label="Close panel">
-                    <X size={14} strokeWidth={2.5} />
-                </button>
-            </div>
-
-            {mode === 'edit' && block && (
-                <div className="block-detail-title-group">
-                    <div className="block-detail-title">{block.task_text}</div>
-                    {block.task_project_title && (
-                        <div className="block-detail-project">{block.task_project_title}</div>
-                    )}
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-panel block-modal-panel" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                    <div className="block-detail-header-left">
+                        <span className="block-detail-kicker">
+                            {mode === 'new' ? 'New block' : 'Selected'}
+                        </span>
+                    </div>
+                    <button
+                        className="block-detail-close"
+                        onClick={onClose}
+                        aria-label="Close panel"
+                    >
+                        <X size={16} strokeWidth={2.5} />
+                    </button>
                 </div>
-            )}
 
-            {mode === 'new' && (
-                <label className="block-detail-field">
-                    <span>Task</span>
-                    <select
-                        value={taskId || ''}
-                        onChange={(e) => setTaskId(Number(e.target.value))}
-                    >
-                        {tasks.length === 0 && <option value="">No tasks available</option>}
-                        {tasks.map((t) => (
-                            <option key={t.id} value={t.id}>
-                                {t.text}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-            )}
+                <div className="modal-body">
+                    {mode === 'edit' && block && block.event_type === 'task' ? (
+                        <div className="block-detail-title-group">
+                            <div className="block-detail-title">{block.task_text}</div>
+                            {block.task_project_title && (
+                                <div className="block-detail-project">
+                                    {block.task_project_title}
+                                </div>
+                            )}
+                        </div>
+                    ) : mode === 'new' ? (
+                        <div className="block-type-tabs">
+                            <button
+                                className={eventType === 'task' ? 'active' : ''}
+                                onClick={() => setEventType('task')}
+                            >
+                                Task
+                            </button>
+                            <button
+                                className={eventType === 'meeting' ? 'active' : ''}
+                                onClick={() => setEventType('meeting')}
+                            >
+                                Meeting
+                            </button>
+                            <button
+                                className={eventType === 'reminder' ? 'active' : ''}
+                                onClick={() => setEventType('reminder')}
+                            >
+                                Reminder
+                            </button>
+                        </div>
+                    ) : (
+                        <div className={`event-badge event-badge-${eventType}`}>{eventType}</div>
+                    )}
 
-            <label className="block-detail-field">
-                <span>Date</span>
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </label>
+                    {eventType === 'task' ? (
+                        mode === 'new' ? (
+                            <label className="block-detail-field">
+                                <span>Task</span>
+                                <select
+                                    value={taskId || ''}
+                                    onChange={(e) => setTaskId(Number(e.target.value))}
+                                >
+                                    {tasks.length === 0 && (
+                                        <option value="">No tasks available</option>
+                                    )}
+                                    {tasks.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                            {t.text}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        ) : null
+                    ) : (
+                        <label className="block-detail-field">
+                            <span>Title</span>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder={`e.g., ${eventType === 'meeting' ? 'Client Call' : 'Follow up'}`}
+                            />
+                        </label>
+                    )}
 
-            <div className="block-detail-row">
-                <label className="block-detail-field">
-                    <span>Start</span>
-                    <input
-                        type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        step={60 * 15}
-                    />
-                </label>
-                <label className="block-detail-field">
-                    <span>End</span>
-                    <input
-                        type="time"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        step={60 * 15}
-                    />
-                </label>
+                    <label className="block-detail-field">
+                        <span>Date</span>
+                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                    </label>
+
+                    <div className="block-detail-row">
+                        <label className="block-detail-field">
+                            <span>Start</span>
+                            <input
+                                type="time"
+                                value={startTime}
+                                onChange={(e) => setStartTime(e.target.value)}
+                                step={60 * 15}
+                            />
+                        </label>
+                        <label className="block-detail-field">
+                            <span>End</span>
+                            <input
+                                type="time"
+                                value={endTime}
+                                onChange={(e) => setEndTime(e.target.value)}
+                                step={60 * 15}
+                            />
+                        </label>
+                    </div>
+
+                    <div className="block-detail-readout">
+                        <span>Duration</span>
+                        <strong>{durationLabel}</strong>
+                    </div>
+                </div>
+
+                <div className="modal-footer">
+                    {mode === 'edit' && onDelete && (
+                        <button
+                            className={`btn-danger ${confirmingDelete ? 'confirming' : ''}`}
+                            onClick={handleDelete}
+                        >
+                            <Trash2 size={12} strokeWidth={2.5} />
+                            {confirmingDelete ? 'Confirm' : 'Delete'}
+                        </button>
+                    )}
+                    <div className="modal-footer-right">
+                        {mode === 'edit' &&
+                            onStartFocus &&
+                            block &&
+                            block.event_type === 'task' &&
+                            block.task_id && (
+                                <button
+                                    className="btn-ghost"
+                                    onClick={() => onStartFocus(block.task_id!)}
+                                >
+                                    <Play size={12} strokeWidth={2.5} />
+                                    Focus
+                                </button>
+                            )}
+                        <button
+                            className="btn-primary"
+                            onClick={handleSave}
+                            disabled={saving || !date || !startTime || !endTime}
+                        >
+                            {saving ? 'Saving…' : mode === 'new' ? 'Create block' : 'Save'}
+                        </button>
+                    </div>
+                </div>
             </div>
-
-            <div className="block-detail-readout">
-                <span>Duration</span>
-                <strong>{durationLabel}</strong>
-            </div>
-
-            <div className="block-detail-actions">
-                {mode === 'edit' && onStartFocus && block && (
-                    <button
-                        className="btn-primary block-detail-focus"
-                        onClick={() => onStartFocus(block.task_id)}
-                    >
-                        <Play size={12} strokeWidth={2.5} />
-                        Start focus now
-                    </button>
-                )}
-                <button
-                    className="btn-ghost"
-                    onClick={handleSave}
-                    disabled={saving || !date || !startTime || !endTime}
-                >
-                    {saving ? 'Saving…' : mode === 'new' ? 'Create block' : 'Save'}
-                </button>
-                {mode === 'edit' && onDelete && (
-                    <button
-                        className={`btn-danger ${confirmingDelete ? 'confirming' : ''}`}
-                        onClick={handleDelete}
-                    >
-                        <Trash2 size={12} strokeWidth={2.5} />
-                        {confirmingDelete ? 'Click again to confirm' : 'Remove from schedule'}
-                    </button>
-                )}
-            </div>
-        </aside>
+        </div>
     )
 }

@@ -1,5 +1,5 @@
 import type { ScheduleBlockWithTask } from '../../../../shared/types'
-import { ROW_HEIGHT, START_HOUR, blockMinutes, formatHHMM } from '../../lib/scheduleTime'
+import { ROW_HEIGHT, START_HOUR, END_HOUR, blockMinutes, formatHHMM } from '../../lib/scheduleTime'
 
 interface ScheduleBlockProps {
     block: ScheduleBlockWithTask
@@ -19,7 +19,7 @@ export function ScheduleBlock({
     const startMin = blockMinutes(block.start_at)
     const endMin = blockMinutes(block.end_at)
     const dayStart = START_HOUR * 60
-    const dayEnd = 22 * 60
+    const dayEnd = END_HOUR * 60
 
     if (endMin <= dayStart || startMin >= dayEnd) return null
 

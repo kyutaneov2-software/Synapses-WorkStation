@@ -2,10 +2,10 @@
    SCHEDULE
    ============================================================ */
 
-   .schedule-layout {
+.schedule-layout {
     display: flex;
-    flex: 1; /* This tells the layout to fill the remaining space next to the IconRail */
-    min-width: 0; /* Prevents flex blowout and allows the grid to scroll properly */
+    flex: 1;
+    min-width: 0;
     height: 100vh;
     overflow: hidden;
     background: var(--bg-0);
@@ -16,11 +16,9 @@
 /* ── LEFT: sidebar ────────────────────────────────────────── */
 
 .schedule-sidebar {
-    /* Instead of width: 280px and flex-shrink: 0 */
     flex: 1;
     min-width: 260px;
-    max-width: 340px; /* Prevents it from taking up half the screen on ultrawide monitors */
-
+    max-width: 340px;
     background: linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -135,244 +133,14 @@
     box-shadow: 0 0 12px var(--accent-glow);
 }
 
-/* Notes */
-
-.schedule-notes-section {
-    border-top: 1px solid var(--border-subtle);
-    padding-top: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.schedule-notes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.schedule-note-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text-1);
-    font-size: 12px;
-    cursor: pointer;
-    text-align: left;
-    font-family: inherit;
-    transition: all var(--dur-fast);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.schedule-note-item:hover {
-    background: var(--bg-3);
-    border-color: var(--border-strong);
-    color: var(--text-0);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-}
-
-.schedule-note-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.schedule-add-note-btn {
-    background: none;
-    border: none;
-    color: var(--text-2);
-    font-size: 11px;
-    padding: 4px 0;
-    cursor: pointer;
-    text-align: left;
-    font-family: inherit;
-    transition: color var(--dur-fast);
-}
-
-.schedule-add-note-btn:hover {
-    color: var(--accent);
-}
-
-.schedule-sidebar-label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-3);
-}
-
-.schedule-sidebar-text {
-    font-size: 11.5px;
-    color: var(--text-2);
-    line-height: 1.5;
-}
-
-/* Detail panel inside sidebar */
-
-.schedule-detail-section {
-    margin-top: auto;
-    border-top: 1px solid var(--border);
-    background: var(--bg-1);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
-    /* Ensures bottom corners match the sidebar panel */
-    border-bottom-left-radius: var(--radius-lg);
-    border-bottom-right-radius: var(--radius-lg);
-}
-
-.block-detail {
-    padding: 16px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.block-detail-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.block-detail-kicker {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-3);
-}
-
-.block-detail-close {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    color: var(--text-2);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all var(--dur-fast);
-}
-
-.block-detail-close:hover {
-    background: var(--bg-3);
-    color: var(--danger);
-}
-
-.block-detail-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-0);
-    line-height: 1.35;
-    word-break: break-word;
-}
-
-.block-detail-field {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.block-detail-field > span {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-2);
-}
-
-.block-detail-field input,
-.block-detail-field select {
-    background: var(--bg-0);
-    border: 1px solid var(--border);
-    color: var(--text-0);
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    font-size: 12.5px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.block-detail-field input:focus,
-.block-detail-field select:focus {
-    border-color: var(--accent);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 0 3px var(--accent-soft);
-}
-
-.block-detail-field input[type='date'],
-.block-detail-field input[type='time'] {
-    color-scheme: dark;
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-}
-
-.block-detail-row {
-    display: flex;
-    gap: 8px;
-}
-
-.block-detail-row .block-detail-field {
-    flex: 1;
-}
-
-.block-detail-readout {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 10px 0;
-    border-top: 1px solid var(--border-subtle);
-    border-bottom: 1px solid var(--border-subtle);
-    font-size: 12px;
-    color: var(--text-2);
-}
-
-.block-detail-readout strong {
-    color: var(--text-0);
-    font-family: var(--font-mono);
-    font-weight: 600;
-}
-
-.block-detail-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-.block-detail-focus {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    box-shadow: 0 4px 12px var(--accent-glow);
-}
-
-.block-detail-actions .btn-ghost,
-.block-detail-actions .btn-danger {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 9px 12px;
-    font-size: 12px;
-}
-
 /* ── RIGHT: main column ───────────────────────────────────── */
 
 .schedule-main {
-    /* flex: 1 takes the rest of the space, removing max-width allows it to stretch */
     flex: 3;
     min-width: 0;
-
     display: flex;
     flex-direction: column;
+    position: relative; /* For the FAB */
     background: radial-gradient(circle at top left, rgba(91, 141, 239, 0.04), transparent 40%), var(--bg-1);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -490,7 +258,7 @@
 .schedule-grid-scroll {
     flex: 1;
     min-height: 0;
-    overflow: auto; /* Scrolls both x and y if needed */
+    overflow: auto;
     background: var(--bg-0);
 }
 
@@ -520,7 +288,7 @@
 
 .schedule-day-header {
     flex: 1;
-    min-width: 100px; /* Prevents columns from shrinking too much */
+    min-width: 100px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -594,7 +362,7 @@
 
 .schedule-day {
     flex: 1;
-    min-width: 100px; /* Matches header min-width */
+    min-width: 100px;
     position: relative;
     border-left: 1px solid var(--border);
     background-image: repeating-linear-gradient(
@@ -655,13 +423,29 @@
     border-radius: 6px;
     padding: 6px 8px;
     text-align: left;
-    cursor: pointer;
+    cursor: grab;
     font-family: inherit;
     color: var(--text-0);
     overflow: hidden;
     transition: transform var(--dur-fast), border-color var(--dur-fast), box-shadow var(--dur-fast);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    cursor: grab;
+}
+
+/* Event Type Colors */
+.schedule-block.event-task {
+    border-left-color: var(--accent);
+}
+.schedule-block.event-meeting {
+    border-left-color: var(--success);
+}
+.schedule-block.event-meeting .schedule-block-title {
+    color: var(--success);
+}
+.schedule-block.event-reminder {
+    border-left-color: var(--warning);
+}
+.schedule-block.event-reminder .schedule-block-title {
+    color: var(--warning);
 }
 
 .schedule-block:hover {
@@ -732,7 +516,7 @@
 .schedule-block.dragging {
     cursor: grabbing;
     opacity: 0.6;
-    pointer-events: none; /* Let the mouse events fall through to the grid underneath */
+    pointer-events: none;
 }
 
 .schedule-block-resize-handle {
@@ -750,8 +534,225 @@
     border-bottom-right-radius: 6px;
 }
 
-/* Add this to prevent text selection while dragging */
 .schedule-grid-scroll.is-dragging {
     user-select: none;
     cursor: grabbing;
+}
+
+/* ── FLOATING ACTION BUTTON (FAB) ─────────────────────────── */
+
+.schedule-fab {
+    position: absolute;
+    bottom: 24px;
+    right: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 30px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 4px 16px var(--accent-glow);
+    transition: transform var(--dur-fast), box-shadow var(--dur-fast);
+    z-index: 100;
+}
+
+.schedule-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+/* ── MODAL STYLES ─────────────────────────────────────────── */
+
+.block-modal-panel {
+    max-width: 420px;
+}
+
+.block-type-tabs {
+    display: flex;
+    background: var(--bg-2);
+    padding: 3px;
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+}
+
+.block-type-tabs button {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: calc(var(--radius) - 2px);
+    transition: all var(--dur-fast);
+}
+
+.block-type-tabs button:hover {
+    color: var(--text-0);
+}
+
+.block-type-tabs button.active {
+    background: var(--bg-3);
+    color: var(--text-0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.event-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.event-badge-task {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.event-badge-meeting {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.event-badge-reminder {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+/* We keep the form field styles from before,
+   but remove the old .block-detail layout styles */
+
+.block-detail-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 16px;
+}
+
+.block-detail-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-0);
+    line-height: 1.35;
+}
+
+.block-detail-project {
+    font-size: 12px;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.block-detail-project::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+}
+
+.block-detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 12px;
+}
+
+.block-detail-field > span {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-2);
+}
+
+.block-detail-field input,
+.block-detail-field select {
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+    color: var(--text-0);
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    font-size: 12.5px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.block-detail-field input:focus,
+.block-detail-field select:focus {
+    border-color: var(--accent);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 0 3px var(--accent-soft);
+}
+
+.block-detail-field input[type='date'],
+.block-detail-field input[type='time'] {
+    color-scheme: dark;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.block-detail-row {
+    display: flex;
+    gap: 8px;
+}
+
+.block-detail-row .block-detail-field {
+    flex: 1;
+}
+
+.block-detail-readout {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 12px;
+    color: var(--text-2);
+    margin-bottom: 16px;
+}
+
+.block-detail-readout strong {
+    color: var(--text-0);
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.block-detail-header-left {
+    display: flex;
+    align-items: center;
+}
+
+.block-detail-close {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--dur-fast);
+}
+
+.block-detail-close:hover {
+    background: var(--bg-3);
+    color: var(--danger);
 }

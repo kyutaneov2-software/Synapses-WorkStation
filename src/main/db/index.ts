@@ -202,6 +202,36 @@ export function runMigrations(): void {
         userVersion = 8
     }
 
+    if (userVersion < 9) {
+        console.log('Running migration to version 9 — support for generic events...')
+
+        // SQLite requires a table rebuild to change a column to NULLABLE
+        db.exec(`
+            CREATE TABLE schedule_blocks_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_id INTEGER,
+                title TEXT,
+                event_type TEXT DEFAULT 'task',
+                start_at TEXT NOT NULL,
+                end_at TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE
+            );
+
+            INSERT INTO schedule_blocks_new (id, task_id, start_at, end_at, created_at)
+            SELECT id, task_id, start_at, end_at, created_at FROM schedule_blocks;
+
+            DROP TABLE schedule_blocks;
+            ALTER TABLE schedule_blocks_new RENAME TO schedule_blocks;
+
+            CREATE INDEX IF NOT EXISTS idx_blocks_task ON schedule_blocks(task_id);
+            CREATE INDEX IF NOT EXISTS idx_blocks_start ON schedule_blocks(start_at);
+        `)
+
+        db.pragma('user_version = 9')
+        userVersion = 9
+    }
+
     // Enable foreign key enforcement for the rest of the app's lifetime.
     // Must be outside a transaction — it's a silent no-op inside one.
     db.pragma('foreign_keys = ON')

@@ -168,24 +168,27 @@ export interface NoteSummary {
 }
 
 // ── Schedule ──────────────────────────────────────────────
-
+export type EventType = 'task' | 'meeting' | 'reminder'
 export interface ScheduleBlock {
     id: number
-    task_id: number
-    start_at: string // "YYYY-MM-DD HH:MM" local
-    end_at: string // "YYYY-MM-DD HH:MM" local
+    task_id: number | null
+    title: string | null
+    event_type: EventType
+    start_at: string
+    end_at: string
     created_at: string
 }
-
-export interface ScheduleBlockUpdate {
-    start_at?: string
-    end_at?: string
+export interface ScheduleBlockWithTask extends ScheduleBlock {
+    task_text: string | null
+    task_done: 0 | 1 | null
+    task_project_id: number | null
+    task_project_title: string | null
 }
 
-/** Block joined with its task's display fields — used by the Week view. */
-export interface ScheduleBlockWithTask extends ScheduleBlock {
-    task_text: string
-    task_done: 0 | 1
-    task_project_id: number | null
-    task_project_title: string | null // ← new
+export interface ScheduleBlockInput {
+    taskId: number | null
+    title: string | null
+    eventType: EventType
+    startAt: string
+    endAt: string
 }

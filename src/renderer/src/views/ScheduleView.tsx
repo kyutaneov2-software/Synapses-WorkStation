@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, StickyNote } from 'lucide-react'
-import { useNotes, useScheduleRange, useTasksByView } from '../lib/hooks'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { useScheduleRange, useTasksByView } from '../lib/hooks'
 import { MiniMonth } from '../components/schedule/MiniMonth'
 import { ScheduleGrid } from '../components/schedule/ScheduleGrid'
 import { BlockDetailPanel } from '../components/schedule/BlockDetailPanel'
@@ -14,6 +13,7 @@ import {
     sevenDays,
     startOfWeek
 } from '../lib/scheduleTime'
+import type { ScheduleBlockInput } from '../../../shared/types'
 
 type ViewMode = 'day' | 'week'
 
@@ -23,7 +23,6 @@ interface NewBlockDraft {
 }
 
 export function ScheduleView(): React.JSX.Element {
-    const navigate = useNavigate()
     const [viewMode, setViewMode] = useState<ViewMode>('week')
     const [anchor, setAnchor] = useState<Date>(() => {
         const d = new Date()
@@ -43,10 +42,8 @@ export function ScheduleView(): React.JSX.Element {
 
     const { blocks } = useScheduleRange(fromDate, toDate)
     const { tasks } = useTasksByView('all')
-    const { notes } = useNotes()
 
     const openTasks = useMemo(() => tasks.filter((t) => !t.done), [tasks])
-    const recentNotes = useMemo(() => notes.slice(0, 3), [notes])
 
     const selectedBlock = useMemo(
         () => blocks.find((b) => b.id === selectedBlockId) ?? null,
@@ -92,21 +89,13 @@ export function ScheduleView(): React.JSX.Element {
         setNewBlock(null)
     }
 
-    const handleCreateBlock = async (
-        taskId: number,
-        startAt: string,
-        endAt: string
-    ): Promise<void> => {
-        await window.api.createBlock(taskId, startAt, endAt)
+    const handleCreateBlock = async (input: ScheduleBlockInput): Promise<void> => {
+        await window.api.createBlock(input)
     }
 
-    const handleUpdateBlock = async (
-        _taskId: number,
-        startAt: string,
-        endAt: string
-    ): Promise<void> => {
+    const handleUpdateBlock = async (input: ScheduleBlockInput): Promise<void> => {
         if (!selectedBlock) return
-        await window.api.updateBlock(selectedBlock.id, startAt, endAt)
+        await window.api.updateBlock(selectedBlock.id, input)
     }
 
     const handleDeleteBlock = async (): Promise<void> => {
@@ -150,63 +139,7 @@ export function ScheduleView(): React.JSX.Element {
             <aside className="schedule-sidebar">
                 <div className="schedule-sidebar-top">
                     <MiniMonth anchor={anchor} onSelect={setAnchor} />
-
-                    <div className="schedule-notes-section">
-                        <div className="schedule-sidebar-label">Recent Notes</div>
-                        <div className="schedule-notes-list">
-                            {recentNotes.length === 0 ? (
-                                <p className="schedule-sidebar-text">No notes yet.</p>
-                            ) : (
-                                recentNotes.map((n) => (
-                                    <button
-                                        key={n.id}
-                                        className="schedule-note-item"
-                                        onClick={() => navigate(`/notes/${n.id}`)}
-                                    >
-                                        <StickyNote size={12} strokeWidth={2} />
-                                        <span className="schedule-note-title">
-                                            {n.title || 'Untitled'}
-                                        </span>
-                                    </button>
-                                ))
-                            )}
-                        </div>
-                        <button
-                            className="schedule-add-note-btn"
-                            onClick={() => navigate('/notes')}
-                        >
-                            View all notes
-                        </button>
-                    </div>
                 </div>
-
-                {(selectedBlock || newBlock) && (
-                    <div className="schedule-detail-section">
-                        {selectedBlock && (
-                            <BlockDetailPanel
-                                key={`edit-${selectedBlock.id}`}
-                                mode="edit"
-                                block={selectedBlock}
-                                tasks={openTasks}
-                                onSave={handleUpdateBlock}
-                                onDelete={handleDeleteBlock}
-                                onStartFocus={handleStartFocus}
-                                onClose={handleClosePanel}
-                            />
-                        )}
-                        {newBlock && (
-                            <BlockDetailPanel
-                                key={`new-${newBlock.dayKey}-${newBlock.startMinutes}`}
-                                mode="new"
-                                defaultStart={defaultStart}
-                                defaultEnd={defaultEnd}
-                                tasks={openTasks}
-                                onSave={handleCreateBlock}
-                                onClose={handleClosePanel}
-                            />
-                        )}
-                    </div>
-                )}
             </aside>
 
             {/* ── RIGHT: main column ───────────── */}
@@ -255,10 +188,48 @@ export function ScheduleView(): React.JSX.Element {
                     onSelectBlock={handleSelectBlock}
                     onClickEmpty={handleClickEmpty}
                     onUpdateBlock={async (id, start, end) => {
-                        await window.api.updateBlock(id, start, end)
+                        // Find the existing block to preserve its taskId/title/eventType
+                        const existing = blocks.find((b) => b.id === id)
+                        if (!existing) return
+                        await window.api.updateBlock(id, {
+                            taskId: existing.task_id,
+                            title: existing.title,
+                            eventType: existing.event_type,
+                            startAt: start,
+                            endAt: end
+                        })
                     }}
                 />
+
+                {/* Floating Action Button */}
+                <button
+                    className="schedule-fab"
+                    onClick={() => handleClickEmpty(dateKey(anchor), 9 * 60)}
+                >
+                    <Plus size={20} strokeWidth={2.5} />
+                    <span>New Block</span>
+                </button>
             </div>
+
+            {/* Modal */}
+            {(selectedBlock || newBlock) && (
+                <BlockDetailPanel
+                    key={
+                        selectedBlock
+                            ? `edit-${selectedBlock.id}`
+                            : `new-${newBlock?.dayKey}-${newBlock?.startMinutes}`
+                    }
+                    mode={selectedBlock ? 'edit' : 'new'}
+                    block={selectedBlock || undefined}
+                    defaultStart={defaultStart}
+                    defaultEnd={defaultEnd}
+                    tasks={openTasks}
+                    onSave={selectedBlock ? handleUpdateBlock : handleCreateBlock}
+                    onDelete={selectedBlock ? handleDeleteBlock : undefined}
+                    onStartFocus={handleStartFocus}
+                    onClose={handleClosePanel}
+                />
+            )}
         </div>
     )
 }

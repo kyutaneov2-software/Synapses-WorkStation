@@ -72,10 +72,8 @@ const api: SynapsesAPI = {
     // Schedule
     getScheduleRange: (fromDate: string, toDate: string) =>
         ipcRenderer.invoke('db:get-schedule-range', fromDate, toDate),
-    createBlock: (taskId: number, startAt: string, endAt: string) =>
-        ipcRenderer.invoke('db:create-block', taskId, startAt, endAt),
-    updateBlock: (id: number, startAt: string, endAt: string) =>
-        ipcRenderer.invoke('db:update-block', id, startAt, endAt),
+    createBlock: (input) => ipcRenderer.invoke('db:create-block', input),
+    updateBlock: (id, input) => ipcRenderer.invoke('db:update-block', id, input),
     deleteBlock: (id: number) => ipcRenderer.invoke('db:delete-block', id),
 
     // System

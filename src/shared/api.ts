@@ -13,7 +13,7 @@ import type {
     NoteSummary,
     NoteUpdate
 } from './types'
-import type { ScheduleBlock, ScheduleBlockWithTask } from './types'
+import type { ScheduleBlock, ScheduleBlockWithTask, ScheduleBlockInput } from './types'
 
 export interface SynapsesAPI {
     getProjects: () => Promise<Project[]>
@@ -73,7 +73,7 @@ export interface SynapsesAPI {
 
     // Schedule
     getScheduleRange: (fromDate: string, toDate: string) => Promise<ScheduleBlockWithTask[]>
-    createBlock: (taskId: number, startAt: string, endAt: string) => Promise<ScheduleBlock>
-    updateBlock: (id: number, startAt: string, endAt: string) => Promise<ScheduleBlock>
+    createBlock: (input: ScheduleBlockInput) => Promise<ScheduleBlock>
+    updateBlock: (id: number, input: ScheduleBlockInput) => Promise<ScheduleBlock>
     deleteBlock: (id: number) => Promise<void>
 }
