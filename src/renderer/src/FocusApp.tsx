@@ -1,18 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import { Play, Pause, X, Check } from 'lucide-react'
-import type { Task, Project } from '../../shared/types'
+import type { Task } from '../../shared/types'
 import { formatHMS } from './lib/time'
 import { parseSqliteMs } from '../../shared/dates'
+import { useProject } from './lib/hooks'
 
 function FocusApp(): React.JSX.Element {
     const [task, setTask] = useState<Task | null>(null)
-    const [projectName, setProjectName] = useState<string | null>(null)
     const [tomorrowInput, setTomorrowInput] = useState('')
     const [showInput, setShowInput] = useState(false)
     const [trackingTaskId, setTrackingTaskId] = useState<number | null>(null)
     const [startedAt, setStartedAt] = useState<number | null>(null)
     const [elapsed, setElapsed] = useState(0)
     const inputRef = useRef<HTMLInputElement>(null)
+
+    const { project } = useProject(task?.project_id ?? null)
+    const projectName = project?.title ?? null
 
     useEffect(() => {
         let cancelled = false
@@ -49,25 +52,6 @@ function FocusApp(): React.JSX.Element {
             unsubscribe()
         }
     }, [])
-
-    useEffect(() => {
-        let cancelled = false
-
-        ;(async () => {
-            if (!task || task.project_id === null) {
-                if (!cancelled) setProjectName(null)
-                return
-            }
-            const projects: Project[] = await window.api.getProjects()
-            if (cancelled) return
-            const match = projects.find((p) => p.id === task.project_id)
-            setProjectName(match?.title ?? null)
-        })()
-
-        return () => {
-            cancelled = true
-        }
-    }, [task])
 
     useEffect(() => {
         if (startedAt === null) return

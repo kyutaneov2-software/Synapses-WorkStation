@@ -5,6 +5,7 @@ import type { SynapsesAPI } from '../shared/api'
 const api: SynapsesAPI = {
     // Projects
     getProjects: () => ipcRenderer.invoke('db:get-projects'),
+    getProject: (id: number) => ipcRenderer.invoke('db:get-project', id),
     createProject: (title: string, client: string) =>
         ipcRenderer.invoke('db:create-project', title, client),
     updateProject: (id: number, updates: Record<string, unknown>) =>

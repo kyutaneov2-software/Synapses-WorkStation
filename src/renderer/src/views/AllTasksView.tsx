@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { NewTaskOptions, Task } from '../../../shared/types'
-import { useProjects, useTasksByView } from '../lib/hooks'
+import { useProjects, useTasksByView, useTaskActions } from '../lib/hooks'
 import { TaskItem } from '../components/tasks/TaskItem'
 import { QuickAdd } from '../components/common/QuickAdd'
 import { isOverdue } from '../lib/dates'
@@ -11,6 +11,7 @@ type SortBy = 'recent' | 'due' | 'priority'
 export function AllTasksView(): React.JSX.Element {
     const { tasks, loading } = useTasksByView('all')
     const { projects } = useProjects()
+    const actions = useTaskActions(tasks)
 
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('open')
@@ -77,32 +78,6 @@ export function AllTasksView(): React.JSX.Element {
             options.dueDate,
             options.priority
         )
-    }
-
-    const handleToggle = async (id: number, done: boolean): Promise<void> => {
-        await window.api.toggleTask(id, done)
-    }
-
-    const handleDelete = async (id: number): Promise<void> => {
-        await window.api.deleteTask(id)
-    }
-
-    const handleSetDueDate = async (id: number, date: string | null): Promise<void> => {
-        await window.api.updateTask(id, { due_date: date })
-    }
-
-    const handleSetPriority = async (id: number, priority: number): Promise<void> => {
-        await window.api.updateTask(id, { priority })
-    }
-
-    const handleSetText = async (id: number, text: string): Promise<void> => {
-        await window.api.updateTask(id, { text })
-    }
-
-    const handlePin = async (id: number): Promise<void> => {
-        const task = tasks.find((t) => t.id === id)
-        const isCurrentlyPinned = task?.is_current === 1
-        await window.api.focusPinTask(isCurrentlyPinned ? null : id)
     }
 
     const totalCount = tasks.length
@@ -232,12 +207,7 @@ export function AllTasksView(): React.JSX.Element {
                                       key={t.id}
                                       task={t}
                                       project={project ?? undefined}
-                                      onToggle={handleToggle}
-                                      onDelete={handleDelete}
-                                      onSetDueDate={handleSetDueDate}
-                                      onSetPriority={handleSetPriority}
-                                      onSetText={handleSetText}
-                                      onPin={handlePin}
+                                      {...actions}
                                   />
                               ))}
                           </section>
@@ -248,12 +218,7 @@ export function AllTasksView(): React.JSX.Element {
                           key={t.id}
                           task={t}
                           project={t.project_id ? projectById.get(t.project_id) : undefined}
-                          onToggle={handleToggle}
-                          onDelete={handleDelete}
-                          onSetDueDate={handleSetDueDate}
-                          onSetPriority={handleSetPriority}
-                          onSetText={handleSetText}
-                          onPin={handlePin}
+                          {...actions}
                       />
                   ))}
         </div>

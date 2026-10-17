@@ -4,6 +4,7 @@ import type { ProjectPhase } from '../../../../shared/types'
 import { EditableText } from '../common/EditableText'
 import { CURRENCY_SYMBOLS } from '../../../../shared/constants'
 import { parseMoney } from '../../../../shared/money'
+import { parseSqliteDate } from '../../lib/dates'
 
 interface PhaseListProps {
     phases: ProjectPhase[]
@@ -75,10 +76,7 @@ export function PhaseList({
                         />
                         {phase.paid_at && (
                             <span className="phase-paid-date">
-                                Paid{' '}
-                                {new Date(
-                                    phase.paid_at.replace(' ', 'T') + 'Z'
-                                ).toLocaleDateString()}
+                                Paid {parseSqliteDate(phase.paid_at).toLocaleDateString()}
                             </span>
                         )}
                     </div>

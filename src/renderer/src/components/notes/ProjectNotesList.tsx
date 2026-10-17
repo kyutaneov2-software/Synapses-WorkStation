@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Pin, Plus, StickyNote } from 'lucide-react'
 import { useNotesByProject } from '../../lib/hooks'
+import { parseSqliteDate } from '../../lib/dates'
 
 interface ProjectNotesListProps {
     projectId: number
@@ -49,10 +50,10 @@ export function ProjectNotesList({ projectId }: ProjectNotesListProps): React.JS
                             </div>
                             {n.preview && <div className="note-item-preview">{n.preview}</div>}
                             <div className="note-item-meta">
-                                {new Date(n.updated_at.replace(' ', 'T') + 'Z').toLocaleDateString(
-                                    undefined,
-                                    { month: 'short', day: 'numeric' }
-                                )}
+                                {parseSqliteDate(n.updated_at).toLocaleDateString(undefined, {
+                                    month: 'short',
+                                    day: 'numeric'
+                                })}
                             </div>
                         </button>
                     ))}

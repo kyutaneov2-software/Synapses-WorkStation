@@ -2,7 +2,13 @@ import { ipcMain } from 'electron'
 import db from '../db'
 import { broadcast } from '../services/broadcast'
 import type { Project } from '../../shared/types'
-import { requireString, optionalString, requireNumber, requireEnum } from './validate'
+import {
+    requireString,
+    optionalString,
+    requireNumber,
+    requireEnum,
+    requirePositiveId
+} from './validate'
 import { PROJECT_TYPES } from '../../shared/constants'
 
 interface ProjectRow {
@@ -164,5 +170,12 @@ export function registerProjectHandlers(): void {
         }
         db.prepare('DELETE FROM projects WHERE id = ?').run(cleanId)
         broadcast('data:changed')
+    })
+
+    ipcMain.handle('db:get-project', (_, id: unknown): Project | null => {
+        const cleanId = requirePositiveId(id, 'id')
+        const row = db.prepare('SELECT * FROM projects WHERE id = ?').get(cleanId) as
+            ProjectRow | undefined
+        return row ? rowToProject(row) : null
     })
 }

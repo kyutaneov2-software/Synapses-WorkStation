@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { Pin, Plus } from 'lucide-react'
 import { useNotes } from '../../lib/hooks'
+import { parseSqliteMs } from '../../lib/dates'
 
 interface NotesSidebarProps {
     projectId?: number | null
@@ -110,7 +111,7 @@ function NoteRow({ note }: NoteRowProps): React.JSX.Element {
 }
 
 function relativeTime(sqliteTs: string): string {
-    const then = new Date(sqliteTs.replace(' ', 'T') + 'Z').getTime()
+    const then = parseSqliteMs(sqliteTs)
     const diff = Date.now() - then
     const mins = Math.floor(diff / 60000)
     if (mins < 1) return 'just now'

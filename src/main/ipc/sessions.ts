@@ -1,27 +1,9 @@
 import { ipcMain } from 'electron'
 import db from '../db'
 import { broadcast } from '../services/broadcast'
-import type { Session } from '../../shared/types'
+import type { Session, SessionTotals } from '../../shared/types'
 import { optionalId } from './validate'
-
-export interface SessionTotals {
-    totalSeconds: number
-    thisWeekSeconds: number
-    thisMonthSeconds: number
-    byProject: Record<number, number>
-    byTask: Record<number, number>
-}
-
-function parseSqliteDate(s: string): number {
-    // SQLite datetime('now') returns "YYYY-MM-DD HH:MM:SS" in UTC
-    return new Date(s.replace(' ', 'T') + 'Z').getTime()
-}
-
-function sessionSeconds(row: { started_at: string; ended_at: string | null }): number {
-    const start = parseSqliteDate(row.started_at)
-    const end = row.ended_at ? parseSqliteDate(row.ended_at) : Date.now()
-    return Math.max(0, Math.floor((end - start) / 1000))
-}
+import { parseSqliteDate, sessionSeconds } from '../../shared/dates'
 
 export function registerSessionHandlers(): void {
     ipcMain.handle('session:start', (_, taskId: unknown): Session => {
@@ -73,7 +55,6 @@ export function registerSessionHandlers(): void {
         const weekStart = new Date(now)
         weekStart.setDate(now.getDate() - 7)
         weekStart.setHours(0, 0, 0, 0)
-
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
         let totalSeconds = 0
@@ -84,8 +65,7 @@ export function registerSessionHandlers(): void {
 
         for (const row of rows) {
             const secs = sessionSeconds(row)
-            const start = parseSqliteDate(row.started_at)
-            const startDate = new Date(start)
+            const startDate = parseSqliteDate(row.started_at)
 
             totalSeconds += secs
             if (startDate >= weekStart) thisWeekSeconds += secs

@@ -13,6 +13,7 @@ const ALL_CHANNELS = [
     // Projects
     'db:get-projects',
     'db:create-project',
+    'db:get-project',
     'db:update-project',
     'db:delete-project',
     // Tasks

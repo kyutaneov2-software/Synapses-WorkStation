@@ -12,6 +12,7 @@ import type {
 
 export interface SynapsesAPI {
     getProjects: () => Promise<Project[]>
+    getProject: (id: number) => Promise<Project | null>
     createProject: (title: string, client: string) => Promise<Project>
     updateProject: (id: number, updates: Record<string, unknown>) => Promise<Project>
     deleteProject: (id: number) => Promise<void>

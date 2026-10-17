@@ -1,6 +1,7 @@
 export { useLiveData } from './useLiveData'
-export { useProjects } from './useProjects'
+export { useProjects, useProject } from './useProjects'
 export { useTasksByView, useTasksByProject } from './useTasks'
+export { useTaskActions } from './useTaskActions'
 export { usePhases } from './usePhases'
 export { useDashboard } from './useDashboard'
 export { useProjectTags } from './useProjectTags'

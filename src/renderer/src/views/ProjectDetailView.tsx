@@ -1,7 +1,13 @@
 import { useState } from 'react'
 import { Settings, ExternalLink } from 'lucide-react'
 import type { Project, NewTaskOptions } from '../../../shared/types'
-import { usePhases, useProjects, useProjectTags, useTasksByProject } from '../lib/hooks'
+import {
+    useProject,
+    usePhases,
+    useProjectTags,
+    useTasksByProject,
+    useTaskActions
+} from '../lib/hooks'
 import { TaskItem } from '../components/tasks/TaskItem'
 import { QuickAdd } from '../components/common/QuickAdd'
 import { PhaseList } from '../components/phases/PhaseList'
@@ -31,45 +37,19 @@ export function ProjectDetailView({
     projectId,
     onDeleted
 }: ProjectDetailViewProps): React.JSX.Element {
-    const { projects, loading: projectsLoading } = useProjects()
+    const { project, loading: projectLoading } = useProject(projectId)
     const { tasks, loading: tasksLoading } = useTasksByProject(projectId)
     const { phases, loading: phasesLoading } = usePhases(projectId)
     const { tags } = useProjectTags(projectId)
+    const actions = useTaskActions(tasks)
+
+    const loading = projectLoading || tasksLoading || phasesLoading
 
     const [activeTab, setActiveTab] = useState<Tab>('overview')
     const [showEdit, setShowEdit] = useState(false)
 
-    const loading = projectsLoading || tasksLoading || phasesLoading
-    const project = projects.find((p) => p.id === projectId) ?? null
-
     const handleAddTask = async (text: string, options: NewTaskOptions): Promise<void> => {
         await window.api.createTask(text, projectId, todayStr(), options.dueDate, options.priority)
-    }
-
-    const handleToggleTask = async (id: number, done: boolean): Promise<void> => {
-        await window.api.toggleTask(id, done)
-    }
-
-    const handleDeleteTask = async (id: number): Promise<void> => {
-        await window.api.deleteTask(id)
-    }
-
-    const handleSetDueDate = async (id: number, date: string | null): Promise<void> => {
-        await window.api.updateTask(id, { due_date: date })
-    }
-
-    const handleSetPriority = async (id: number, priority: number): Promise<void> => {
-        await window.api.updateTask(id, { priority })
-    }
-
-    const handleSetText = async (id: number, text: string): Promise<void> => {
-        await window.api.updateTask(id, { text })
-    }
-
-    const handlePin = async (id: number): Promise<void> => {
-        const task = tasks.find((t) => t.id === id)
-        const isCurrentlyPinned = task?.is_current === 1
-        await window.api.focusPinTask(isCurrentlyPinned ? null : id)
     }
 
     const handleAddPhase = async (name: string, amountCents: number): Promise<void> => {
@@ -333,16 +313,7 @@ export function ProjectDetailView({
                     {openTasks.length > 0 && (
                         <section className="task-group">
                             {openTasks.map((t) => (
-                                <TaskItem
-                                    key={t.id}
-                                    task={t}
-                                    onToggle={handleToggleTask}
-                                    onDelete={handleDeleteTask}
-                                    onSetDueDate={handleSetDueDate}
-                                    onSetPriority={handleSetPriority}
-                                    onSetText={handleSetText}
-                                    onPin={handlePin}
-                                />
+                                <TaskItem key={t.id} task={t} {...actions} />
                             ))}
                         </section>
                     )}
@@ -351,16 +322,7 @@ export function ProjectDetailView({
                         <section className="task-group">
                             <h3 className="group-title">Completed</h3>
                             {doneTasks.map((t) => (
-                                <TaskItem
-                                    key={t.id}
-                                    task={t}
-                                    onToggle={handleToggleTask}
-                                    onDelete={handleDeleteTask}
-                                    onSetDueDate={handleSetDueDate}
-                                    onSetPriority={handleSetPriority}
-                                    onSetText={handleSetText}
-                                    onPin={handlePin}
-                                />
+                                <TaskItem key={t.id} task={t} {...actions} />
                             ))}
                         </section>
                     )}
