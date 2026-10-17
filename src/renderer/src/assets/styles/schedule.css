@@ -434,18 +434,38 @@
 /* Event Type Colors */
 .schedule-block.event-task {
     border-left-color: var(--accent);
+    background: linear-gradient(180deg, rgba(91, 141, 239, 0.15) 0%, var(--bg-2) 100%);
 }
+.schedule-block.event-task:hover {
+    border-color: var(--accent);
+}
+
 .schedule-block.event-meeting {
     border-left-color: var(--success);
+    background: linear-gradient(180deg, rgba(74, 222, 128, 0.15) 0%, var(--bg-2) 100%);
+}
+.schedule-block.event-meeting:hover {
+    border-color: var(--success);
 }
 .schedule-block.event-meeting .schedule-block-title {
     color: var(--success);
 }
+.schedule-block.event-meeting .schedule-block-time {
+    color: rgba(74, 222, 128, 0.8);
+}
+
 .schedule-block.event-reminder {
-    border-left-color: var(--warning);
+    border-left-color: var(--purple);
+    background: linear-gradient(180deg, rgba(167, 139, 250, 0.15) 0%, var(--bg-2) 100%);
+}
+.schedule-block.event-reminder:hover {
+    border-color: var(--purple);
 }
 .schedule-block.event-reminder .schedule-block-title {
-    color: var(--warning);
+    color: var(--purple);
+}
+.schedule-block.event-reminder .schedule-block-time {
+    color: rgba(167, 139, 250, 0.8);
 }
 
 .schedule-block:hover {
@@ -755,4 +775,265 @@
 .block-detail-close:hover {
     background: var(--bg-3);
     color: var(--danger);
+}
+
+/* ── AGENDA SIDEBAR ───────────────────────────────────────── */
+
+.agenda-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 0 4px;
+    margin-top: 16px;
+}
+
+.agenda-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.agenda-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    margin-bottom: 4px;
+}
+
+.agenda-empty {
+    font-size: 12px;
+    color: var(--text-3);
+    font-style: italic;
+}
+
+.agenda-item {
+    display: flex;
+    gap: 12px;
+    background: transparent;
+    border: none;
+    border-left: 3px solid transparent; /* Add space for the color */
+    padding: 8px 8px 8px 10px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: background var(--dur-fast);
+}
+
+.agenda-item:hover {
+    background: var(--bg-2);
+}
+
+/* Match Agenda item colors to calendar blocks */
+.agenda-item.event-task {
+    border-left-color: var(--accent);
+}
+.agenda-item.event-meeting {
+    border-left-color: var(--success);
+}
+.agenda-item.event-reminder {
+    border-left-color: var(--purple);
+}
+
+.agenda-time {
+    font-size: 11px;
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    width: 50px;
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.agenda-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.agenda-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-0);
+    line-height: 1.3;
+}
+
+.agenda-project {
+    font-size: 11px;
+    color: var(--text-2);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.agenda-project::before {
+    content: '';
+    display: inline-block;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--accent);
+}
+
+.agenda-task-unscheduled {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    padding: 10px;
+    border-radius: var(--radius);
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--dur-fast);
+}
+
+.agenda-task-unscheduled:hover {
+    border-color: var(--accent);
+    background: var(--bg-3);
+}
+
+.agenda-hint {
+    font-size: 10px;
+    color: var(--text-3);
+    margin-top: 4px;
+}
+
+/* ── TOOLBAR UPDATES ──────────────────────────────────────── */
+
+.schedule-project-stats {
+    color: var(--accent);
+    opacity: 0.8;
+    margin-left: 4px;
+}
+
+.schedule-new-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 16px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+/* ── MODAL UPDATES ────────────────────────────────────────── */
+
+.time-input-group {
+    display: flex;
+    align-items: center;
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding-right: 4px;
+}
+
+.time-input-group input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    flex: 1;
+    min-width: 80px;
+}
+
+.time-input-group button {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    font-size: 10px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 2px;
+}
+.time-input-group button:hover {
+    background: var(--bg-3);
+    color: var(--text-0);
+}
+
+.block-detail-duration {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    margin-top: 4px;
+}
+
+.block-detail-duration > span {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+}
+
+.duration-pills {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.duration-pills button {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--dur-fast);
+}
+
+.duration-pills button:hover {
+    background: var(--bg-3);
+}
+
+.duration-pills button.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.block-detail-glance {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    margin-top: 16px;
+}
+
+.glance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 11px;
+    color: var(--text-2);
+}
+
+.glance-status {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.glance-timeline {
+    position: relative;
+}
+
+.glance-track {
+    height: 6px;
+    background: var(--bg-0);
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.glance-highlight {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: var(--warning);
+    border-radius: 3px;
+}
+
+.glance-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
 }

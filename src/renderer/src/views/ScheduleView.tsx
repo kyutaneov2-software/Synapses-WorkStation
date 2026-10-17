@@ -4,6 +4,7 @@ import { useScheduleRange, useTasksByView } from '../lib/hooks'
 import { MiniMonth } from '../components/schedule/MiniMonth'
 import { ScheduleGrid } from '../components/schedule/ScheduleGrid'
 import { BlockDetailPanel } from '../components/schedule/BlockDetailPanel'
+import { AgendaSidebar } from '../components/schedule/AgendaSidebar' // Import the new component
 import {
     DEFAULT_DURATION_MINUTES,
     blockMinutes,
@@ -20,6 +21,7 @@ type ViewMode = 'day' | 'week'
 interface NewBlockDraft {
     dayKey: string
     startMinutes: number
+    defaultTaskId?: number | null
 }
 
 export function ScheduleView(): React.JSX.Element {
@@ -50,24 +52,38 @@ export function ScheduleView(): React.JSX.Element {
         [blocks, selectedBlockId]
     )
 
+    // Calculate stats and project breakdown for the header
     const stats = useMemo(() => {
         const count = blocks.length
-        const totalMinutes = blocks.reduce(
-            (sum, b) => sum + Math.max(0, blockMinutes(b.end_at) - blockMinutes(b.start_at)),
-            0
-        )
-        const h = Math.floor(totalMinutes / 60)
-        const m = totalMinutes % 60
-        const timeLabel = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`
-        return { count, timeLabel }
+        let totalMinutes = 0
+        const projectMinutes = new Map<string, number>()
+
+        blocks.forEach((b) => {
+            const mins = Math.max(0, blockMinutes(b.end_at) - blockMinutes(b.start_at))
+            totalMinutes += mins
+            if (b.task_project_title) {
+                projectMinutes.set(
+                    b.task_project_title,
+                    (projectMinutes.get(b.task_project_title) || 0) + mins
+                )
+            }
+        })
+
+        const formatMins = (m: number): string => {
+            const h = Math.floor(m / 60)
+            const min = m % 60
+            return h === 0 ? `${min}m` : min === 0 ? `${h}h` : `${h}h ${min}m`
+        }
+
+        const projectDetails = Array.from(projectMinutes.entries())
+            .map(([name, mins]) => `${name} ${formatMins(mins)}`)
+            .join(' · ')
+
+        return { count, timeLabel: formatMins(totalMinutes), projectDetails }
     }, [blocks])
 
-    const handlePrev = (): void => {
-        setAnchor((d) => offsetDays(d, viewMode === 'day' ? -1 : -7))
-    }
-    const handleNext = (): void => {
-        setAnchor((d) => offsetDays(d, viewMode === 'day' ? 1 : 7))
-    }
+    const handlePrev = (): void => setAnchor((d) => offsetDays(d, viewMode === 'day' ? -1 : -7))
+    const handleNext = (): void => setAnchor((d) => offsetDays(d, viewMode === 'day' ? 1 : 7))
     const handleToday = (): void => {
         const d = new Date()
         d.setHours(0, 0, 0, 0)
@@ -133,12 +149,25 @@ export function ScheduleView(): React.JSX.Element {
         ? composeLocalDateTime(newBlock.dayKey, newBlock.startMinutes + DEFAULT_DURATION_MINUTES)
         : undefined
 
+    // Handler to open "New Block" from the Unscheduled Agenda list
+    const handleScheduleTask = (taskId: number): void => {
+        const today = dateKey(new Date())
+        setSelectedBlockId(null)
+        setNewBlock({ dayKey: today, startMinutes: 9 * 60, defaultTaskId: taskId })
+    }
+
     return (
         <div className="schedule-layout">
             {/* ── LEFT: sidebar ─────────── */}
             <aside className="schedule-sidebar">
                 <div className="schedule-sidebar-top">
                     <MiniMonth anchor={anchor} onSelect={setAnchor} />
+                    <AgendaSidebar
+                        blocks={blocks}
+                        tasks={openTasks}
+                        onSelectBlock={handleSelectBlock}
+                        onCreateForTask={handleScheduleTask}
+                    />
                 </div>
             </aside>
 
@@ -147,10 +176,16 @@ export function ScheduleView(): React.JSX.Element {
                 <div className="schedule-toolbar">
                     <div className="schedule-toolbar-info">
                         <h2 className="schedule-title">{headerLabel}</h2>
-                        <span className="schedule-subtitle">
+                        <div className="schedule-subtitle">
                             {stats.count} block{stats.count === 1 ? '' : 's'} · {stats.timeLabel}{' '}
                             planned
-                        </span>
+                            {stats.projectDetails && (
+                                <span className="schedule-project-stats">
+                                    {' '}
+                                    · {stats.projectDetails}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     <div className="schedule-view-toggle">
@@ -179,6 +214,13 @@ export function ScheduleView(): React.JSX.Element {
                             <ChevronRight size={14} strokeWidth={2.5} />
                         </button>
                     </div>
+
+                    <button
+                        className="btn-primary schedule-new-btn"
+                        onClick={() => handleClickEmpty(dateKey(new Date()), 9 * 60)}
+                    >
+                        <Plus size={16} strokeWidth={2.5} /> New Block
+                    </button>
                 </div>
 
                 <ScheduleGrid
@@ -187,8 +229,7 @@ export function ScheduleView(): React.JSX.Element {
                     selectedBlockId={selectedBlockId}
                     onSelectBlock={handleSelectBlock}
                     onClickEmpty={handleClickEmpty}
-                    onUpdateBlock={async (id, start, end) => {
-                        // Find the existing block to preserve its taskId/title/eventType
+                    onUpdateBlock={async (id, start, end): Promise<void> => {
                         const existing = blocks.find((b) => b.id === id)
                         if (!existing) return
                         await window.api.updateBlock(id, {
@@ -200,15 +241,6 @@ export function ScheduleView(): React.JSX.Element {
                         })
                     }}
                 />
-
-                {/* Floating Action Button */}
-                <button
-                    className="schedule-fab"
-                    onClick={() => handleClickEmpty(dateKey(anchor), 9 * 60)}
-                >
-                    <Plus size={20} strokeWidth={2.5} />
-                    <span>New Block</span>
-                </button>
             </div>
 
             {/* Modal */}
@@ -223,6 +255,7 @@ export function ScheduleView(): React.JSX.Element {
                     block={selectedBlock || undefined}
                     defaultStart={defaultStart}
                     defaultEnd={defaultEnd}
+                    defaultTaskId={newBlock?.defaultTaskId} // Pass the task ID from Agenda
                     tasks={openTasks}
                     onSave={selectedBlock ? handleUpdateBlock : handleCreateBlock}
                     onDelete={selectedBlock ? handleDeleteBlock : undefined}

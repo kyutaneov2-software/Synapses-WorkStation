@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Play, Trash2, X } from 'lucide-react'
 import type {
     ScheduleBlockWithTask,
@@ -6,13 +6,14 @@ import type {
     ScheduleBlockInput,
     EventType
 } from '../../../../shared/types'
-import { blockDayKey } from '../../lib/scheduleTime'
+import { blockDayKey, blockMinutes } from '../../lib/scheduleTime'
 
 interface BlockDetailPanelProps {
     mode: 'edit' | 'new'
     block?: ScheduleBlockWithTask
     defaultStart?: string
     defaultEnd?: string
+    defaultTaskId?: number | null
     tasks: Task[]
     onSave: (input: ScheduleBlockInput) => Promise<void>
     onDelete?: () => Promise<void>
@@ -25,6 +26,7 @@ export function BlockDetailPanel({
     block,
     defaultStart,
     defaultEnd,
+    defaultTaskId,
     tasks,
     onSave,
     onDelete,
@@ -35,8 +37,11 @@ export function BlockDetailPanel({
     const endStr = block?.end_at ?? defaultEnd ?? ''
 
     const [eventType, setEventType] = useState<EventType>(block?.event_type ?? 'task')
-    const [taskId, setTaskId] = useState<number | null>(block?.task_id ?? tasks[0]?.id ?? null)
+    const [taskId, setTaskId] = useState<number | null>(
+        block?.task_id ?? defaultTaskId ?? tasks[0]?.id ?? null
+    )
     const [title, setTitle] = useState(block?.title ?? '')
+    const [reminder, setReminder] = useState('15') // 0, 15, 30, 60
 
     const [date, setDate] = useState<string>(() => blockDayKey(startStr))
     const [startTime, setStartTime] = useState<string>(() => startStr.slice(11, 16))
@@ -44,6 +49,29 @@ export function BlockDetailPanel({
 
     const [saving, setSaving] = useState(false)
     const [confirmingDelete, setConfirmingDelete] = useState(false)
+
+    // Time helpers
+    const adjustTime = (timeStr: string, minutesDelta: number): string => {
+        const [h, m] = timeStr.split(':').map(Number)
+        let total = h * 60 + m + minutesDelta
+        if (total < 0) total = 0
+        if (total >= 24 * 60) total = 24 * 60 - 1
+        const newH = Math.floor(total / 60)
+        const newM = total % 60
+        return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`
+    }
+
+    const setDuration = (mins: number): void => {
+        setEndTime(adjustTime(startTime, mins))
+    }
+
+    // Calculate current duration for pills
+    const currentDurationMins = useMemo(() => {
+        if (!startTime || !endTime) return 0
+        const [sh, sm] = startTime.split(':').map(Number)
+        const [eh, em] = endTime.split(':').map(Number)
+        return eh * 60 + em - (sh * 60 + sm)
+    }, [startTime, endTime])
 
     const handleSave = async (): Promise<void> => {
         if (!date || !startTime || !endTime) return
@@ -69,29 +97,6 @@ export function BlockDetailPanel({
         }
     }
 
-    const handleDelete = async (): Promise<void> => {
-        if (!onDelete) return
-        if (!confirmingDelete) {
-            setConfirmingDelete(true)
-            return
-        }
-        await onDelete()
-        onClose()
-    }
-
-    const durationLabel = (() => {
-        if (!startTime || !endTime) return '—'
-        const [sh, sm] = startTime.split(':').map(Number)
-        const [eh, em] = endTime.split(':').map(Number)
-        const total = eh * 60 + em - (sh * 60 + sm)
-        if (total <= 0) return '—'
-        const h = Math.floor(total / 60)
-        const m = total % 60
-        if (h === 0) return `${m}m`
-        if (m === 0) return `${h}h`
-        return `${h}h ${m}m`
-    })()
-
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-panel block-modal-panel" onClick={(e) => e.stopPropagation()}>
@@ -101,11 +106,7 @@ export function BlockDetailPanel({
                             {mode === 'new' ? 'New block' : 'Selected'}
                         </span>
                     </div>
-                    <button
-                        className="block-detail-close"
-                        onClick={onClose}
-                        aria-label="Close panel"
-                    >
+                    <button className="block-detail-close" onClick={onClose}>
                         <X size={16} strokeWidth={2.5} />
                     </button>
                 </div>
@@ -153,9 +154,6 @@ export function BlockDetailPanel({
                                     value={taskId || ''}
                                     onChange={(e) => setTaskId(Number(e.target.value))}
                                 >
-                                    {tasks.length === 0 && (
-                                        <option value="">No tasks available</option>
-                                    )}
                                     {tasks.map((t) => (
                                         <option key={t.id} value={t.id}>
                                             {t.text}
@@ -171,7 +169,7 @@ export function BlockDetailPanel({
                                 type="text"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                placeholder={`e.g., ${eventType === 'meeting' ? 'Client Call' : 'Follow up'}`}
+                                placeholder="e.g., Client Call"
                             />
                         </label>
                     )}
@@ -184,27 +182,122 @@ export function BlockDetailPanel({
                     <div className="block-detail-row">
                         <label className="block-detail-field">
                             <span>Start</span>
-                            <input
-                                type="time"
-                                value={startTime}
-                                onChange={(e) => setStartTime(e.target.value)}
-                                step={60 * 15}
-                            />
+                            <div className="time-input-group">
+                                <input
+                                    type="time"
+                                    value={startTime}
+                                    onChange={(e) => setStartTime(e.target.value)}
+                                    step={900}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setStartTime(adjustTime(startTime, -15))}
+                                >
+                                    -15
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setStartTime(adjustTime(startTime, 15))}
+                                >
+                                    +15
+                                </button>
+                            </div>
                         </label>
                         <label className="block-detail-field">
                             <span>End</span>
-                            <input
-                                type="time"
-                                value={endTime}
-                                onChange={(e) => setEndTime(e.target.value)}
-                                step={60 * 15}
-                            />
+                            <div className="time-input-group">
+                                <input
+                                    type="time"
+                                    value={endTime}
+                                    onChange={(e) => setEndTime(e.target.value)}
+                                    step={900}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setEndTime(adjustTime(endTime, -15))}
+                                >
+                                    -15
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEndTime(adjustTime(endTime, 15))}
+                                >
+                                    +15
+                                </button>
+                            </div>
                         </label>
                     </div>
 
-                    <div className="block-detail-readout">
+                    <div className="block-detail-duration">
                         <span>Duration</span>
-                        <strong>{durationLabel}</strong>
+                        <div className="duration-pills">
+                            {[30, 60, 90, 120, 150, 180].map((mins) => (
+                                <button
+                                    key={mins}
+                                    className={currentDurationMins === mins ? 'active' : ''}
+                                    onClick={() => setDuration(mins)}
+                                >
+                                    {mins < 60 ? `${mins}m` : `${mins / 60}h`}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="block-detail-glance">
+                        <div className="glance-header">
+                            <span>
+                                {new Date(date + 'T00:00:00').toLocaleDateString(undefined, {
+                                    weekday: 'long'
+                                })}{' '}
+                                at a glance
+                            </span>
+                            <span className="glance-status">No conflicts</span>
+                        </div>
+                        <div className="glance-timeline">
+                            <div className="glance-track">
+                                {/* Highlight current block's time */}
+                                {startTime && endTime && (
+                                    <div
+                                        className="glance-highlight"
+                                        style={{
+                                            left: `${(blockMinutes(`${date} ${startTime}`) / (24 * 60)) * 100}%`,
+                                            width: `${((blockMinutes(`${date} ${endTime}`) - blockMinutes(`${date} ${startTime}`)) / (24 * 60)) * 100}%`
+                                        }}
+                                    />
+                                )}
+                            </div>
+                            <div className="glance-labels">
+                                <span>8 AM</span>
+                                <span>12 PM</span>
+                                <span>4 PM</span>
+                                <span>8 PM</span>
+                                <span>11 PM</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="block-detail-row" style={{ marginTop: '16px' }}>
+                        <label
+                            className="block-detail-field"
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <span>Reminder</span>
+                            <select
+                                value={reminder}
+                                onChange={(e) => setReminder(e.target.value)}
+                                style={{ width: '120px' }}
+                            >
+                                <option value="0">None</option>
+                                <option value="5">5 min before</option>
+                                <option value="15">15 min before</option>
+                                <option value="30">30 min before</option>
+                                <option value="60">1 hour before</option>
+                            </select>
+                        </label>
                     </div>
                 </div>
 
@@ -212,9 +305,11 @@ export function BlockDetailPanel({
                     {mode === 'edit' && onDelete && (
                         <button
                             className={`btn-danger ${confirmingDelete ? 'confirming' : ''}`}
-                            onClick={handleDelete}
+                            onClick={() =>
+                                confirmingDelete ? onDelete() : setConfirmingDelete(true)
+                            }
                         >
-                            <Trash2 size={12} strokeWidth={2.5} />
+                            <Trash2 size={12} strokeWidth={2.5} />{' '}
                             {confirmingDelete ? 'Confirm' : 'Delete'}
                         </button>
                     )}
@@ -228,16 +323,11 @@ export function BlockDetailPanel({
                                     className="btn-ghost"
                                     onClick={() => onStartFocus(block.task_id!)}
                                 >
-                                    <Play size={12} strokeWidth={2.5} />
-                                    Focus
+                                    <Play size={12} strokeWidth={2.5} /> Focus
                                 </button>
                             )}
-                        <button
-                            className="btn-primary"
-                            onClick={handleSave}
-                            disabled={saving || !date || !startTime || !endTime}
-                        >
-                            {saving ? 'Saving…' : mode === 'new' ? 'Create block' : 'Save'}
+                        <button className="btn-primary" onClick={handleSave} disabled={saving}>
+                            {saving ? 'Saving…' : 'Save'}
                         </button>
                     </div>
                 </div>

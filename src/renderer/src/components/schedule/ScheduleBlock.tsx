@@ -32,9 +32,9 @@ export function ScheduleBlock({
 
     return (
         <button
-            className={`schedule-block ${selected ? 'selected' : ''} ${
-                block.task_done ? 'done' : ''
-            } ${isDragging ? 'dragging' : ''}`}
+            className={`schedule-block event-${block.event_type} ${
+                selected ? 'selected' : ''
+            } ${block.task_done ? 'done' : ''} ${isDragging ? 'dragging' : ''}`}
             style={{
                 top: `${top}px`,
                 height: `${height}px`,
@@ -44,9 +44,9 @@ export function ScheduleBlock({
             }}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => onMouseDown(e, 'move')}
-            title={`${block.task_text} — ${formatHHMM(block.start_at)}–${formatHHMM(block.end_at)}`}
+            title={`${block.task_text || block.title} — ${formatHHMM(block.start_at)}–${formatHHMM(block.end_at)}`}
         >
-            <div className="schedule-block-title">{block.task_text}</div>
+            <div className="schedule-block-title">{block.task_text || block.title}</div>
             {block.task_project_title && (
                 <div className="schedule-block-project">{block.task_project_title}</div>
             )}
