@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import db from '../db'
 import { broadcast } from '../services/broadcast'
-import type { Task } from '../../shared/types'
+import type { Task, TaskUpdate } from '../../shared/types'
 import {
     requireString,
     optionalString,
@@ -110,7 +110,7 @@ export function registerTaskHandlers(): void {
 
     ipcMain.handle('db:update-task', (_, id: unknown, updates: Record<string, unknown>): Task => {
         const cleanId = requirePositiveId(id, 'id')
-        const allowed: (keyof Task)[] = [
+        const allowed: (keyof TaskUpdate)[] = [
             'text',
             'planned_for',
             'due_date',

@@ -9,7 +9,8 @@ import {
     requireEnum,
     requirePositiveId
 } from './validate'
-import { PROJECT_TYPES } from '../../shared/constants'
+import { PROJECT_TYPES, PROJECT_STATUSES, CURRENCIES } from '../../shared/constants'
+import type { ProjectStatus } from '../../shared/constants'
 
 interface ProjectRow {
     id: number
@@ -20,7 +21,7 @@ interface ProjectRow {
     status: string
     start_date: string | null
     due_date: string | null
-    hourly_rate_cents: number | null // ← renamed
+    hourly_rate_cents: number | null
     currency: string
     created_at: string
     archived: number
@@ -33,6 +34,9 @@ function rowToProject(row: ProjectRow): Project {
     return {
         ...row,
         type: (row.type as Project['type']) ?? null,
+        status: (row.status as ProjectStatus) ?? 'active',
+        currency: (row.currency as Project['currency']) ?? 'USD',
+        archived: row.archived === 1 ? 1 : 0,
         tech_stack: row.tech_stack ? (JSON.parse(row.tech_stack) as string[]) : null,
         reference_links: row.reference_links
             ? (JSON.parse(row.reference_links) as Project['reference_links'])
@@ -127,16 +131,18 @@ export function registerProjectHandlers(): void {
                 }
             } else if (key === 'type') {
                 values.push(v === null ? null : requireEnum(v, 'type', PROJECT_TYPES))
+            } else if (key === 'status') {
+                values.push(requireEnum(v, 'status', PROJECT_STATUSES))
+            } else if (key === 'currency') {
+                values.push(requireEnum(v, 'currency', CURRENCIES))
             } else if (
                 key === 'title' ||
                 key === 'client' ||
                 key === 'brief' ||
-                key === 'status' ||
                 key === 'client_contact'
             ) {
                 values.push(optionalString(v, key, 2000))
             } else if (key === 'hourly_rate_cents') {
-                // ← renamed branch
                 if (v === null) {
                     values.push(null)
                 } else {
@@ -147,11 +153,11 @@ export function registerProjectHandlers(): void {
                     values.push(n)
                 }
             } else if (key === 'archived') {
-                values.push(typeof v === 'number' ? v : 0)
+                if (v !== 0 && v !== 1) throw new Error('Invalid archived: expected 0 or 1')
+                values.push(v)
             } else {
                 values.push(optionalString(v, key, 20))
             }
-            fields.push(`${key} = ?`)
         }
 
         if (fields.length > 0) {

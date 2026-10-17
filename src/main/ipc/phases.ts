@@ -90,9 +90,8 @@ export function registerPhaseHandlers(): void {
                     }
                     values.push(n)
                 } else if (key === 'paid') {
-                    if (typeof v === 'boolean') values.push(v ? 1 : 0)
-                    else if (v === 0 || v === 1) values.push(v)
-                    else throw new Error('Invalid paid: expected boolean or 0/1')
+                    if (v !== 0 && v !== 1) throw new Error('Invalid paid: expected 0 or 1')
+                    values.push(v)
                 } else if (key === 'paid_at') {
                     if (v === null || v === undefined || v === '') {
                         values.push(null)

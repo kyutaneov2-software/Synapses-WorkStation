@@ -1,10 +1,13 @@
 import { useState } from 'react'
-import type { Project } from '../../../../shared/types'
+import type { Project, ProjectType } from '../../../../shared/types'
 import {
     PROJECT_TYPES,
     PROJECT_TYPE_LABELS,
     CURRENCIES,
-    CURRENCY_SYMBOLS
+    CURRENCY_SYMBOLS,
+    PROJECT_STATUSES,
+    type ProjectStatus,
+    type CurrencyCode
 } from '../../../../shared/constants'
 import { TechStackPicker } from '../common/TechStackPicker'
 import { ReferenceLinksEditor } from '../common/ReferenceLinksEditor'
@@ -26,9 +29,9 @@ export function ProjectEditModal({
     const [title, setTitle] = useState(project.title)
     const [client, setClient] = useState(project.client ?? '')
     const [clientContact, setClientContact] = useState(project.client_contact ?? '')
-    const [type, setType] = useState<string>(project.type ?? 'other')
-    const [status, setStatus] = useState(project.status ?? 'active')
-    const [currency, setCurrency] = useState(project.currency ?? 'USD')
+    const [type, setType] = useState<ProjectType>(project.type ?? 'other')
+    const [status, setStatus] = useState<ProjectStatus>(project.status ?? 'active')
+    const [currency, setCurrency] = useState<CurrencyCode>(project.currency ?? 'USD')
     const [startDate, setStartDate] = useState(project.start_date ?? '')
     const [dueDate, setDueDate] = useState(project.due_date ?? '')
     const [hourlyRate, setHourlyRate] = useState(
@@ -50,7 +53,7 @@ export function ProjectEditModal({
                 title: title.trim(),
                 client: client.trim() || null,
                 client_contact: clientContact.trim() || null,
-                type: type as Project['type'],
+                type,
                 status,
                 currency,
                 start_date: startDate || null,
@@ -128,7 +131,10 @@ export function ProjectEditModal({
                         <div className="form-row">
                             <label className="form-field">
                                 <span>Type</span>
-                                <select value={type} onChange={(e) => setType(e.target.value)}>
+                                <select
+                                    value={type}
+                                    onChange={(e) => setType(e.target.value as ProjectType)}
+                                >
                                     {PROJECT_TYPES.map((t) => (
                                         <option key={t} value={t}>
                                             {PROJECT_TYPE_LABELS[t]}
@@ -139,11 +145,15 @@ export function ProjectEditModal({
 
                             <label className="form-field">
                                 <span>Status</span>
-                                <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                                    <option value="active">Active</option>
-                                    <option value="paused">Paused</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="archived">Archived</option>
+                                <select
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value as ProjectStatus)}
+                                >
+                                    {PROJECT_STATUSES.map((s) => (
+                                        <option key={s} value={s}>
+                                            {s.charAt(0).toUpperCase() + s.slice(1)}
+                                        </option>
+                                    ))}
                                 </select>
                             </label>
 
@@ -151,7 +161,7 @@ export function ProjectEditModal({
                                 <span>Currency</span>
                                 <select
                                     value={currency}
-                                    onChange={(e) => setCurrency(e.target.value)}
+                                    onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
                                 >
                                     {CURRENCIES.map((c) => (
                                         <option key={c} value={c}>

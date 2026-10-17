@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type { SynapsesAPI } from '../shared/api'
+import type { ProjectUpdate, TaskUpdate, PhaseUpdate, NoteUpdate } from '../shared/types'
 
 const api: SynapsesAPI = {
     // Projects
@@ -8,7 +9,7 @@ const api: SynapsesAPI = {
     getProject: (id: number) => ipcRenderer.invoke('db:get-project', id),
     createProject: (title: string, client: string) =>
         ipcRenderer.invoke('db:create-project', title, client),
-    updateProject: (id: number, updates: Record<string, unknown>) =>
+    updateProject: (id: number, updates: ProjectUpdate) =>
         ipcRenderer.invoke('db:update-project', id, updates),
     deleteProject: (id: number) => ipcRenderer.invoke('db:delete-project', id),
 
@@ -26,7 +27,7 @@ const api: SynapsesAPI = {
         priority: number
     ) => ipcRenderer.invoke('db:create-task', text, projectId, plannedFor, dueDate, priority),
     toggleTask: (id: number, done: boolean) => ipcRenderer.invoke('db:toggle-task', id, done),
-    updateTask: (id: number, updates: Record<string, unknown>) =>
+    updateTask: (id: number, updates: TaskUpdate) =>
         ipcRenderer.invoke('db:update-task', id, updates),
     deleteTask: (id: number) => ipcRenderer.invoke('db:delete-task', id),
 
@@ -34,7 +35,7 @@ const api: SynapsesAPI = {
     getPhases: (projectId: number) => ipcRenderer.invoke('db:get-phases', projectId),
     createPhase: (projectId: number, name: string, amountCents: number) =>
         ipcRenderer.invoke('db:create-phase', projectId, name, amountCents),
-    updatePhase: (id: number, updates: Record<string, unknown>) =>
+    updatePhase: (id: number, updates: PhaseUpdate) =>
         ipcRenderer.invoke('db:update-phase', id, updates),
     deletePhase: (id: number) => ipcRenderer.invoke('db:delete-phase', id),
 
@@ -45,14 +46,13 @@ const api: SynapsesAPI = {
         ipcRenderer.invoke('db:set-project-tags', projectId, tagNames),
 
     // Notes
-    // Notes
     getNotes: () => ipcRenderer.invoke('db:get-notes'),
     getNotesByProject: (projectId: number) =>
         ipcRenderer.invoke('db:get-notes-by-project', projectId),
     getNote: (id: number) => ipcRenderer.invoke('db:get-note', id),
     createNote: (title: string, projectId: number | null) =>
         ipcRenderer.invoke('db:create-note', title, projectId),
-    updateNote: (id: number, updates: Record<string, unknown>) =>
+    updateNote: (id: number, updates: NoteUpdate) =>
         ipcRenderer.invoke('db:update-note', id, updates),
     deleteNote: (id: number) => ipcRenderer.invoke('db:delete-note', id),
 

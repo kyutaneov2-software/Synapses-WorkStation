@@ -1,20 +1,24 @@
 import type {
     Project,
+    ProjectUpdate,
     Task,
+    TaskUpdate,
     ProjectPhase,
+    PhaseUpdate,
     Session,
     DashboardData,
     SessionTotals,
     Tag,
     Note,
-    NoteSummary
+    NoteSummary,
+    NoteUpdate
 } from './types'
 
 export interface SynapsesAPI {
     getProjects: () => Promise<Project[]>
     getProject: (id: number) => Promise<Project | null>
     createProject: (title: string, client: string) => Promise<Project>
-    updateProject: (id: number, updates: Record<string, unknown>) => Promise<Project>
+    updateProject: (id: number, updates: ProjectUpdate) => Promise<Project>
     deleteProject: (id: number) => Promise<void>
 
     getTasks: () => Promise<Task[]>
@@ -28,12 +32,12 @@ export interface SynapsesAPI {
         priority: number
     ) => Promise<Task>
     toggleTask: (id: number, done: boolean) => Promise<Task>
-    updateTask: (id: number, updates: Record<string, unknown>) => Promise<Task>
+    updateTask: (id: number, updates: TaskUpdate) => Promise<Task>
     deleteTask: (id: number) => Promise<void>
 
     getPhases: (projectId: number) => Promise<ProjectPhase[]>
     createPhase: (projectId: number, name: string, amountCents: number) => Promise<ProjectPhase>
-    updatePhase: (id: number, updates: Record<string, unknown>) => Promise<ProjectPhase>
+    updatePhase: (id: number, updates: PhaseUpdate) => Promise<ProjectPhase>
     deletePhase: (id: number) => Promise<void>
 
     // Tags
@@ -63,6 +67,6 @@ export interface SynapsesAPI {
     getNotesByProject: (projectId: number) => Promise<NoteSummary[]>
     getNote: (id: number) => Promise<Note>
     createNote: (title: string, projectId: number | null) => Promise<Note>
-    updateNote: (id: number, updates: Record<string, unknown>) => Promise<Note>
+    updateNote: (id: number, updates: NoteUpdate) => Promise<Note>
     deleteNote: (id: number) => Promise<void>
 }

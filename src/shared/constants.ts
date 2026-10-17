@@ -1,7 +1,7 @@
 export const CURRENCIES = ['USD', 'PHP', 'EUR', 'GBP'] as const
 export type CurrencyCode = (typeof CURRENCIES)[number]
 
-export const CURRENCY_SYMBOLS: Record<string, string> = {
+export const CURRENCY_SYMBOLS: Record<CurrencyCode, string> = {
     USD: '$',
     PHP: '₱',
     EUR: '€',

@@ -1,4 +1,5 @@
-import type { ProjectType } from './constants'
+import type { ProjectType, ProjectStatus, CurrencyCode } from './constants'
+export type { ProjectType, ProjectStatus, CurrencyCode } from './constants'
 
 export interface ReferenceLink {
     label: string
@@ -17,13 +18,13 @@ export interface Project {
     client: string | null
     type: ProjectType | null
     brief: string | null
-    status: string
+    status: ProjectStatus
     start_date: string | null
     due_date: string | null
     hourly_rate_cents: number | null
-    currency: string
+    currency: CurrencyCode
     created_at: string
-    archived: number
+    archived: 0 | 1
     client_contact: string | null
     tech_stack: string[] | null
     reference_links: ReferenceLink[] | null
@@ -33,13 +34,13 @@ export interface Task {
     id: number
     project_id: number | null
     text: string
-    done: number
+    done: 0 | 1
     priority: number
     due_date: string | null
     planned_for: string | null
     created_at: string
     completed_at: string | null
-    is_current: number
+    is_current: 0 | 1
 }
 
 export interface ProjectPhase {
@@ -47,8 +48,8 @@ export interface ProjectPhase {
     project_id: number
     name: string
     amount_cents: number
-    currency: string
-    paid: number
+    currency: CurrencyCode
+    paid: 0 | 1
     paid_at: string | null
     sort_order: number
 }
@@ -77,6 +78,53 @@ export interface NewTaskOptions {
     priority: number
 }
 
+// ── Update payload types ──────────────────────────────────
+// These mirror the allowlists in each IPC handler. If you add a
+// column to a table and want it editable, add it here AND in the
+// handler's `allowed` array.
+
+export interface TaskUpdate {
+    text?: string
+    planned_for?: string | null
+    due_date?: string | null
+    priority?: number
+    project_id?: number | null
+}
+
+export interface ProjectUpdate {
+    title?: string
+    client?: string | null
+    type?: ProjectType | null
+    brief?: string | null
+    status?: ProjectStatus
+    start_date?: string | null
+    due_date?: string | null
+    hourly_rate_cents?: number | null
+    currency?: CurrencyCode
+    archived?: 0 | 1
+    client_contact?: string | null
+    tech_stack?: string[] | null
+    reference_links?: ReferenceLink[] | null
+}
+
+export interface PhaseUpdate {
+    name?: string
+    amount_cents?: number
+    paid?: 0 | 1
+    paid_at?: string | null
+    sort_order?: number
+}
+
+export interface NoteUpdate {
+    title?: string
+    body?: string
+    topics?: string[] | null
+    project_id?: number | null
+    pinned?: 0 | 1
+}
+
+// ── Dashboard / aggregates ────────────────────────────────
+
 export interface DashboardData {
     projects: Project[]
     tasks: Task[]
@@ -103,7 +151,7 @@ export interface Note {
     body: string
     topics: string[] | null
     project_id: number | null
-    pinned: number
+    pinned: 0 | 1
     created_at: string
     updated_at: string
 }
@@ -114,7 +162,7 @@ export interface NoteSummary {
     title: string
     preview: string
     project_id: number | null
-    pinned: number
+    pinned: 0 | 1
     created_at: string
     updated_at: string
 }

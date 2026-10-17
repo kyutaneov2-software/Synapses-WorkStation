@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import db from '../db'
 import { broadcast } from '../services/broadcast'
-import type { Note, NoteSummary } from '../../shared/types'
+import type { Note, NoteSummary, NoteUpdate } from '../../shared/types'
 import { requireString, optionalString, requireNumber, optionalId } from './validate'
 
 interface NoteRow {
@@ -18,7 +18,8 @@ interface NoteRow {
 function rowToNote(row: NoteRow): Note {
     return {
         ...row,
-        topics: row.topics ? (JSON.parse(row.topics) as string[]) : null
+        topics: row.topics ? (JSON.parse(row.topics) as string[]) : null,
+        pinned: row.pinned === 1 ? 1 : 0
     }
 }
 
@@ -73,7 +74,7 @@ export function registerNoteHandlers(): void {
         return getNoteById(result.lastInsertRowid as number)
     })
 
-    ipcMain.handle('db:update-note', (_, id: unknown, updates: Partial<Note>): Note => {
+    ipcMain.handle('db:update-note', (_, id: unknown, updates: NoteUpdate): Note => {
         const cleanId = requireNumber(id, 'id')
         if (!Number.isInteger(cleanId) || cleanId <= 0) {
             throw new Error('Invalid id: expected positive integer')
@@ -109,7 +110,8 @@ export function registerNoteHandlers(): void {
             } else if (key === 'project_id') {
                 values.push(optionalId(v, 'project_id'))
             } else if (key === 'pinned') {
-                values.push(typeof v === 'number' && v !== 0 ? 1 : 0)
+                if (v !== 0 && v !== 1) throw new Error('Invalid pinned: expected 0 or 1')
+                values.push(v)
             }
 
             fields.push(`${key} = ?`)
