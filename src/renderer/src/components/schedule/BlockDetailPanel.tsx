@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { Play, Trash2, X } from 'lucide-react'
 import type {
     ScheduleBlockWithTask,
@@ -41,7 +42,7 @@ export function BlockDetailPanel({
         block?.task_id ?? defaultTaskId ?? tasks[0]?.id ?? null
     )
     const [title, setTitle] = useState(block?.title ?? '')
-    const [reminder, setReminder] = useState('15') // 0, 15, 30, 60
+    const [reminder, setReminder] = useState('15')
 
     const [date, setDate] = useState<string>(() => blockDayKey(startStr))
     const [startTime, setStartTime] = useState<string>(() => startStr.slice(11, 16))
@@ -50,7 +51,6 @@ export function BlockDetailPanel({
     const [saving, setSaving] = useState(false)
     const [confirmingDelete, setConfirmingDelete] = useState(false)
 
-    // Time helpers
     const adjustTime = (timeStr: string, minutesDelta: number): string => {
         const [h, m] = timeStr.split(':').map(Number)
         let total = h * 60 + m + minutesDelta
@@ -65,7 +65,6 @@ export function BlockDetailPanel({
         setEndTime(adjustTime(startTime, mins))
     }
 
-    // Calculate current duration for pills
     const currentDurationMins = useMemo(() => {
         if (!startTime || !endTime) return 0
         const [sh, sm] = startTime.split(':').map(Number)
@@ -98,8 +97,21 @@ export function BlockDetailPanel({
     }
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-panel block-modal-panel" onClick={(e) => e.stopPropagation()}>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="modal-overlay"
+            onClick={onClose}
+        >
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="modal-panel block-modal-panel"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="modal-header">
                     <div className="block-detail-header-left">
                         <span className="block-detail-kicker">
@@ -255,7 +267,6 @@ export function BlockDetailPanel({
                         </div>
                         <div className="glance-timeline">
                             <div className="glance-track">
-                                {/* Highlight current block's time */}
                                 {startTime && endTime && (
                                     <div
                                         className="glance-highlight"
@@ -331,7 +342,7 @@ export function BlockDetailPanel({
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     )
 }

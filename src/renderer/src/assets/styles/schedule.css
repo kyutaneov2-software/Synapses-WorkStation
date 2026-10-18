@@ -25,8 +25,9 @@
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    z-index: 10;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 20;
+    /* Deep shadow for floating look */
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
 }
 
 .schedule-sidebar-top {
@@ -140,7 +141,7 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    position: relative; /* For the FAB */
+    position: relative;
     background: radial-gradient(circle at top left, rgba(91, 141, 239, 0.04), transparent 40%), var(--bg-1);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -260,6 +261,8 @@
     min-height: 0;
     overflow: auto;
     background: var(--bg-0);
+    /* Recessed look */
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Headers (Sticky) */
@@ -399,6 +402,13 @@
     z-index: 20;
     pointer-events: none;
     box-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
+    animation: pulse-line 2s infinite ease-in-out;
+}
+
+@keyframes pulse-line {
+    0% { opacity: 0.8; box-shadow: 0 0 8px rgba(255, 107, 107, 0.4); }
+    50% { opacity: 1; box-shadow: 0 0 16px rgba(255, 107, 107, 0.8); }
+    100% { opacity: 0.8; box-shadow: 0 0 8px rgba(255, 107, 107, 0.4); }
 }
 
 .schedule-now-line::before {
@@ -427,8 +437,8 @@
     font-family: inherit;
     color: var(--text-0);
     overflow: hidden;
-    transition: transform var(--dur-fast), border-color var(--dur-fast), box-shadow var(--dur-fast);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast), border-color var(--dur-fast);
 }
 
 /* Event Type Colors */
@@ -436,42 +446,27 @@
     border-left-color: var(--accent);
     background: linear-gradient(180deg, rgba(91, 141, 239, 0.15) 0%, var(--bg-2) 100%);
 }
-.schedule-block.event-task:hover {
-    border-color: var(--accent);
-}
 
 .schedule-block.event-meeting {
     border-left-color: var(--success);
     background: linear-gradient(180deg, rgba(74, 222, 128, 0.15) 0%, var(--bg-2) 100%);
 }
-.schedule-block.event-meeting:hover {
-    border-color: var(--success);
-}
 .schedule-block.event-meeting .schedule-block-title {
     color: var(--success);
-}
-.schedule-block.event-meeting .schedule-block-time {
-    color: rgba(74, 222, 128, 0.8);
 }
 
 .schedule-block.event-reminder {
     border-left-color: var(--purple);
     background: linear-gradient(180deg, rgba(167, 139, 250, 0.15) 0%, var(--bg-2) 100%);
 }
-.schedule-block.event-reminder:hover {
-    border-color: var(--purple);
-}
 .schedule-block.event-reminder .schedule-block-title {
     color: var(--purple);
 }
-.schedule-block.event-reminder .schedule-block-time {
-    color: rgba(167, 139, 250, 0.8);
-}
 
 .schedule-block:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     border-color: var(--accent);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     z-index: 50 !important;
 }
 
@@ -565,34 +560,6 @@
     outline-offset: -2px;
 }
 
-/* ── FLOATING ACTION BUTTON (FAB) ─────────────────────────── */
-
-.schedule-fab {
-    position: absolute;
-    bottom: 24px;
-    right: 32px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--accent);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 30px;
-    border: none;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    box-shadow: 0 4px 16px var(--accent-glow);
-    transition: transform var(--dur-fast), box-shadow var(--dur-fast);
-    z-index: 100;
-}
-
-.schedule-fab:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--accent-glow);
-}
-
 /* ── MODAL STYLES ─────────────────────────────────────────── */
 
 .block-modal-panel {
@@ -640,23 +607,9 @@
     margin-bottom: 12px;
 }
 
-.event-badge-task {
-    background: var(--accent-soft);
-    color: var(--accent);
-}
-
-.event-badge-meeting {
-    background: var(--success-soft);
-    color: var(--success);
-}
-
-.event-badge-reminder {
-    background: var(--warning-soft);
-    color: var(--warning);
-}
-
-/* We keep the form field styles from before,
-   but remove the old .block-detail layout styles */
+.event-badge-task { background: var(--accent-soft); color: var(--accent); }
+.event-badge-meeting { background: var(--success-soft); color: var(--success); }
+.event-badge-reminder { background: var(--warning-soft); color: var(--warning); }
 
 .block-detail-title-group {
     display: flex;
@@ -819,29 +772,23 @@
     gap: 12px;
     background: transparent;
     border: none;
-    border-left: 3px solid transparent; /* Add space for the color */
+    border-left: 3px solid transparent;
     padding: 8px 8px 8px 10px;
     border-radius: 0 var(--radius) var(--radius) 0;
     cursor: pointer;
     text-align: left;
     font-family: inherit;
-    transition: background var(--dur-fast);
+    transition: all var(--dur-fast);
 }
 
 .agenda-item:hover {
-    background: var(--bg-2);
+    background: var(--bg-3);
+    transform: translateX(4px);
 }
 
-/* Match Agenda item colors to calendar blocks */
-.agenda-item.event-task {
-    border-left-color: var(--accent);
-}
-.agenda-item.event-meeting {
-    border-left-color: var(--success);
-}
-.agenda-item.event-reminder {
-    border-left-color: var(--purple);
-}
+.agenda-item.event-task { border-left-color: var(--accent); }
+.agenda-item.event-meeting { border-left-color: var(--success); }
+.agenda-item.event-reminder { border-left-color: var(--purple); }
 
 .agenda-time {
     font-size: 11px;
@@ -872,6 +819,7 @@
     align-items: center;
     gap: 4px;
 }
+
 .agenda-project::before {
     content: '';
     display: inline-block;
@@ -892,6 +840,8 @@
 .agenda-task-unscheduled:hover {
     border-color: var(--accent);
     background: var(--bg-3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .agenda-hint {
@@ -946,6 +896,7 @@
     cursor: pointer;
     margin-left: 2px;
 }
+
 .time-input-group button:hover {
     background: var(--bg-3);
     color: var(--text-0);

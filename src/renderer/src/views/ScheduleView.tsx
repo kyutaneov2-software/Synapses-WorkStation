@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { useScheduleRange, useTasksByView } from '../lib/hooks'
 import { MiniMonth } from '../components/schedule/MiniMonth'
@@ -39,19 +40,16 @@ export function ScheduleView(): React.JSX.Element {
         return sevenDays(startOfWeek(anchor))
     }, [anchor, viewMode])
 
-    // ── FIX: Expand fetch range to always include Today & Tomorrow ─────────
+    // Expand fetch range to always include Today & Tomorrow for the sidebar
     const fromDate = dateKey(days[0])
     const toDate = dateKey(days[days.length - 1])
     const todayStr = dateKey(new Date())
     const tomorrowStr = dateKey(offsetDays(new Date(), 1))
 
-    // Fetch the min date of (visible grid, today) and max date of (visible grid, tomorrow)
     const fetchFromDate = fromDate < todayStr ? fromDate : todayStr
     const fetchToDate = toDate > tomorrowStr ? toDate : tomorrowStr
 
     const { blocks } = useScheduleRange(fetchFromDate, fetchToDate)
-    // ───────────────────────────────────────────────────────────────────────
-
     const { tasks } = useTasksByView('all')
 
     const openTasks = useMemo(() => tasks.filter((t) => !t.done), [tasks])
@@ -65,7 +63,6 @@ export function ScheduleView(): React.JSX.Element {
         let totalMinutes = 0
         const projectMinutes = new Map<string, number>()
 
-        // Only calculate stats for the visible days
         const visibleDays = new Set(days.map((d) => dateKey(d)))
         const visibleBlocks = blocks.filter((b) => visibleDays.has(b.start_at.slice(0, 10)))
 
@@ -183,7 +180,12 @@ export function ScheduleView(): React.JSX.Element {
     }
 
     return (
-        <div className="schedule-layout">
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="schedule-layout"
+        >
             <aside className="schedule-sidebar">
                 <div className="schedule-sidebar-top">
                     <MiniMonth anchor={anchor} onSelect={setAnchor} />
@@ -268,25 +270,27 @@ export function ScheduleView(): React.JSX.Element {
                 />
             </div>
 
-            {(selectedBlock || newBlock) && (
-                <BlockDetailPanel
-                    key={
-                        selectedBlock
-                            ? `edit-${selectedBlock.id}`
-                            : `new-${newBlock?.dayKey}-${newBlock?.startMinutes}`
-                    }
-                    mode={selectedBlock ? 'edit' : 'new'}
-                    block={selectedBlock || undefined}
-                    defaultStart={defaultStart}
-                    defaultEnd={defaultEnd}
-                    defaultTaskId={newBlock?.defaultTaskId}
-                    tasks={openTasks}
-                    onSave={selectedBlock ? handleUpdateBlock : handleCreateBlock}
-                    onDelete={selectedBlock ? handleDeleteBlock : undefined}
-                    onStartFocus={handleStartFocus}
-                    onClose={handleClosePanel}
-                />
-            )}
-        </div>
+            <AnimatePresence>
+                {(selectedBlock || newBlock) && (
+                    <BlockDetailPanel
+                        key={
+                            selectedBlock
+                                ? `edit-${selectedBlock.id}`
+                                : `new-${newBlock?.dayKey}-${newBlock?.startMinutes}`
+                        }
+                        mode={selectedBlock ? 'edit' : 'new'}
+                        block={selectedBlock || undefined}
+                        defaultStart={defaultStart}
+                        defaultEnd={defaultEnd}
+                        defaultTaskId={newBlock?.defaultTaskId}
+                        tasks={openTasks}
+                        onSave={selectedBlock ? handleUpdateBlock : handleCreateBlock}
+                        onDelete={selectedBlock ? handleDeleteBlock : undefined}
+                        onStartFocus={handleStartFocus}
+                        onClose={handleClosePanel}
+                    />
+                )}
+            </AnimatePresence>
+        </motion.div>
     )
 }

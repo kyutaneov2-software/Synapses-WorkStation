@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import type { ScheduleBlockWithTask } from '../../../../shared/types'
 import { ROW_HEIGHT, START_HOUR, END_HOUR, blockMinutes, formatHHMM } from '../../lib/scheduleTime'
 
@@ -31,10 +32,13 @@ export function ScheduleBlock({
     const offsetPx = offsetLevel * 8
 
     return (
-        <button
-            className={`schedule-block event-${block.event_type} ${
-                selected ? 'selected' : ''
-            } ${block.task_done ? 'done' : ''} ${isDragging ? 'dragging' : ''}`}
+        <motion.button
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className={`schedule-block event-${block.event_type} ${selected ? 'selected' : ''} ${
+                block.task_done ? 'done' : ''
+            } ${isDragging ? 'dragging' : ''}`}
             style={{
                 top: `${top}px`,
                 height: `${height}px`,
@@ -61,6 +65,6 @@ export function ScheduleBlock({
                     onMouseDown(e, 'resize')
                 }}
             />
-        </button>
+        </motion.button>
     )
 }

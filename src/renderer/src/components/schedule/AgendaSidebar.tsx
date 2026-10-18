@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import type { ScheduleBlockWithTask, Task } from '../../../../shared/types'
 import { dateKey, offsetDays, blockDayKey, formatHHMM } from '../../lib/scheduleTime'
 
@@ -6,6 +7,16 @@ interface AgendaSidebarProps {
     tasks: Task[]
     onSelectBlock: (id: number) => void
     onCreateForTask: (taskId: number) => void
+}
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+}
+
+const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 }
 }
 
 export function AgendaSidebar({
@@ -24,12 +35,12 @@ export function AgendaSidebar({
         .filter((b) => blockDayKey(b.start_at) === tomorrowKey)
         .sort((a, b) => a.start_at.localeCompare(b.start_at))
 
-    // Tasks that are open and don't have any blocks scheduled in this view
     const scheduledTaskIds = new Set(blocks.map((b) => b.task_id).filter(Boolean))
     const unscheduledTasks = tasks.filter((t) => !t.done && !scheduledTaskIds.has(t.id))
 
     const renderAgendaItem = (block: ScheduleBlockWithTask): React.JSX.Element => (
-        <button
+        <motion.button
+            variants={itemVariants}
             key={block.id}
             className={`agenda-item event-${block.event_type}`}
             onClick={() => onSelectBlock(block.id)}
@@ -41,11 +52,16 @@ export function AgendaSidebar({
                     <div className="agenda-project">{block.task_project_title}</div>
                 )}
             </div>
-        </button>
+        </motion.button>
     )
 
     return (
-        <div className="agenda-sidebar">
+        <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="agenda-sidebar"
+        >
             <div className="agenda-section">
                 <div className="agenda-label">
                     TODAY -{' '}
@@ -78,22 +94,25 @@ export function AgendaSidebar({
                 <div className="agenda-section">
                     <div className="agenda-label">NO TIME SET</div>
                     {unscheduledTasks.map((task) => (
-                        <div
+                        <motion.div
+                            variants={itemVariants}
                             key={task.id}
                             className="agenda-task-unscheduled"
                             onClick={() => onCreateForTask(task.id)}
                             draggable
                             onDragStart={(e) => {
-                                e.dataTransfer.setData('text/plain', task.id.toString())
-                                e.dataTransfer.effectAllowed = 'copy'
+                                // Cast the Framer Motion event to a native React DragEvent
+                                const dragEvent = e as unknown as React.DragEvent<HTMLDivElement>
+                                dragEvent.dataTransfer.setData('text/plain', task.id.toString())
+                                dragEvent.dataTransfer.effectAllowed = 'copy'
                             }}
                         >
                             <div className="agenda-title">{task.text}</div>
                             <div className="agenda-hint">Drag to calendar or click</div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             )}
-        </div>
+        </motion.div>
     )
 }
