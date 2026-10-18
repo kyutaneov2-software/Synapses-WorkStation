@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams, useNavigate } from 'react-router-dom'
 import { StickyNote } from 'lucide-react'
 import { NotesSidebar } from '../components/notes/NotesSidebar'
 import { NoteEditor } from '../components/notes/NoteEditor'
@@ -15,10 +15,23 @@ function NoteEditorRoute(): React.JSX.Element {
 }
 
 function EmptyState(): React.JSX.Element {
+    const navigate = useNavigate()
+
+    const handleNew = async (): Promise<void> => {
+        const note = await window.api.createNote('Untitled', null)
+        navigate(`/notes/${note.id}`)
+    }
+
     return (
         <div className="note-editor-empty">
-            <StickyNote size={32} strokeWidth={1.5} />
-            <span>Select a note or create a new one.</span>
+            <div className="note-empty-icon">
+                <StickyNote size={32} strokeWidth={1.5} />
+            </div>
+            <h2>No note selected</h2>
+            <p>Select a note from the sidebar or start a new one.</p>
+            <button className="btn-primary" onClick={handleNew}>
+                Create new note
+            </button>
         </div>
     )
 }

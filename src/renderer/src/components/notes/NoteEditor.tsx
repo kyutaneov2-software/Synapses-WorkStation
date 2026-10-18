@@ -1,66 +1,51 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Pin, Trash2 } from 'lucide-react'
 import type { Note } from '../../../../shared/types'
 import { useProjects } from '../../lib/hooks'
+import { bodyToEditorHtml, editorHtmlToBody } from '../../lib/noteBody'
+import { relativeTime } from '../../lib/relativeTime'
 import { TagInput } from '../common/TagInput'
+import { NoteBodyEditor } from './NoteBodyEditor'
+import { NoteToolbar } from './NoteToolbar'
+import { useFormatState } from './UseFormatState'
+import { useNoteAutosave } from './useNoteAutosave'
 
 interface NoteEditorProps {
     noteId: number
 }
 
-const SAVE_DEBOUNCE_MS = 500
-const SAVED_INDICATOR_MS = 1200
 const DELETE_CONFIRM_MS = 3000
 
 export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
     const navigate = useNavigate()
     const { projects } = useProjects()
+    const editorRef = useRef<HTMLDivElement>(null)
+    const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const [note, setNote] = useState<Note | null>(null)
+    const [initialHtml, setInitialHtml] = useState('')
     const [loading, setLoading] = useState(true)
 
     const [title, setTitle] = useState('')
-    const [body, setBody] = useState('')
     const [topics, setTopics] = useState<string[]>([])
     const [projectId, setProjectId] = useState<number | null>(null)
-
-    const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
     const [confirmingDelete, setConfirmingDelete] = useState(false)
 
-    // Unmount guard — every setState after an `await` must check this.
-    const aliveRef = useRef(true)
-    // Last-confirmed DB state. Diff base for autosave.
-    const noteRef = useRef<Note | null>(null)
-    // Debounce timer for the autosave.
-    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-    // Separate timer for the "Saved" indicator so it never fights the debounce.
-    const indicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-    // Accumulated patch built fresh on every effect run.
-    const pendingRef = useRef<Partial<Note>>({})
+    const { saveState, queueSave, discard } = useNoteAutosave(noteId, setNote)
+    const { active, refresh } = useFormatState(editorRef)
 
-    // ── Lifecycle: unmount guard ────────────────────────────
-    useEffect(() => {
-        aliveRef.current = true
-        return () => {
-            aliveRef.current = false
-        }
-    }, [])
-
-    // ── Load ────────────────────────────────────────────────
     useEffect(() => {
         let cancelled = false
-
         window.api
             .getNote(noteId)
             .then((n) => {
                 if (cancelled) return
-                noteRef.current = n
                 setNote(n)
                 setTitle(n.title)
-                setBody(n.body)
                 setTopics(n.topics ?? [])
                 setProjectId(n.project_id)
+                setInitialHtml(bodyToEditorHtml(n.body))
                 setLoading(false)
             })
             .catch((e) => {
@@ -69,106 +54,40 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
                 setNote(null)
                 setLoading(false)
             })
-
         return () => {
             cancelled = true
         }
     }, [noteId])
 
-    // ── Save flush ──────────────────────────────────────────
-    const flushSave = useCallback(async (): Promise<void> => {
-        const toSave = pendingRef.current
-        pendingRef.current = {}
-        if (Object.keys(toSave).length === 0) return
-        if (!aliveRef.current) return
-
-        setSaveState('saving')
-
-        try {
-            const updated = await window.api.updateNote(noteId, toSave)
-            if (!aliveRef.current) return
-
-            noteRef.current = updated
-            setNote(updated)
-            setSaveState('saved')
-
-            if (indicatorTimerRef.current) clearTimeout(indicatorTimerRef.current)
-            indicatorTimerRef.current = setTimeout(() => {
-                if (aliveRef.current) setSaveState('idle')
-            }, SAVED_INDICATOR_MS)
-        } catch (e) {
-            if (!aliveRef.current) return
-            console.error('[NoteEditor] save failed:', e)
-            // Re-queue so the next edit or unmount retries.
-            pendingRef.current = { ...toSave, ...pendingRef.current }
-            setSaveState('idle')
-        }
-    }, [noteId])
-
-    // ── Autosave ────────────────────────────────────────────
-    // Note: `note` is intentionally NOT in deps. We diff against
-    // `noteRef.current` so the effect doesn't re-run when a save resolves.
-    useEffect(() => {
-        const base = noteRef.current
-        if (!base) return
-
-        const patch: Partial<Note> = {}
-        if (title !== base.title) patch.title = title
-        if (body !== base.body) patch.body = body
-        if (projectId !== base.project_id) patch.project_id = projectId
-        const currentTopics = topics.length > 0 ? topics : null
-        const baseTopics = base.topics ?? null
-        if (JSON.stringify(currentTopics) !== JSON.stringify(baseTopics)) {
-            patch.topics = currentTopics as Note['topics']
-        }
-
-        if (Object.keys(patch).length === 0) return
-
-        pendingRef.current = patch
-
-        if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
-        saveTimerRef.current = setTimeout(() => {
-            void flushSave()
-        }, SAVE_DEBOUNCE_MS)
-
-        return () => {
-            if (saveTimerRef.current) {
-                clearTimeout(saveTimerRef.current)
-                saveTimerRef.current = null
-            }
-        }
-    }, [title, body, topics, projectId, flushSave])
-
-    // ── Unmount flush ───────────────────────────────────────
     useEffect(() => {
         return () => {
-            if (saveTimerRef.current) {
-                clearTimeout(saveTimerRef.current)
-                saveTimerRef.current = null
-            }
-            if (indicatorTimerRef.current) {
-                clearTimeout(indicatorTimerRef.current)
-                indicatorTimerRef.current = null
-            }
-            const leftover = pendingRef.current
-            pendingRef.current = {}
-            if (Object.keys(leftover).length > 0) {
-                // Fire-and-forget. Component is unmounting, no setState.
-                window.api.updateNote(noteId, leftover).catch((e) => {
-                    console.error('[NoteEditor] unmount flush failed:', e)
-                })
-            }
+            if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current)
         }
-    }, [noteId])
+    }, [])
 
-    // ── Actions ─────────────────────────────────────────────
+    const handleTitle = (value: string): void => {
+        setTitle(value)
+        queueSave({ title: value })
+    }
+
+    const handleTopics = (value: string[]): void => {
+        setTopics(value)
+        queueSave({ topics: (value.length > 0 ? value : null) as Note['topics'] })
+    }
+
+    const handleProject = (value: number | null): void => {
+        setProjectId(value)
+        queueSave({ project_id: value })
+    }
+
+    const handleBody = (html: string): void => {
+        queueSave({ body: editorHtmlToBody(html) })
+    }
+
     const handleTogglePin = async (): Promise<void> => {
         if (!note) return
         try {
-            const updated = await window.api.updateNote(noteId, { pinned: note.pinned ? 0 : 1 })
-            if (!aliveRef.current) return
-            noteRef.current = updated
-            setNote(updated)
+            setNote(await window.api.updateNote(noteId, { pinned: note.pinned ? 0 : 1 }))
         } catch (e) {
             console.error('[NoteEditor] toggle pin failed:', e)
         }
@@ -177,15 +96,26 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
     const handleDelete = async (): Promise<void> => {
         if (!confirmingDelete) {
             setConfirmingDelete(true)
-            setTimeout(() => setConfirmingDelete(false), DELETE_CONFIRM_MS)
+            deleteTimerRef.current = setTimeout(() => setConfirmingDelete(false), DELETE_CONFIRM_MS)
             return
         }
         try {
+            discard()
             await window.api.deleteNote(noteId)
-            if (aliveRef.current) navigate('/notes')
+            navigate('/notes')
         } catch (e) {
             console.error('[NoteEditor] delete failed:', e)
         }
+    }
+
+    const runCommand = (command: string, value?: string): void => {
+        editorRef.current?.focus()
+        // Clicking Heading inside a heading turns it back into normal text.
+        const alreadyApplied =
+            command === 'formatBlock' &&
+            document.queryCommandValue('formatBlock').toLowerCase() === value
+        document.execCommand(command, false, alreadyApplied ? 'div' : value)
+        refresh()
     }
 
     if (loading) {
@@ -204,69 +134,69 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
         )
     }
 
+    const statusText =
+        saveState === 'saving'
+            ? 'Saving…'
+            : saveState === 'saved'
+              ? 'Saved'
+              : `Saved · edited ${relativeTime(note.updated_at)}`
+
     return (
         <div className="note-editor">
-            <div className="note-editor-header">
-                <input
-                    type="text"
-                    className="note-editor-title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Untitled"
-                />
-                <span className={`note-save-status ${saveState === 'saving' ? 'saving' : ''}`}>
-                    {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved' : ''}
-                </span>
-            </div>
-
-            <textarea
-                className="note-editor-body"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="Start writing…"
-            />
-
-            <div className="note-editor-footer">
-                <TagInput value={topics} onChange={setTopics} placeholder="Add a topic…" />
-
-                <select
-                    className="note-project-select"
-                    value={projectId === null ? 'none' : String(projectId)}
-                    onChange={(e) =>
-                        setProjectId(e.target.value === 'none' ? null : Number(e.target.value))
-                    }
-                    title="Attach to project"
-                >
-                    <option value="none">No project</option>
-                    {projects.map((p) => (
-                        <option key={p.id} value={p.id}>
-                            {p.title}
-                        </option>
-                    ))}
-                </select>
-
-                <div className="note-editor-actions">
-                    {confirmingDelete && (
-                        <span className="note-delete-confirm">Click again to delete</span>
-                    )}
-                    <button
-                        className={`note-icon-btn ${note.pinned ? 'active' : ''}`}
-                        onClick={handleTogglePin}
-                        title={note.pinned ? 'Unpin' : 'Pin'}
-                        aria-label={note.pinned ? 'Unpin note' : 'Pin note'}
-                    >
-                        <Pin size={14} strokeWidth={2} />
-                    </button>
-                    <button
-                        className="note-icon-btn danger"
-                        onClick={handleDelete}
-                        title="Delete note"
-                        aria-label="Delete note"
-                    >
-                        <Trash2 size={14} strokeWidth={2} />
-                    </button>
+            <div className="note-editor-content">
+                <div className="note-editor-header">
+                    <input
+                        type="text"
+                        className="note-editor-title"
+                        value={title}
+                        onChange={(e): void => handleTitle(e.target.value)}
+                        placeholder="Untitled"
+                    />
+                    <div className="note-top-actions">
+                        <span className="note-save-status">{statusText}</span>
+                        <button
+                            className={`note-icon-btn ${note.pinned ? 'active' : ''}`}
+                            onClick={handleTogglePin}
+                            title={note.pinned ? 'Unpin' : 'Pin'}
+                        >
+                            <Pin size={14} strokeWidth={2} />
+                        </button>
+                        <button
+                            className={`note-icon-btn danger ${confirmingDelete ? 'confirming' : ''}`}
+                            onClick={handleDelete}
+                            title={confirmingDelete ? 'Click again to delete' : 'Delete note'}
+                        >
+                            <Trash2 size={14} strokeWidth={2} />
+                        </button>
+                    </div>
                 </div>
+
+                <div className="note-editor-meta">
+                    <TagInput value={topics} onChange={handleTopics} placeholder="+ Add topic" />
+                    <select
+                        className="note-project-select"
+                        value={projectId === null ? 'none' : String(projectId)}
+                        onChange={(e): void =>
+                            handleProject(e.target.value === 'none' ? null : Number(e.target.value))
+                        }
+                    >
+                        <option value="none">No project</option>
+                        {projects.map((p) => (
+                            <option key={p.id} value={p.id}>
+                                {p.title}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <NoteBodyEditor
+                    initialHtml={initialHtml}
+                    onChange={handleBody}
+                    editorRef={editorRef}
+                />
             </div>
+
+            <NoteToolbar active={active} onCommand={runCommand} />
         </div>
     )
 }

@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { Pin, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Plus, Search } from 'lucide-react'
+import { htmlToText } from '../../../../shared/htmlToText'
 import { useNotes } from '../../lib/hooks'
-import { parseSqliteMs } from '../../lib/dates'
+import { NoteRow } from './NoteRow'
 
 interface NotesSidebarProps {
     projectId?: number | null
@@ -12,20 +13,29 @@ export function NotesSidebar({ projectId }: NotesSidebarProps): React.JSX.Elemen
     const { notes } = useNotes()
     const navigate = useNavigate()
     const [search, setSearch] = useState('')
+    const [filter, setFilter] = useState<'all' | 'pinned'>('all')
 
     const filtered = useMemo(() => {
         let list = notes
         if (projectId !== undefined) {
             list = list.filter((n) => n.project_id === projectId)
         }
+
+        if (filter === 'pinned') {
+            list = list.filter((n) => n.pinned)
+        }
+
         const q = search.trim().toLowerCase()
         if (q) {
+            // Search the readable text, not the HTML markup.
             list = list.filter(
-                (n) => n.title.toLowerCase().includes(q) || n.preview.toLowerCase().includes(q)
+                (n) =>
+                    n.title.toLowerCase().includes(q) ||
+                    htmlToText(n.preview).toLowerCase().includes(q)
             )
         }
         return list
-    }, [notes, search, projectId])
+    }, [notes, search, projectId, filter])
 
     const pinned = filtered.filter((n) => n.pinned)
     const rest = filtered.filter((n) => !n.pinned)
@@ -35,16 +45,22 @@ export function NotesSidebar({ projectId }: NotesSidebarProps): React.JSX.Elemen
         navigate(`/notes/${note.id}`)
     }
 
+    const totalCount = notes.length
+    const pinnedCount = notes.filter((n) => n.pinned).length
+
     return (
         <aside className="notes-sidebar">
             <div className="notes-sidebar-header">
-                <input
-                    type="text"
-                    className="notes-search"
-                    placeholder="Search notes…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+                <div className="notes-search-wrap">
+                    <Search size={14} className="notes-search-icon" />
+                    <input
+                        type="text"
+                        className="notes-search"
+                        placeholder="Search notes"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
                 <button
                     className="notes-new-btn"
                     onClick={handleNew}
@@ -52,6 +68,21 @@ export function NotesSidebar({ projectId }: NotesSidebarProps): React.JSX.Elemen
                     aria-label="New note"
                 >
                     <Plus size={16} strokeWidth={2.5} />
+                </button>
+            </div>
+
+            <div className="notes-filters">
+                <button
+                    className={`notes-filter-pill ${filter === 'all' ? 'active' : ''}`}
+                    onClick={() => setFilter('all')}
+                >
+                    All <span className="pill-count">{totalCount}</span>
+                </button>
+                <button
+                    className={`notes-filter-pill ${filter === 'pinned' ? 'active' : ''}`}
+                    onClick={() => setFilter('pinned')}
+                >
+                    Pinned <span className="pill-count">{pinnedCount}</span>
                 </button>
             </div>
 
@@ -64,7 +95,7 @@ export function NotesSidebar({ projectId }: NotesSidebarProps): React.JSX.Elemen
 
                 {pinned.length > 0 && (
                     <>
-                        <div className="notes-group-label">Pinned</div>
+                        <div className="notes-group-label">PINNED</div>
                         {pinned.map((n) => (
                             <NoteRow key={n.id} note={n} />
                         ))}
@@ -73,7 +104,7 @@ export function NotesSidebar({ projectId }: NotesSidebarProps): React.JSX.Elemen
 
                 {rest.length > 0 && (
                     <>
-                        {pinned.length > 0 && <div className="notes-group-label">All notes</div>}
+                        {pinned.length > 0 && <div className="notes-group-label">ALL NOTES</div>}
                         {rest.map((n) => (
                             <NoteRow key={n.id} note={n} />
                         ))}
@@ -82,43 +113,4 @@ export function NotesSidebar({ projectId }: NotesSidebarProps): React.JSX.Elemen
             </div>
         </aside>
     )
-}
-
-interface NoteRowProps {
-    note: {
-        id: number
-        title: string
-        preview: string
-        pinned: number
-        updated_at: string
-    }
-}
-
-function NoteRow({ note }: NoteRowProps): React.JSX.Element {
-    return (
-        <NavLink
-            to={`/notes/${note.id}`}
-            className={({ isActive }) => `note-item ${isActive ? 'active' : ''}`}
-        >
-            <div className="note-item-title">
-                {note.pinned === 1 && <Pin size={11} strokeWidth={2.5} />}
-                <span>{note.title || 'Untitled'}</span>
-            </div>
-            {note.preview && <div className="note-item-preview">{note.preview}</div>}
-            <div className="note-item-meta">{relativeTime(note.updated_at)}</div>
-        </NavLink>
-    )
-}
-
-function relativeTime(sqliteTs: string): string {
-    const then = parseSqliteMs(sqliteTs)
-    const diff = Date.now() - then
-    const mins = Math.floor(diff / 60000)
-    if (mins < 1) return 'just now'
-    if (mins < 60) return `${mins}m ago`
-    const hours = Math.floor(mins / 60)
-    if (hours < 24) return `${hours}h ago`
-    const days = Math.floor(hours / 24)
-    if (days < 7) return `${days}d ago`
-    return new Date(then).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
