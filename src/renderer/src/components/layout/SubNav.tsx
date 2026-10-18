@@ -2,9 +2,9 @@ import { NavLink } from 'react-router-dom'
 import { ROUTES } from '../../lib/routes'
 
 const TABS = [
-    { to: ROUTES.commissionsToday, label: 'Today' },
-    { to: ROUTES.commissionsTomorrow, label: 'Tomorrow' },
-    { to: ROUTES.commissionsAll, label: 'All Tasks' }
+    { to: ROUTES.tasksToday, label: 'Today' },
+    { to: ROUTES.tasksTomorrow, label: 'Tomorrow' },
+    { to: ROUTES.tasksAll, label: 'All Tasks' }
 ]
 
 export function SubNav(): React.JSX.Element {

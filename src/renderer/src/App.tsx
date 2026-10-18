@@ -1,6 +1,7 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { IconRail } from './components/layout/IconRail'
-import { CommissionsSpace } from './/spaces/CommissionsSpace'
+import { TasksSpace } from './spaces/TasksSpace'
+import { ProjectsSpace } from './spaces/ProjectsSpace'
 import { HomeSpace } from './spaces/HomeSpace'
 import { NotesSpace } from './spaces/NotesSpace'
 import { ScheduleSpace } from './spaces/ScheduleSpace'
@@ -13,14 +14,21 @@ function App(): React.JSX.Element {
             <div className="app-shell">
                 <IconRail />
                 <Routes>
-                    <Route path="/" element={<Navigate to="/commissions/today" replace />} />
-                    <Route path="/commissions/*" element={<CommissionsSpace />} />
+                    <Route path="/" element={<Navigate to="/tasks/today" replace />} />
+
+                    {/* New Domains */}
+                    <Route path="/tasks/*" element={<TasksSpace />} />
+                    <Route path="/projects/*" element={<ProjectsSpace />} />
+
+                    {/* Redirect old bookmarks */}
+                    <Route path="/commissions/*" element={<Navigate to="/tasks/today" replace />} />
+
                     <Route path="/home" element={<HomeSpace />} />
                     <Route path="/notes/*" element={<NotesSpace />} />
                     <Route path="/schedule" element={<ScheduleSpace />} />
                     <Route path="/goals" element={<GoalsSpace />} />
                     <Route path="/settings" element={<SettingsSpace />} />
-                    <Route path="*" element={<Navigate to="/commissions/today" replace />} />
+                    <Route path="*" element={<Navigate to="/tasks/today" replace />} />
                 </Routes>
             </div>
         </HashRouter>

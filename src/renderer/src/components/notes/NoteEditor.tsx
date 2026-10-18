@@ -9,7 +9,7 @@ import { relativeTime } from '../../lib/relativeTime'
 import { TagInput } from '../common/TagInput'
 import { NoteBodyEditor } from './NoteBodyEditor'
 import { NoteToolbar } from './NoteToolbar'
-import { useFormatState } from './UseFormatState'
+import { useFormatState } from './useFormatState'
 import { useNoteAutosave } from './useNoteAutosave'
 
 interface NoteEditorProps {

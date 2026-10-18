@@ -9,7 +9,7 @@ import {
     List,
     ListOrdered
 } from 'lucide-react'
-import type { ActiveFormats } from './UseFormatState'
+import type { ActiveFormats } from './useFormatState'
 
 interface ToolbarAction {
     title: string

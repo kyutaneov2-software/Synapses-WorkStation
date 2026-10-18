@@ -1,5 +1,14 @@
 import { NavLink } from 'react-router-dom'
-import { Home, FolderKanban, StickyNote, Calendar, Target, Settings, Zap } from 'lucide-react'
+import {
+    Home,
+    FolderKanban,
+    StickyNote,
+    Calendar,
+    Target,
+    Settings,
+    Zap,
+    CheckSquare
+} from 'lucide-react'
 import { ROUTES } from '../../lib/routes'
 
 const iconSize = 18
@@ -17,10 +26,20 @@ export function IconRail(): React.JSX.Element {
                     <Home size={iconSize} strokeWidth={stroke} />
                 </NavLink>
 
+                {/* NEW: Tasks Space */}
                 <NavLink
-                    to={ROUTES.commissionsToday}
+                    to={ROUTES.tasksToday}
                     className={({ isActive }) => `icon-rail-btn ${isActive ? 'active' : ''}`}
-                    title="Commissions"
+                    title="Tasks"
+                >
+                    <CheckSquare size={iconSize} strokeWidth={stroke} />
+                </NavLink>
+
+                {/* RENAMED: Projects Space */}
+                <NavLink
+                    to={ROUTES.projects}
+                    className={({ isActive }) => `icon-rail-btn ${isActive ? 'active' : ''}`}
+                    title="Projects"
                 >
                     <FolderKanban size={iconSize} strokeWidth={stroke} />
                 </NavLink>

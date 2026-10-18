@@ -14,7 +14,8 @@ export function Sidebar(): React.JSX.Element {
     const [client, setClient] = useState('')
     const [submitting, setSubmitting] = useState(false)
 
-    const match = location.pathname.match(/^\/commissions\/project\/(\d+)/)
+    // Matches /projects/123
+    const match = location.pathname.match(/^\/projects\/(\d+)/)
     const activeProjectId = match ? Number(match[1]) : null
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
@@ -28,7 +29,7 @@ export function Sidebar(): React.JSX.Element {
             setTitle('')
             setClient('')
             setCreating(false)
-            navigate(ROUTES.commissionsProject(project.id))
+            navigate(ROUTES.projectDetail(project.id))
         } finally {
             setSubmitting(false)
         }
@@ -80,7 +81,7 @@ export function Sidebar(): React.JSX.Element {
             <ul className="project-list">
                 {projects.map((p) => (
                     <li key={p.id} className={p.id === activeProjectId ? 'active' : ''}>
-                        <Link to={ROUTES.commissionsProject(p.id)}>
+                        <Link to={ROUTES.projectDetail(p.id)}>
                             <span className="project-title-row">
                                 {projectTypeIcon(p.type, 13)}
                                 <span className="project-title">{p.title}</span>

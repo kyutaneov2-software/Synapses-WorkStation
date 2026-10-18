@@ -1,10 +1,13 @@
 /** The checklist line (a div that starts with a checkbox) the caret is in, if any. */
 function checklistLine(editor: HTMLElement): HTMLElement | null {
     const node = window.getSelection()?.anchorNode
-    let el = node instanceof Element ? node : (node?.parentElement ?? null)
+    // Changed Element to HTMLElement here
+    let el = node instanceof HTMLElement ? node : (node?.parentElement ?? null)
 
     while (el && el !== editor) {
-        if (el.matches('div') && el.firstElementChild?.matches('input[type="checkbox"]')) return el
+        if (el.matches('div') && el.firstElementChild?.matches('input[type="checkbox"]')) {
+            return el
+        }
         el = el.parentElement
     }
     return null

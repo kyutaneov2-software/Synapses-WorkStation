@@ -1,13 +1,16 @@
 export const ROUTES = {
-    // Commissions
-    commissions: '/commissions',
-    commissionsToday: '/commissions/today',
-    commissionsTomorrow: '/commissions/tomorrow',
-    commissionsAll: '/commissions/all',
-    commissionsProject: (id: number): string => `/commissions/project/${id}`,
+    // Tasks
+    tasks: '/tasks',
+    tasksToday: '/tasks/today',
+    tasksTomorrow: '/tasks/tomorrow',
+    tasksAll: '/tasks/all',
+
+    // Projects
+    projects: '/projects',
+    projectDetail: (id: number): string => `/projects/${id}`,
 
     // Other spaces
-    home: '/home', // ← change from '/'
+    home: '/home',
     notes: '/notes',
     schedule: '/schedule',
     goals: '/goals',
