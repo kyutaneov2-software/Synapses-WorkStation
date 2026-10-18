@@ -15,7 +15,8 @@ const KEEP_TAGS = new Set([
     'A',
     'BR',
     'DIV',
-    'P'
+    'P',
+    'INPUT' // Added for checkboxes
 ])
 
 // These are removed together with their content.
@@ -51,11 +52,33 @@ function cleanChildren(parent: Element): void {
             continue
         }
 
+        // Special handling for checkboxes
+        if (tag === 'INPUT') {
+            if (child.getAttribute('type') !== 'checkbox') {
+                child.remove()
+                continue
+            }
+            for (const attr of Array.from(child.attributes)) {
+                if (attr.name !== 'type' && attr.name !== 'checked') {
+                    child.removeAttribute(attr.name)
+                }
+            }
+            continue
+        }
+
+        // Handle attributes for other tags
         for (const attr of Array.from(child.attributes)) {
-            const keep = tag === 'A' && attr.name === 'href' && isSafeHref(attr.value)
+            let keep = false
+            if (tag === 'A' && attr.name === 'href' && isSafeHref(attr.value)) keep = true
+            if (tag === 'A' && attr.name === 'target' && attr.value === '_blank') keep = true
+
             if (!keep) child.removeAttribute(attr.name)
         }
-        if (tag === 'A') child.setAttribute('rel', 'noopener noreferrer')
+
+        if (tag === 'A') {
+            child.setAttribute('rel', 'noopener noreferrer')
+            child.setAttribute('target', '_blank') // Force external links
+        }
     }
 }
 

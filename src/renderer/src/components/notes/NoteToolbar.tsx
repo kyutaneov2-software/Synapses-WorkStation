@@ -39,7 +39,12 @@ const GROUPS: ToolbarAction[][] = [
             command: 'insertOrderedList',
             format: 'numberedList'
         },
-        { title: 'Checklist', icon: CheckSquare, command: 'insertHTML', value: '<div>☐ </div>' }
+        {
+            title: 'Checklist',
+            icon: CheckSquare,
+            command: 'insertHTML',
+            value: '<div><input type="checkbox" /> </div>'
+        }
     ]
 ]
 
@@ -113,12 +118,13 @@ export function NoteToolbar({ active, onCommand }: NoteToolbarProps): React.JSX.
                         </div>
                     ))}
                     <span className="toolbar-divider" />
+                    {/* Lit = the caret is in a link, so clicking removes it. */}
                     <button
-                        title="Link"
+                        title={active.link ? 'Remove link' : 'Link'}
                         className={active.link ? 'active' : ''}
                         aria-pressed={active.link}
                         onMouseDown={(e): void => e.preventDefault()}
-                        onClick={startLink}
+                        onClick={active.link ? (): void => onCommand('unlink') : startLink}
                     >
                         <LinkIcon size={14} />
                     </button>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Pin, Trash2 } from 'lucide-react'
 import type { Note } from '../../../../shared/types'
 import { useProjects } from '../../lib/hooks'
+import { applyLink, removeLink } from '../../lib/linkCommand'
 import { bodyToEditorHtml, editorHtmlToBody } from '../../lib/noteBody'
 import { relativeTime } from '../../lib/relativeTime'
 import { TagInput } from '../common/TagInput'
@@ -110,11 +111,20 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
 
     const runCommand = (command: string, value?: string): void => {
         editorRef.current?.focus()
-        // Clicking Heading inside a heading turns it back into normal text.
-        const alreadyApplied =
-            command === 'formatBlock' &&
-            document.queryCommandValue('formatBlock').toLowerCase() === value
-        document.execCommand(command, false, alreadyApplied ? 'div' : value)
+
+        if (command === 'createLink') {
+            applyLink(value ?? '')
+        } else if (command === 'unlink') {
+            removeLink()
+        } else if (command === 'bold' && active.heading) {
+            return // headings are already bold
+        } else if (command === 'formatBlock') {
+            // Clicking Heading inside a heading turns it back into normal text.
+            document.execCommand(command, false, active.heading ? 'div' : value)
+        } else {
+            document.execCommand(command, false, value)
+        }
+
         refresh()
     }
 
