@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Square, CheckSquare } from 'lucide-react'
 import type { ProjectPhase } from '../../../../shared/types'
 import { EditableText } from '../common/EditableText'
@@ -53,64 +54,78 @@ export function PhaseList({
 
     return (
         <div className="phase-list">
-            {phases.map((phase) => (
-                <div key={phase.id} className={`phase-item ${phase.paid ? 'paid' : ''}`}>
-                    <button
-                        className="phase-check"
-                        onClick={() => handleTogglePaid(phase)}
-                        title={phase.paid ? 'Mark unpaid' : 'Mark paid'}
+            <AnimatePresence mode="popLayout">
+                {phases.map((phase) => (
+                    <motion.div
+                        layout
+                        key={phase.id}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className={`phase-item ${phase.paid ? 'paid' : ''}`}
                     >
-                        {phase.paid ? (
-                            <CheckSquare size={18} strokeWidth={2} />
-                        ) : (
-                            <Square size={18} strokeWidth={2} />
-                        )}
-                    </button>
+                        <button
+                            className="phase-check"
+                            onClick={() => handleTogglePaid(phase)}
+                            title={phase.paid ? 'Mark unpaid' : 'Mark paid'}
+                        >
+                            {phase.paid ? (
+                                <CheckSquare size={18} strokeWidth={2} />
+                            ) : (
+                                <Square size={18} strokeWidth={2} />
+                            )}
+                        </button>
 
-                    <div className="phase-name-wrap">
-                        <EditableText
-                            value={phase.name}
-                            onSave={(newName) => onUpdate(phase.id, { name: newName })}
-                            className="phase-name"
-                            inputClassName="phase-name-input-inline"
-                        />
-                        {phase.paid_at && (
-                            <span className="phase-paid-date">
-                                Paid {parseSqliteDate(phase.paid_at).toLocaleDateString()}
-                            </span>
-                        )}
-                    </div>
+                        <div className="phase-name-wrap">
+                            <EditableText
+                                value={phase.name}
+                                onSave={(newName) => onUpdate(phase.id, { name: newName })}
+                                className="phase-name"
+                                inputClassName="phase-name-input-inline"
+                            />
+                            {phase.paid_at && (
+                                <span className="phase-paid-date">
+                                    Paid {parseSqliteDate(phase.paid_at).toLocaleDateString()}
+                                </span>
+                            )}
+                        </div>
 
-                    <div className="phase-amount-group">
-                        <span className="currency-symbol">{symbol}</span>
-                        <input
-                            type="number"
-                            className="phase-amount-input"
-                            defaultValue={phase.amount_cents / 100}
-                            step="0.01"
-                            onBlur={(e) => {
-                                const cents = parseMoney(e.target.value)
-                                if (cents !== null) handleAmountChange(phase, cents)
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                            }}
-                        />
-                        <span className="currency-code">{currency}</span>
-                    </div>
+                        <div className="phase-amount-group">
+                            <span className="currency-symbol">{symbol}</span>
+                            <input
+                                type="number"
+                                className="phase-amount-input"
+                                defaultValue={phase.amount_cents / 100}
+                                step="0.01"
+                                onBlur={(e) => {
+                                    const cents = parseMoney(e.target.value)
+                                    if (cents !== null) handleAmountChange(phase, cents)
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                                }}
+                            />
+                            <span className="currency-code">{currency}</span>
+                        </div>
 
-                    <button
-                        className="phase-delete"
-                        onClick={() => onDelete(phase.id)}
-                        title="Delete phase"
-                    >
-                        ×
-                    </button>
-                </div>
-            ))}
+                        <button
+                            className="phase-delete"
+                            onClick={() => onDelete(phase.id)}
+                            title="Delete phase"
+                        >
+                            ×
+                        </button>
+                    </motion.div>
+                ))}
+            </AnimatePresence>
 
             {adding ? (
-                <form className="phase-item phase-add-form" onSubmit={handleSubmit}>
+                <motion.form
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="phase-item phase-add-form"
+                    onSubmit={handleSubmit}
+                >
                     <span className="phase-check">
                         <Square size={18} strokeWidth={2} />
                     </span>
@@ -148,7 +163,7 @@ export function PhaseList({
                     >
                         Cancel
                     </button>
-                </form>
+                </motion.form>
             ) : (
                 <button className="phase-add-btn" onClick={() => setAdding(true)}>
                     + Add payment phase

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import type { Project, ProjectType } from '../../../../shared/types'
 import {
     PROJECT_TYPES,
@@ -79,8 +80,21 @@ export function ProjectEditModal({
     }
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-panel modal-panel-wide" onClick={(e) => e.stopPropagation()}>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="modal-overlay"
+            onClick={onClose}
+        >
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="modal-panel modal-panel-wide"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <form onSubmit={handleSubmit}>
                     <div className="modal-header">
                         <h3>Edit Project</h3>
@@ -95,6 +109,7 @@ export function ProjectEditModal({
                     </div>
 
                     <div className="modal-body">
+                        {/* ... (Keep existing form fields unchanged) ... */}
                         <label className="form-field">
                             <span>Title</span>
                             <input
@@ -105,7 +120,6 @@ export function ProjectEditModal({
                                 required
                             />
                         </label>
-
                         <div className="form-row">
                             <label className="form-field">
                                 <span>Client</span>
@@ -116,7 +130,6 @@ export function ProjectEditModal({
                                     placeholder="Optional"
                                 />
                             </label>
-
                             <label className="form-field">
                                 <span>Client Contact</span>
                                 <input
@@ -127,7 +140,6 @@ export function ProjectEditModal({
                                 />
                             </label>
                         </div>
-
                         <div className="form-row">
                             <label className="form-field">
                                 <span>Type</span>
@@ -142,7 +154,6 @@ export function ProjectEditModal({
                                     ))}
                                 </select>
                             </label>
-
                             <label className="form-field">
                                 <span>Status</span>
                                 <select
@@ -156,7 +167,6 @@ export function ProjectEditModal({
                                     ))}
                                 </select>
                             </label>
-
                             <label className="form-field">
                                 <span>Currency</span>
                                 <select
@@ -170,7 +180,6 @@ export function ProjectEditModal({
                                     ))}
                                 </select>
                             </label>
-
                             <label className="form-field">
                                 <span>Hourly Rate</span>
                                 <input
@@ -182,7 +191,6 @@ export function ProjectEditModal({
                                 />
                             </label>
                         </div>
-
                         <div className="form-row">
                             <label className="form-field">
                                 <span>Start Date</span>
@@ -192,7 +200,6 @@ export function ProjectEditModal({
                                     onChange={(e) => setStartDate(e.target.value)}
                                 />
                             </label>
-
                             <label className="form-field">
                                 <span>Due Date</span>
                                 <input
@@ -202,7 +209,6 @@ export function ProjectEditModal({
                                 />
                             </label>
                         </div>
-
                         <label className="form-field">
                             <span>Brief</span>
                             <textarea
@@ -212,12 +218,10 @@ export function ProjectEditModal({
                                 rows={3}
                             />
                         </label>
-
                         <div className="form-field">
                             <span>Tech Stack</span>
                             <TechStackPicker value={techStack} onChange={setTechStack} />
                         </div>
-
                         <div className="form-field">
                             <span>Reference Links</span>
                             <ReferenceLinksEditor
@@ -249,7 +253,7 @@ export function ProjectEditModal({
                         </div>
                     </div>
                 </form>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     )
 }

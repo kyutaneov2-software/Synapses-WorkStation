@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Settings, ExternalLink, Calendar, DollarSign, Tag } from 'lucide-react'
 import type { Project, NewTaskOptions } from '../../../shared/types'
 import {
@@ -37,7 +38,6 @@ export function ProjectDetailView({
     projectId,
     onDeleted
 }: ProjectDetailViewProps): React.JSX.Element {
-    // Use the targeted hook so this view instantly updates on status change
     const { project, loading: projectLoading } = useProject(projectId)
     const { tasks, loading: tasksLoading } = useTasksByProject(projectId)
     const { phases, loading: phasesLoading } = usePhases(projectId)
@@ -104,287 +104,300 @@ export function ProjectDetailView({
     const status = project.status || 'active'
 
     return (
-        <div className="project-detail-layout">
-            <div className="project-detail-scroll">
-                {/* ── HEADER CARD ──────────────────────────────── */}
-                <div className="project-header-card">
-                    <div className="project-header-top">
-                        <div className="project-title-block">
-                            <div className="project-title-row">
-                                {projectTypeIcon(project.type, 24)}
-                                <EditableText
-                                    value={project.title}
-                                    onSave={(newTitle) => handleUpdateProject({ title: newTitle })}
-                                    className="project-title-edit"
-                                    inputClassName="project-title-input"
-                                />
-                                <span className={`status-badge ${status}`}>{status}</span>
-                            </div>
+        <div className="project-detail-scroll">
+            {/* ── HEADER CARD ──────────────────────────────── */}
+            <div className="project-header-card">
+                <div className="project-header-top">
+                    <div className="project-title-block">
+                        <div className="project-title-row">
+                            {projectTypeIcon(project.type, 24)}
                             <EditableText
-                                value={project.client ?? ''}
-                                onSave={(newClient) =>
-                                    handleUpdateProject({ client: newClient || null })
-                                }
-                                placeholder="+ add client"
-                                className="project-client-label"
-                                inputClassName="project-client-input"
-                                allowEmpty
+                                value={project.title}
+                                onSave={(newTitle) => handleUpdateProject({ title: newTitle })}
+                                className="project-title-edit"
+                                inputClassName="project-title-input"
                             />
+                            <span className={`status-badge ${status}`}>{status}</span>
                         </div>
-
-                        <div className="project-header-actions">
-                            {total > 0 && (
-                                <div className="money-summary-card">
-                                    <span className="money-summary-label">Financials</span>
-                                    <div className="money-summary-row">
-                                        <span className="money-paid">
-                                            {formatMoney(paid, currency)}
-                                        </span>
-                                        <span className="money-sep">/</span>
-                                        <span className="money-total">
-                                            {formatMoney(total, currency)}
-                                        </span>
-                                    </div>
-                                    <span
-                                        className={`money-remaining ${remaining > 0 ? 'owed' : 'clear'}`}
-                                    >
-                                        {remaining > 0
-                                            ? `${formatMoney(remaining, currency)} remaining`
-                                            : 'Paid in full'}
-                                    </span>
-                                </div>
-                            )}
-                            <button className="edit-project-btn" onClick={() => setShowEdit(true)}>
-                                <Settings size={16} strokeWidth={2} />
-                            </button>
-                        </div>
+                        <EditableText
+                            value={project.client ?? ''}
+                            onSave={(newClient) =>
+                                handleUpdateProject({ client: newClient || null })
+                            }
+                            placeholder="+ add client"
+                            className="project-client-label"
+                            inputClassName="project-client-input"
+                            allowEmpty
+                        />
                     </div>
 
-                    <EditableText
-                        value={project.brief ?? ''}
-                        onSave={(newBrief) => handleUpdateProject({ brief: newBrief || null })}
-                        placeholder="+ add a brief description"
-                        className="project-brief"
-                        inputClassName="project-brief-input"
-                        multiline
-                        allowEmpty
-                    />
-                </div>
-
-                {/* ── TABS ─────────────────────────────────────── */}
-                <div className="project-tabs">
-                    <button
-                        className={activeTab === 'overview' ? 'active' : ''}
-                        onClick={() => setActiveTab('overview')}
-                    >
-                        Overview
-                    </button>
-                    <button
-                        className={activeTab === 'tasks' ? 'active' : ''}
-                        onClick={() => setActiveTab('tasks')}
-                    >
-                        Tasks ({tasks.length})
-                    </button>
-                    <button
-                        className={activeTab === 'payments' ? 'active' : ''}
-                        onClick={() => setActiveTab('payments')}
-                    >
-                        Payments ({phases.length})
-                    </button>
-                    <button
-                        className={activeTab === 'files' ? 'active' : ''}
-                        onClick={() => setActiveTab('files')}
-                    >
-                        Files
-                    </button>
-                    <button
-                        className={activeTab === 'notes' ? 'active' : ''}
-                        onClick={() => setActiveTab('notes')}
-                    >
-                        Notes
-                    </button>
-                </div>
-
-                {/* ── TAB CONTENT ──────────────────────────────── */}
-                <div className="project-tab-content">
-                    {activeTab === 'overview' && (
-                        <div className="project-overview-grid">
-                            <div className="overview-cards-col">
-                                <div className="detail-card">
-                                    <div className="detail-card-header">
-                                        <Calendar size={14} /> <span>Timeline</span>
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="detail-label">Start Date</span>
-                                        <span className="detail-value">
-                                            {formatDate(project.start_date)}
-                                        </span>
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="detail-label">Due Date</span>
-                                        <span className="detail-value">
-                                            {formatDate(project.due_date)}
-                                        </span>
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="detail-label">Type</span>
-                                        <span className="detail-value">
-                                            {project.type ? PROJECT_TYPE_LABELS[project.type] : '—'}
-                                        </span>
-                                    </div>
+                    <div className="project-header-actions">
+                        {total > 0 && (
+                            <div className="money-summary-card">
+                                <span className="money-summary-label">Financials</span>
+                                <div className="money-summary-row">
+                                    <span className="money-paid">
+                                        {formatMoney(paid, currency)}
+                                    </span>
+                                    <span className="money-sep">/</span>
+                                    <span className="money-total">
+                                        {formatMoney(total, currency)}
+                                    </span>
                                 </div>
-
-                                <div className="detail-card">
-                                    <div className="detail-card-header">
-                                        <DollarSign size={14} /> <span>Financials</span>
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="detail-label">Hourly Rate</span>
-                                        <span className="detail-value">
-                                            {project.hourly_rate_cents
-                                                ? `${formatMoney(project.hourly_rate_cents, currency)}/hr`
-                                                : '—'}
-                                        </span>
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="detail-label">Currency</span>
-                                        <span className="detail-value">{currency}</span>
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="detail-label">Client Contact</span>
-                                        <span className="detail-value">
-                                            {project.client_contact || '—'}
-                                        </span>
-                                    </div>
-                                </div>
+                                <span
+                                    className={`money-remaining ${remaining > 0 ? 'owed' : 'clear'}`}
+                                >
+                                    {remaining > 0
+                                        ? `${formatMoney(remaining, currency)} remaining`
+                                        : 'Paid in full'}
+                                </span>
                             </div>
+                        )}
+                        <button className="edit-project-btn" onClick={() => setShowEdit(true)}>
+                            <Settings size={16} strokeWidth={2} />
+                        </button>
+                    </div>
+                </div>
 
-                            <div className="overview-cards-col overview-cards-wide">
-                                <div className="detail-card">
-                                    <div className="detail-card-header">
-                                        <Tag size={14} /> <span>Tags & Tech Stack</span>
+                <EditableText
+                    value={project.brief ?? ''}
+                    onSave={(newBrief) => handleUpdateProject({ brief: newBrief || null })}
+                    placeholder="+ add a brief description"
+                    className="project-brief"
+                    inputClassName="project-brief-input"
+                    multiline
+                    allowEmpty
+                />
+            </div>
+
+            {/* ── TABS ─────────────────────────────────────── */}
+            <div className="project-tabs">
+                {(['overview', 'tasks', 'payments', 'files', 'notes'] as Tab[]).map((tab) => (
+                    <button
+                        key={tab}
+                        className={activeTab === tab ? 'active' : ''}
+                        onClick={() => setActiveTab(tab)}
+                    >
+                        {tab === 'tasks'
+                            ? `Tasks (${tasks.length})`
+                            : tab === 'payments'
+                              ? `Payments (${phases.length})`
+                              : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        {activeTab === tab && (
+                            <motion.div
+                                layoutId="active-project-tab"
+                                className="active-tab-underline"
+                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            />
+                        )}
+                    </button>
+                ))}
+            </div>
+
+            {/* ── TAB CONTENT ──────────────────────────────── */}
+            <div className="project-tab-content-wrapper">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.15 } }}
+                        transition={{ duration: 0.2 }}
+                        className="project-tab-content"
+                    >
+                        {activeTab === 'overview' && (
+                            <div className="project-overview-grid">
+                                <div className="overview-cards-col">
+                                    <div className="detail-card">
+                                        <div className="detail-card-header">
+                                            <Calendar size={14} /> <span>Timeline</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="detail-label">Start Date</span>
+                                            <span className="detail-value">
+                                                {formatDate(project.start_date)}
+                                            </span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="detail-label">Due Date</span>
+                                            <span className="detail-value">
+                                                {formatDate(project.due_date)}
+                                            </span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="detail-label">Type</span>
+                                            <span className="detail-value">
+                                                {project.type
+                                                    ? PROJECT_TYPE_LABELS[project.type]
+                                                    : '—'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div className="detail-section">
-                                        <span className="detail-section-label">Tags</span>
-                                        <TagInput
-                                            value={tags.map((t) => t.name)}
-                                            onChange={handleTagsChange}
-                                        />
+
+                                    <div className="detail-card">
+                                        <div className="detail-card-header">
+                                            <DollarSign size={14} /> <span>Financials</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="detail-label">Hourly Rate</span>
+                                            <span className="detail-value">
+                                                {project.hourly_rate_cents
+                                                    ? `${formatMoney(project.hourly_rate_cents, currency)}/hr`
+                                                    : '—'}
+                                            </span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="detail-label">Currency</span>
+                                            <span className="detail-value">{currency}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="detail-label">Client Contact</span>
+                                            <span className="detail-value">
+                                                {project.client_contact || '—'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div className="detail-section">
-                                        <span className="detail-section-label">Tech Stack</span>
-                                        {project.tech_stack && project.tech_stack.length > 0 ? (
-                                            <div className="tech-stack-presets">
-                                                {project.tech_stack.map((t) => (
-                                                    <span key={t} className="tech-chip selected">
-                                                        {t}
-                                                    </span>
+                                </div>
+
+                                <div className="overview-cards-col overview-cards-wide">
+                                    <div className="detail-card">
+                                        <div className="detail-card-header">
+                                            <Tag size={14} /> <span>Tags & Tech Stack</span>
+                                        </div>
+                                        <div className="detail-section">
+                                            <span className="detail-section-label">Tags</span>
+                                            <TagInput
+                                                value={tags.map((t) => t.name)}
+                                                onChange={handleTagsChange}
+                                            />
+                                        </div>
+                                        <div className="detail-section">
+                                            <span className="detail-section-label">Tech Stack</span>
+                                            {project.tech_stack && project.tech_stack.length > 0 ? (
+                                                <div className="tech-stack-presets">
+                                                    {project.tech_stack.map((t) => (
+                                                        <span
+                                                            key={t}
+                                                            className="tech-chip selected"
+                                                        >
+                                                            {t}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className="detail-empty">
+                                                    No tech stack added.
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="detail-card">
+                                        <div className="detail-card-header">
+                                            <ExternalLink size={14} /> <span>Reference Links</span>
+                                        </div>
+                                        {project.reference_links &&
+                                        project.reference_links.length > 0 ? (
+                                            <div className="ref-links">
+                                                {project.reference_links.map((link, i) => (
+                                                    <div key={i} className="ref-link-row">
+                                                        <span className="ref-link-label">
+                                                            {link.label}
+                                                        </span>
+                                                        <a
+                                                            className="ref-link-url"
+                                                            href={link.url}
+                                                            onClick={(e) => {
+                                                                e.preventDefault()
+                                                                window.open(
+                                                                    link.url,
+                                                                    '_blank',
+                                                                    'noopener,noreferrer'
+                                                                )
+                                                            }}
+                                                        >
+                                                            {link.url}
+                                                            <ExternalLink
+                                                                size={11}
+                                                                strokeWidth={2}
+                                                            />
+                                                        </a>
+                                                    </div>
                                                 ))}
                                             </div>
                                         ) : (
                                             <span className="detail-empty">
-                                                No tech stack added.
+                                                No reference links.
                                             </span>
                                         )}
                                     </div>
                                 </div>
+                            </div>
+                        )}
 
-                                <div className="detail-card">
-                                    <div className="detail-card-header">
-                                        <ExternalLink size={14} /> <span>Reference Links</span>
-                                    </div>
-                                    {project.reference_links &&
-                                    project.reference_links.length > 0 ? (
-                                        <div className="ref-links">
-                                            {project.reference_links.map((link, i) => (
-                                                <div key={i} className="ref-link-row">
-                                                    <span className="ref-link-label">
-                                                        {link.label}
-                                                    </span>
-                                                    <a
-                                                        className="ref-link-url"
-                                                        href={link.url}
-                                                        onClick={(e) => {
-                                                            e.preventDefault()
-                                                            window.open(
-                                                                link.url,
-                                                                '_blank',
-                                                                'noopener,noreferrer'
-                                                            )
-                                                        }}
-                                                    >
-                                                        {link.url}
-                                                        <ExternalLink size={11} strokeWidth={2} />
-                                                    </a>
-                                                </div>
+                        {activeTab === 'tasks' && (
+                            <div className="project-tab-panel">
+                                <QuickAdd
+                                    onAdd={handleAddTask}
+                                    placeholder="Add a task to this project…"
+                                    projects={[]}
+                                    hideProject
+                                    hidePlannedFor
+                                />
+                                {openTasks.length > 0 && (
+                                    <section className="task-group">
+                                        <AnimatePresence mode="popLayout">
+                                            {openTasks.map((t) => (
+                                                <TaskItem key={t.id} task={t} {...actions} />
                                             ))}
-                                        </div>
-                                    ) : (
-                                        <span className="detail-empty">No reference links.</span>
-                                    )}
-                                </div>
+                                        </AnimatePresence>
+                                    </section>
+                                )}
+                                {doneTasks.length > 0 && (
+                                    <section className="task-group">
+                                        <h3 className="group-title">Completed</h3>
+                                        <AnimatePresence mode="popLayout">
+                                            {doneTasks.map((t) => (
+                                                <TaskItem key={t.id} task={t} {...actions} />
+                                            ))}
+                                        </AnimatePresence>
+                                    </section>
+                                )}
+                                {tasks.length === 0 && (
+                                    <div className="empty-state">
+                                        <p>No tasks yet.</p>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {activeTab === 'tasks' && (
-                        <div className="project-tab-panel">
-                            <QuickAdd
-                                onAdd={handleAddTask}
-                                placeholder="Add a task to this project…"
-                                projects={[]}
-                                hideProject
-                                hidePlannedFor
-                            />
-                            {openTasks.length > 0 && (
-                                <section className="task-group">
-                                    {openTasks.map((t) => (
-                                        <TaskItem key={t.id} task={t} {...actions} />
-                                    ))}
-                                </section>
-                            )}
-                            {doneTasks.length > 0 && (
-                                <section className="task-group">
-                                    <h3 className="group-title">Completed</h3>
-                                    {doneTasks.map((t) => (
-                                        <TaskItem key={t.id} task={t} {...actions} />
-                                    ))}
-                                </section>
-                            )}
-                            {tasks.length === 0 && (
+                        {activeTab === 'payments' && (
+                            <div className="project-tab-panel">
+                                <PhaseList
+                                    phases={phases}
+                                    currency={currency}
+                                    onAdd={handleAddPhase}
+                                    onUpdate={handleUpdatePhase}
+                                    onDelete={handleDeletePhase}
+                                />
+                            </div>
+                        )}
+
+                        {activeTab === 'files' && (
+                            <div className="project-tab-panel">
                                 <div className="empty-state">
-                                    <p>No tasks yet.</p>
+                                    <p>File attachments coming soon.</p>
                                 </div>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'payments' && (
-                        <div className="project-tab-panel">
-                            <PhaseList
-                                phases={phases}
-                                currency={currency}
-                                onAdd={handleAddPhase}
-                                onUpdate={handleUpdatePhase}
-                                onDelete={handleDeletePhase}
-                            />
-                        </div>
-                    )}
-
-                    {activeTab === 'files' && (
-                        <div className="project-tab-panel">
-                            <div className="empty-state">
-                                <p>File attachments coming soon.</p>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {activeTab === 'notes' && (
-                        <div className="project-tab-panel">
-                            <ProjectNotesList projectId={projectId} />
-                        </div>
-                    )}
-                </div>
+                        {activeTab === 'notes' && (
+                            <div className="project-tab-panel">
+                                <ProjectNotesList projectId={projectId} />
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </div>
 
             {showEdit && (
