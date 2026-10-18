@@ -4,7 +4,7 @@ import { useScheduleRange, useTasksByView } from '../lib/hooks'
 import { MiniMonth } from '../components/schedule/MiniMonth'
 import { ScheduleGrid } from '../components/schedule/ScheduleGrid'
 import { BlockDetailPanel } from '../components/schedule/BlockDetailPanel'
-import { AgendaSidebar } from '../components/schedule/AgendaSidebar' // Import the new component
+import { AgendaSidebar } from '../components/schedule/AgendaSidebar'
 import {
     DEFAULT_DURATION_MINUTES,
     blockMinutes,
@@ -39,10 +39,19 @@ export function ScheduleView(): React.JSX.Element {
         return sevenDays(startOfWeek(anchor))
     }, [anchor, viewMode])
 
+    // ── FIX: Expand fetch range to always include Today & Tomorrow ─────────
     const fromDate = dateKey(days[0])
     const toDate = dateKey(days[days.length - 1])
+    const todayStr = dateKey(new Date())
+    const tomorrowStr = dateKey(offsetDays(new Date(), 1))
 
-    const { blocks } = useScheduleRange(fromDate, toDate)
+    // Fetch the min date of (visible grid, today) and max date of (visible grid, tomorrow)
+    const fetchFromDate = fromDate < todayStr ? fromDate : todayStr
+    const fetchToDate = toDate > tomorrowStr ? toDate : tomorrowStr
+
+    const { blocks } = useScheduleRange(fetchFromDate, fetchToDate)
+    // ───────────────────────────────────────────────────────────────────────
+
     const { tasks } = useTasksByView('all')
 
     const openTasks = useMemo(() => tasks.filter((t) => !t.done), [tasks])
@@ -52,13 +61,15 @@ export function ScheduleView(): React.JSX.Element {
         [blocks, selectedBlockId]
     )
 
-    // Calculate stats and project breakdown for the header
     const stats = useMemo(() => {
-        const count = blocks.length
         let totalMinutes = 0
         const projectMinutes = new Map<string, number>()
 
-        blocks.forEach((b) => {
+        // Only calculate stats for the visible days
+        const visibleDays = new Set(days.map((d) => dateKey(d)))
+        const visibleBlocks = blocks.filter((b) => visibleDays.has(b.start_at.slice(0, 10)))
+
+        visibleBlocks.forEach((b) => {
             const mins = Math.max(0, blockMinutes(b.end_at) - blockMinutes(b.start_at))
             totalMinutes += mins
             if (b.task_project_title) {
@@ -79,8 +90,8 @@ export function ScheduleView(): React.JSX.Element {
             .map(([name, mins]) => `${name} ${formatMins(mins)}`)
             .join(' · ')
 
-        return { count, timeLabel: formatMins(totalMinutes), projectDetails }
-    }, [blocks])
+        return { count: visibleBlocks.length, timeLabel: formatMins(totalMinutes), projectDetails }
+    }, [blocks, days])
 
     const handlePrev = (): void => setAnchor((d) => offsetDays(d, viewMode === 'day' ? -1 : -7))
     const handleNext = (): void => setAnchor((d) => offsetDays(d, viewMode === 'day' ? 1 : 7))
@@ -149,16 +160,30 @@ export function ScheduleView(): React.JSX.Element {
         ? composeLocalDateTime(newBlock.dayKey, newBlock.startMinutes + DEFAULT_DURATION_MINUTES)
         : undefined
 
-    // Handler to open "New Block" from the Unscheduled Agenda list
     const handleScheduleTask = (taskId: number): void => {
         const today = dateKey(new Date())
         setSelectedBlockId(null)
         setNewBlock({ dayKey: today, startMinutes: 9 * 60, defaultTaskId: taskId })
     }
 
+    const handleDropTask = async (
+        taskId: number,
+        dayKey: string,
+        startMinutes: number
+    ): Promise<void> => {
+        const startAt = composeLocalDateTime(dayKey, startMinutes)
+        const endAt = composeLocalDateTime(dayKey, startMinutes + DEFAULT_DURATION_MINUTES)
+        await window.api.createBlock({
+            taskId,
+            title: null,
+            eventType: 'task',
+            startAt,
+            endAt
+        })
+    }
+
     return (
         <div className="schedule-layout">
-            {/* ── LEFT: sidebar ─────────── */}
             <aside className="schedule-sidebar">
                 <div className="schedule-sidebar-top">
                     <MiniMonth anchor={anchor} onSelect={setAnchor} />
@@ -171,7 +196,6 @@ export function ScheduleView(): React.JSX.Element {
                 </div>
             </aside>
 
-            {/* ── RIGHT: main column ───────────── */}
             <div className="schedule-main">
                 <div className="schedule-toolbar">
                     <div className="schedule-toolbar-info">
@@ -229,6 +253,7 @@ export function ScheduleView(): React.JSX.Element {
                     selectedBlockId={selectedBlockId}
                     onSelectBlock={handleSelectBlock}
                     onClickEmpty={handleClickEmpty}
+                    onDropTask={handleDropTask}
                     onUpdateBlock={async (id, start, end): Promise<void> => {
                         const existing = blocks.find((b) => b.id === id)
                         if (!existing) return
@@ -243,7 +268,6 @@ export function ScheduleView(): React.JSX.Element {
                 />
             </div>
 
-            {/* Modal */}
             {(selectedBlock || newBlock) && (
                 <BlockDetailPanel
                     key={
@@ -255,7 +279,7 @@ export function ScheduleView(): React.JSX.Element {
                     block={selectedBlock || undefined}
                     defaultStart={defaultStart}
                     defaultEnd={defaultEnd}
-                    defaultTaskId={newBlock?.defaultTaskId} // Pass the task ID from Agenda
+                    defaultTaskId={newBlock?.defaultTaskId}
                     tasks={openTasks}
                     onSave={selectedBlock ? handleUpdateBlock : handleCreateBlock}
                     onDelete={selectedBlock ? handleDeleteBlock : undefined}

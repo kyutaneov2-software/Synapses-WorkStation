@@ -22,6 +22,7 @@ interface ScheduleGridProps {
     onSelectBlock: (id: number) => void
     onClickEmpty: (dayKey: string, snappedMinutes: number) => void
     onUpdateBlock: (id: number, startAt: string, endAt: string) => Promise<void>
+    onDropTask: (taskId: number, dayKey: string, startMinutes: number) => Promise<void>
 }
 
 interface BlockWithOffset {
@@ -70,14 +71,15 @@ export function ScheduleGrid({
     selectedBlockId,
     onSelectBlock,
     onClickEmpty,
-    onUpdateBlock
+    onUpdateBlock,
+    onDropTask
 }: ScheduleGridProps): React.JSX.Element {
     const gridHeight = HOURS_SHOWN * ROW_HEIGHT
     const today = new Date()
     const todayKey = dateKey(today)
     const [dragState, setDragState] = useState<DragState | null>(null)
+    const [dragOverDay, setDragOverDay] = useState<string | null>(null)
 
-    // Tracks if the last mouse interaction was with a block
     const interactedWithBlock = useRef(false)
 
     const blocksByDay = useMemo(() => {
@@ -160,7 +162,6 @@ export function ScheduleGrid({
                 hasMoved
             } = dragState
 
-            // Mark that we interacted with a block
             interactedWithBlock.current = true
 
             if (!hasMoved) {
@@ -186,7 +187,6 @@ export function ScheduleGrid({
     }, [dragState, onUpdateBlock, onSelectBlock])
 
     const handleDayClick = (day: Date, e: React.MouseEvent<HTMLDivElement>): void => {
-        // If we just clicked/dragged a block, ignore the resulting click on the grid
         if (interactedWithBlock.current) {
             interactedWithBlock.current = false
             return
@@ -201,6 +201,33 @@ export function ScheduleGrid({
         const snapped = Math.round(rawMinutes / SNAP_MINUTES) * SNAP_MINUTES
         const clamped = Math.max(START_HOUR * 60, Math.min(snapped, END_HOUR * 60 - SNAP_MINUTES))
         onClickEmpty(dateKey(day), clamped)
+    }
+
+    const handleDragOver = (e: React.DragEvent, dayKey: string): void => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'copy'
+        setDragOverDay(dayKey)
+    }
+
+    const handleDragLeave = (): void => {
+        setDragOverDay(null)
+    }
+
+    const handleDrop = async (e: React.DragEvent, day: Date): Promise<void> => {
+        e.preventDefault()
+        setDragOverDay(null)
+        const taskIdStr = e.dataTransfer.getData('text/plain')
+        const taskId = Number(taskIdStr)
+        if (!taskId) return
+
+        const target = e.currentTarget as HTMLElement
+        const rect = target.getBoundingClientRect()
+        const y = e.clientY - rect.top
+        const rawMinutes = (y / ROW_HEIGHT) * 60 + START_HOUR * 60
+        const snapped = Math.round(rawMinutes / SNAP_MINUTES) * SNAP_MINUTES
+        const clamped = Math.max(START_HOUR * 60, Math.min(snapped, END_HOUR * 60 - SNAP_MINUTES))
+
+        await onDropTask(taskId, dateKey(day), clamped)
     }
 
     const now = new Date()
@@ -242,16 +269,32 @@ export function ScheduleGrid({
                 <div className="schedule-days">
                     {days.map((day) => {
                         const dayKey = dateKey(day)
-                        const dayBlocks = blocksByDay.get(dayKey) ?? []
-                        const withOffsets = computeOffsets(dayBlocks)
+                        const baseBlocks = blocksByDay.get(dayKey) ?? []
+
+                        // ── FIX: Inject the dragged block into the target day ──
+                        let displayBlocks = baseBlocks
+                        if (dragState && dragState.currentDayKey === dayKey) {
+                            const exists = baseBlocks.some((b) => b.id === dragState.blockId)
+                            if (!exists) {
+                                const originalBlock = blocks.find((b) => b.id === dragState.blockId)
+                                if (originalBlock) {
+                                    displayBlocks = [...baseBlocks, originalBlock]
+                                }
+                            }
+                        }
+
+                        const withOffsets = computeOffsets(displayBlocks)
                         const isToday = sameDay(day, today)
+                        const isDragOver = dragOverDay === dayKey
 
                         return (
                             <div
                                 key={dayKey}
-                                className={`schedule-day ${isToday ? 'today' : ''}`}
+                                className={`schedule-day ${isToday ? 'today' : ''} ${isDragOver ? 'drag-over' : ''}`}
                                 onClick={(e) => handleDayClick(day, e)}
-                                // Reset the interaction flag on any grid mousedown
+                                onDragOver={(e) => handleDragOver(e, dayKey)}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => handleDrop(e, day)}
                                 onMouseDown={() => {
                                     interactedWithBlock.current = false
                                 }}

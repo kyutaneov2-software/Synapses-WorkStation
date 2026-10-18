@@ -78,14 +78,19 @@ export function AgendaSidebar({
                 <div className="agenda-section">
                     <div className="agenda-label">NO TIME SET</div>
                     {unscheduledTasks.map((task) => (
-                        <button
+                        <div
                             key={task.id}
                             className="agenda-task-unscheduled"
                             onClick={() => onCreateForTask(task.id)}
+                            draggable
+                            onDragStart={(e) => {
+                                e.dataTransfer.setData('text/plain', task.id.toString())
+                                e.dataTransfer.effectAllowed = 'copy'
+                            }}
                         >
                             <div className="agenda-title">{task.text}</div>
-                            <div className="agenda-hint">Click to schedule</div>
-                        </button>
+                            <div className="agenda-hint">Drag to calendar or click</div>
+                        </div>
                     ))}
                 </div>
             )}
