@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { Square, CheckSquare, Target } from 'lucide-react'
 import type { Task, Project } from '../../../../shared/types'
 import { isOverdue } from '../../lib/dates'
@@ -30,7 +31,14 @@ export function TaskItem({
     const isPinned = task.is_current === 1
 
     return (
-        <div className={`task-item ${task.done ? 'done' : ''} ${isPinned ? 'pinned' : ''}`}>
+        <motion.div
+            layout
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+            className={`task-item ${task.done ? 'done' : ''} ${isPinned ? 'pinned' : ''}`}
+            style={{ originY: 0 }}
+        >
             <button
                 className="task-checkbox"
                 onClick={() => onToggle(task.id, !task.done)}
@@ -75,6 +83,6 @@ export function TaskItem({
             <button className="task-delete" onClick={() => onDelete(task.id)} title="Delete task">
                 ×
             </button>
-        </div>
+        </motion.div>
     )
 }

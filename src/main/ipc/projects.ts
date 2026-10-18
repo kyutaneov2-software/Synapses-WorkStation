@@ -10,7 +10,6 @@ import {
     requirePositiveId
 } from './validate'
 import { PROJECT_TYPES, PROJECT_STATUSES, CURRENCIES } from '../../shared/constants'
-import type { ProjectStatus } from '../../shared/constants'
 
 interface ProjectRow {
     id: number
@@ -34,7 +33,7 @@ function rowToProject(row: ProjectRow): Project {
     return {
         ...row,
         type: (row.type as Project['type']) ?? null,
-        status: (row.status as ProjectStatus) ?? 'active',
+        status: (row.status as Project['status']) ?? 'active',
         currency: (row.currency as Project['currency']) ?? 'USD',
         archived: row.archived === 1 ? 1 : 0,
         tech_stack: row.tech_stack ? (JSON.parse(row.tech_stack) as string[]) : null,
@@ -55,6 +54,13 @@ export function registerProjectHandlers(): void {
             .prepare('SELECT * FROM projects WHERE archived = 0 ORDER BY created_at DESC')
             .all() as ProjectRow[]
         return rows.map(rowToProject)
+    })
+
+    ipcMain.handle('db:get-project', (_, id: unknown): Project | null => {
+        const cleanId = requirePositiveId(id, 'id')
+        const row = db.prepare('SELECT * FROM projects WHERE id = ?').get(cleanId) as
+            ProjectRow | undefined
+        return row ? rowToProject(row) : null
     })
 
     ipcMain.handle('db:create-project', (_, title: unknown, client: unknown): Project => {
@@ -81,7 +87,7 @@ export function registerProjectHandlers(): void {
             'status',
             'start_date',
             'due_date',
-            'hourly_rate_cents', // ← renamed
+            'hourly_rate_cents',
             'currency',
             'archived',
             'client_contact',
@@ -132,6 +138,7 @@ export function registerProjectHandlers(): void {
             } else if (key === 'type') {
                 values.push(v === null ? null : requireEnum(v, 'type', PROJECT_TYPES))
             } else if (key === 'status') {
+                // Explicitly validate status to ensure it matches the enum
                 values.push(requireEnum(v, 'status', PROJECT_STATUSES))
             } else if (key === 'currency') {
                 values.push(requireEnum(v, 'currency', CURRENCIES))
@@ -158,6 +165,7 @@ export function registerProjectHandlers(): void {
             } else {
                 values.push(optionalString(v, key, 20))
             }
+            fields.push(`${key} = ?`)
         }
 
         if (fields.length > 0) {
@@ -176,12 +184,5 @@ export function registerProjectHandlers(): void {
         }
         db.prepare('DELETE FROM projects WHERE id = ?').run(cleanId)
         broadcast('data:changed')
-    })
-
-    ipcMain.handle('db:get-project', (_, id: unknown): Project | null => {
-        const cleanId = requirePositiveId(id, 'id')
-        const row = db.prepare('SELECT * FROM projects WHERE id = ?').get(cleanId) as
-            ProjectRow | undefined
-        return row ? rowToProject(row) : null
     })
 }

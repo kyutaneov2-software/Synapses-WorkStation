@@ -32,23 +32,10 @@
     padding: 10px 12px;
     border-radius: var(--radius);
     border: 1px solid transparent;
+    /* Only transition hover states. Framer Motion handles layout/transform */
     transition:
-        background var(--dur-fast),
-        border-color var(--dur-fast),
-        transform var(--dur-fast);
-    animation: task-enter var(--dur) var(--ease-out) both;
-}
-
-@keyframes task-enter {
-    from {
-        opacity: 0;
-        transform: translateY(3px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+        background-color var(--dur-fast),
+        border-color var(--dur-fast);
 }
 
 .task-item:hover {

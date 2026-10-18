@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'framer-motion'
 import { useProjects, useTasksByView, useTaskActions } from '../lib/hooks'
 import type { NewTaskOptions } from '../../../shared/types'
 import { TaskItem } from '../components/tasks/TaskItem'
@@ -49,28 +50,32 @@ export function TodayView(): React.JSX.Element {
             {overdue.length > 0 && (
                 <section className="task-group">
                     <h3 className="group-title overdue-title">Overdue</h3>
-                    {overdue.map((t) => (
-                        <TaskItem
-                            key={t.id}
-                            task={t}
-                            project={t.project_id ? projectById.get(t.project_id) : undefined}
-                            {...actions}
-                        />
-                    ))}
+                    <AnimatePresence mode="popLayout">
+                        {overdue.map((t) => (
+                            <TaskItem
+                                key={t.id}
+                                task={t}
+                                project={t.project_id ? projectById.get(t.project_id) : undefined}
+                                {...actions}
+                            />
+                        ))}
+                    </AnimatePresence>
                 </section>
             )}
 
             {regular.length > 0 && (
                 <section className="task-group">
                     {overdue.length > 0 && <h3 className="group-title">Today</h3>}
-                    {regular.map((t) => (
-                        <TaskItem
-                            key={t.id}
-                            task={t}
-                            project={t.project_id ? projectById.get(t.project_id) : undefined}
-                            {...actions}
-                        />
-                    ))}
+                    <AnimatePresence mode="popLayout">
+                        {regular.map((t) => (
+                            <TaskItem
+                                key={t.id}
+                                task={t}
+                                project={t.project_id ? projectById.get(t.project_id) : undefined}
+                                {...actions}
+                            />
+                        ))}
+                    </AnimatePresence>
                 </section>
             )}
 

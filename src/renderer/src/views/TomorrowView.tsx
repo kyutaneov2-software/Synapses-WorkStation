@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'framer-motion'
 import type { NewTaskOptions } from '../../../shared/types'
 import { useProjects, useTasksByView, useTaskActions } from '../lib/hooks'
 import { TaskItem } from '../components/tasks/TaskItem'
@@ -44,14 +45,16 @@ export function TomorrowView(): React.JSX.Element {
                 hidePlannedFor
             />
 
-            {tasks.map((t) => (
-                <TaskItem
-                    key={t.id}
-                    task={t}
-                    project={t.project_id ? projectById.get(t.project_id) : undefined}
-                    {...actions}
-                />
-            ))}
+            <AnimatePresence mode="popLayout">
+                {tasks.map((t) => (
+                    <TaskItem
+                        key={t.id}
+                        task={t}
+                        project={t.project_id ? projectById.get(t.project_id) : undefined}
+                        {...actions}
+                    />
+                ))}
+            </AnimatePresence>
 
             {tasks.length === 0 && (
                 <div className="empty-state">

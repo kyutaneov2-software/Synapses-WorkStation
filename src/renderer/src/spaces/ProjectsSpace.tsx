@@ -18,18 +18,15 @@ function ProjectDetailRoute(): React.JSX.Element {
 
 function EmptyProjectState(): React.JSX.Element {
     return (
-        <div
-            className="empty-state"
-            style={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center'
-            }}
-        >
-            <FolderKanban size={48} strokeWidth={1} style={{ opacity: 0.2, marginBottom: 16 }} />
-            <h2 style={{ color: 'var(--text-0)', marginBottom: 8 }}>No Project Selected</h2>
-            <p>Select a project from the sidebar or create a new one.</p>
+        <div className="project-empty-state">
+            <div className="project-empty-icon-wrap">
+                <FolderKanban size={40} strokeWidth={1.5} />
+            </div>
+            <h2>No Project Selected</h2>
+            <p>Select a project from the sidebar to view its details, tasks, and financials.</p>
+            <span className="project-empty-hint">
+                or click the <strong>+</strong> in the sidebar to create a new one.
+            </span>
         </div>
     )
 }
@@ -38,14 +35,12 @@ export function ProjectsSpace(): React.JSX.Element {
     return (
         <div className="space-layout">
             <Sidebar />
-            <div className="main-area">
-                <main className="content">
-                    <Routes>
-                        <Route path=":id" element={<ProjectDetailRoute />} />
-                        <Route index element={<EmptyProjectState />} />
-                        <Route path="*" element={<Navigate to={ROUTES.projects} replace />} />
-                    </Routes>
-                </main>
+            <div className="main-area projects-main-area">
+                <Routes>
+                    <Route path=":id" element={<ProjectDetailRoute />} />
+                    <Route index element={<EmptyProjectState />} />
+                    <Route path="*" element={<Navigate to={ROUTES.projects} replace />} />
+                </Routes>
             </div>
         </div>
     )

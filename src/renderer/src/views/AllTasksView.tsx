@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import type { NewTaskOptions, Task } from '../../../shared/types'
 import { useProjects, useTasksByView, useTaskActions } from '../lib/hooks'
 import { TaskItem } from '../components/tasks/TaskItem'
@@ -193,34 +194,40 @@ export function AllTasksView(): React.JSX.Element {
                 </div>
             )}
 
-            {grouped
-                ? Array.from(grouped.entries()).map(([key, groupTasks]) => {
-                      const project = key === 'inbox' ? null : projectById.get(key)
-                      return (
-                          <section key={String(key)} className="task-group">
-                              <h3 className="group-title">
-                                  {project ? project.title : 'Inbox'}
-                                  <span className="group-count">{groupTasks.length}</span>
-                              </h3>
-                              {groupTasks.map((t) => (
-                                  <TaskItem
-                                      key={t.id}
-                                      task={t}
-                                      project={project ?? undefined}
-                                      {...actions}
-                                  />
-                              ))}
-                          </section>
-                      )
-                  })
-                : filtered.map((t) => (
-                      <TaskItem
-                          key={t.id}
-                          task={t}
-                          project={t.project_id ? projectById.get(t.project_id) : undefined}
-                          {...actions}
-                      />
-                  ))}
+            {grouped ? (
+                Array.from(grouped.entries()).map(([key, groupTasks]) => {
+                    const project = key === 'inbox' ? null : projectById.get(key)
+                    return (
+                        <section key={String(key)} className="task-group">
+                            <h3 className="group-title">
+                                {project ? project.title : 'Inbox'}
+                                <span className="group-count">{groupTasks.length}</span>
+                            </h3>
+                            <AnimatePresence mode="popLayout">
+                                {groupTasks.map((t) => (
+                                    <TaskItem
+                                        key={t.id}
+                                        task={t}
+                                        project={project ?? undefined}
+                                        {...actions}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        </section>
+                    )
+                })
+            ) : (
+                <AnimatePresence mode="popLayout">
+                    {filtered.map((t) => (
+                        <TaskItem
+                            key={t.id}
+                            task={t}
+                            project={t.project_id ? projectById.get(t.project_id) : undefined}
+                            {...actions}
+                        />
+                    ))}
+                </AnimatePresence>
+            )}
         </div>
     )
 }
