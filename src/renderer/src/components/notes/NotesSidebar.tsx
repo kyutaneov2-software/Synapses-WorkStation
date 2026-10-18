@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search } from 'lucide-react'
+import { AnimatePresence } from 'framer-motion'
 import { htmlToText } from '../../../../shared/htmlToText'
 import { useNotes } from '../../lib/hooks'
 import { NoteRow } from './NoteRow'
@@ -27,7 +28,6 @@ export function NotesSidebar({ projectId }: NotesSidebarProps): React.JSX.Elemen
 
         const q = search.trim().toLowerCase()
         if (q) {
-            // Search the readable text, not the HTML markup.
             list = list.filter(
                 (n) =>
                     n.title.toLowerCase().includes(q) ||
@@ -96,18 +96,22 @@ export function NotesSidebar({ projectId }: NotesSidebarProps): React.JSX.Elemen
                 {pinned.length > 0 && (
                     <>
                         <div className="notes-group-label">PINNED</div>
-                        {pinned.map((n) => (
-                            <NoteRow key={n.id} note={n} />
-                        ))}
+                        <AnimatePresence mode="popLayout">
+                            {pinned.map((n) => (
+                                <NoteRow key={n.id} note={n} />
+                            ))}
+                        </AnimatePresence>
                     </>
                 )}
 
                 {rest.length > 0 && (
                     <>
                         {pinned.length > 0 && <div className="notes-group-label">ALL NOTES</div>}
-                        {rest.map((n) => (
-                            <NoteRow key={n.id} note={n} />
-                        ))}
+                        <AnimatePresence mode="popLayout">
+                            {rest.map((n) => (
+                                <NoteRow key={n.id} note={n} />
+                            ))}
+                        </AnimatePresence>
                     </>
                 )}
             </div>

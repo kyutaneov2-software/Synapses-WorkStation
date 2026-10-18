@@ -1,5 +1,6 @@
-import { Navigate, Route, Routes, useParams, useNavigate } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { StickyNote } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { NotesSidebar } from '../components/notes/NotesSidebar'
 import { NoteEditor } from '../components/notes/NoteEditor'
 
@@ -37,14 +38,27 @@ function EmptyState(): React.JSX.Element {
 }
 
 export function NotesSpace(): React.JSX.Element {
+    const location = useLocation()
+
     return (
         <div className="space-layout">
             <NotesSidebar />
-            <div className="main-area">
-                <Routes>
-                    <Route index element={<EmptyState />} />
-                    <Route path=":id" element={<NoteEditorRoute />} />
-                </Routes>
+            <div className="main-area" style={{ overflow: 'hidden', position: 'relative' }}>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={location.pathname}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                        style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+                    >
+                        <Routes location={location}>
+                            <Route index element={<EmptyState />} />
+                            <Route path=":id" element={<NoteEditorRoute />} />
+                        </Routes>
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </div>
     )

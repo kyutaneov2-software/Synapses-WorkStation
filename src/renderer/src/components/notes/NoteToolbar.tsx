@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import {
     Bold,
@@ -84,7 +85,13 @@ export function NoteToolbar({ active, onCommand }: NoteToolbarProps): React.JSX.
     }
 
     return (
-        <div className="note-floating-toolbar">
+        <motion.div
+            initial={{ opacity: 0, y: 20, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 20, x: '-50%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="note-floating-toolbar"
+        >
             {linking ? (
                 <input
                     autoFocus
@@ -118,7 +125,6 @@ export function NoteToolbar({ active, onCommand }: NoteToolbarProps): React.JSX.
                         </div>
                     ))}
                     <span className="toolbar-divider" />
-                    {/* Lit = the caret is in a link, so clicking removes it. */}
                     <button
                         title={active.link ? 'Remove link' : 'Link'}
                         className={active.link ? 'active' : ''}
@@ -130,6 +136,6 @@ export function NoteToolbar({ active, onCommand }: NoteToolbarProps): React.JSX.
                     </button>
                 </>
             )}
-        </div>
+        </motion.div>
     )
 }
