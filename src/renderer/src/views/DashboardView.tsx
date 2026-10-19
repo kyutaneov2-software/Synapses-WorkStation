@@ -1,9 +1,105 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Clock, TrendingUp, AlertCircle, CheckCircle2, CalendarDays, Target } from 'lucide-react'
 import type { Project } from '../../../shared/types'
 import { formatHM } from '../lib/time'
 import { useDashboard } from '../lib/hooks'
 import { isOverdue, parseSqliteMs } from '../lib/dates'
 import { formatMoney } from '../../../shared/money'
+
+// ── Helper Components ─────────────────────────────────────────
+
+function LiveClock(): React.JSX.Element {
+    const [time, setTime] = useState(new Date())
+
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000)
+        return () => clearInterval(timer)
+    }, [])
+
+    const hours = time.getHours()
+    const greeting = hours < 12 ? 'Good morning' : hours < 18 ? 'Good afternoon' : 'Good evening'
+
+    return (
+        <div className="clock-widget">
+            <div className="clock-greeting">{greeting}</div>
+            <div className="clock-time">
+                {time.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                <span className="clock-seconds">
+                    {time.toLocaleTimeString(undefined, { second: '2-digit' }).replace(/\D/g, '')}
+                </span>
+            </div>
+            <div className="clock-date">
+                {time.toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric'
+                })}
+            </div>
+        </div>
+    )
+}
+
+// A simple, dependency-free SVG line chart for the "Focus This Week" widget.
+function FocusLineChart({ data }: { data: number[] }): React.JSX.Element {
+    const width = 400
+    const height = 120
+    const padding = 10
+    const max = Math.max(...data, 1) // Prevent div by zero
+
+    // Convert data points to SVG coordinates
+    const points = data
+        .map((val, i) => {
+            const x = (i / (data.length - 1)) * (width - padding * 2) + padding
+            const y = height - (val / max) * (height - padding * 2) - padding
+            return `${x},${y}`
+        })
+        .join(' ')
+
+    // Generate an area fill path
+    const areaPath = `M ${padding},${height - padding} L ${points.replace(/ /g, ' L ')} L ${width - padding},${height - padding} Z`
+
+    return (
+        <svg
+            viewBox={`0 0 ${width} ${height}`}
+            className="line-chart-svg"
+            preserveAspectRatio="none"
+        >
+            <defs>
+                <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+                </linearGradient>
+            </defs>
+            <path d={areaPath} fill="url(#chart-fill)" />
+            <polyline
+                points={points}
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            {/* Render dots for each day */}
+            {data.map((_, i) => {
+                const [x, y] = points.split(' ')[i].split(',')
+                return (
+                    <circle
+                        key={i}
+                        cx={x}
+                        cy={y}
+                        r="4"
+                        fill="var(--bg-1)"
+                        stroke="var(--accent)"
+                        strokeWidth="2"
+                    />
+                )
+            })}
+        </svg>
+    )
+}
+
+// ── Main View ─────────────────────────────────────────────────
 
 interface DeadlineItem {
     id: string
@@ -24,25 +120,12 @@ interface ProjectHealth {
     moneyProgress: number
 }
 
-function todayMidnight(): Date {
-    const d = new Date()
-    d.setHours(0, 0, 0, 0)
-    return d
-}
-
-function daysAway(dateStr: string): number {
-    const d = new Date(dateStr + 'T00:00:00')
-    return Math.round((d.getTime() - todayMidnight().getTime()) / 86400000)
-}
-
-function isThisMonth(sqliteTs: string): boolean {
-    const d = new Date(parseSqliteMs(sqliteTs))
-    const now = new Date()
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-}
-
 export function DashboardView(): React.JSX.Element {
     const { data } = useDashboard()
+
+    // Fake data for the chart to demonstrate the UI.
+    // In a full release, you would add an IPC handler to fetch daily focus stats.
+    const mockWeeklyFocus = [30, 45, 20, 90, 60, 120, 45]
 
     const displayCurrency = useMemo(() => {
         if (!data || data.projects.length === 0) return 'USD'
@@ -50,107 +133,65 @@ export function DashboardView(): React.JSX.Element {
         for (const p of data.projects) {
             counts.set(p.currency, (counts.get(p.currency) || 0) + 1)
         }
-        let best = 'USD'
-        let bestCount = 0
-        for (const [c, n] of counts) {
-            if (n > bestCount) {
-                best = c
-                bestCount = n
-            }
-        }
-        return best
+        return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0][0]
     }, [data])
 
     const stats = useMemo(() => {
-        if (!data) {
-            return {
-                earned: 0,
-                outstanding: 0,
-                earnedThisMonth: 0,
-                paidCount: 0,
-                unpaidCount: 0,
-                thisMonthCount: 0,
-                overdueTasks: 0,
-                overdueProjects: 0,
-                openTasks: 0,
-                doneThisWeek: 0
-            }
-        }
-
+        if (!data) return null
         const { tasks, phases, projects } = data
-        const today = todayMidnight()
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
         const weekAgo = new Date(today)
         weekAgo.setDate(weekAgo.getDate() - 7)
 
-        const projectById = new Map(projects.map((p) => [p.id, p]))
-        const relevant = phases.filter((phase) => {
-            const proj = projectById.get(phase.project_id)
-            return proj?.currency === displayCurrency
-        })
+        const relevant = phases.filter(
+            (p) => projects.find((proj) => proj.id === p.project_id)?.currency === displayCurrency
+        )
 
         const earned = relevant.filter((p) => p.paid).reduce((s, p) => s + p.amount_cents, 0)
-
         const outstanding = relevant.filter((p) => !p.paid).reduce((s, p) => s + p.amount_cents, 0)
-
-        const thisMonth = relevant.filter((p) => p.paid && p.paid_at && isThisMonth(p.paid_at))
-
-        const earnedThisMonth = thisMonth.reduce((s, p) => s + p.amount_cents, 0)
-
         const overdueTasks = tasks.filter((t) => !t.done && isOverdue(t.due_date)).length
-
-        const overdueProjects = projects.filter((p) => {
-            if (!p.due_date || p.status === 'completed') return false
-            return new Date(p.due_date + 'T00:00:00') < today
-        }).length
-
-        const openTasks = tasks.filter((t) => !t.done).length
-
-        const doneThisWeek = tasks.filter((t) => {
-            if (!t.done || !t.completed_at) return false
-            return parseSqliteMs(t.completed_at) >= weekAgo.getTime()
-        }).length
+        const overdueProjects = projects.filter(
+            (p) =>
+                p.due_date && p.status !== 'completed' && new Date(p.due_date + 'T00:00:00') < today
+        ).length
 
         return {
             earned,
             outstanding,
-            earnedThisMonth,
-            paidCount: relevant.filter((p) => p.paid).length,
-            unpaidCount: relevant.filter((p) => !p.paid).length,
-            thisMonthCount: thisMonth.length,
             overdueTasks,
             overdueProjects,
-            openTasks,
-            doneThisWeek
+            openTasks: tasks.filter((t) => !t.done).length,
+            doneThisWeek: tasks.filter(
+                (t) =>
+                    t.done && t.completed_at && parseSqliteMs(t.completed_at) >= weekAgo.getTime()
+            ).length
         }
     }, [data, displayCurrency])
 
     const deadlines = useMemo(() => {
         if (!data) return []
         const projectById = new Map(data.projects.map((p) => [p.id, p]))
-        const today = todayMidnight()
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
         const weekFromNow = new Date(today)
         weekFromNow.setDate(weekFromNow.getDate() + 8)
-
         const items: DeadlineItem[] = []
 
         for (const t of data.tasks) {
-            if (t.done) continue
-            if (!t.due_date) continue
-            const dateStr = t.due_date || t.planned_for
-            if (!dateStr) continue
-            const d = new Date(dateStr + 'T00:00:00')
+            if (t.done || !t.due_date) continue
+            const d = new Date(t.due_date + 'T00:00:00')
             if (d >= weekFromNow) continue
             const project = t.project_id ? projectById.get(t.project_id) : undefined
             items.push({
                 id: `task-${t.id}`,
                 title: t.text,
                 projectTitle: project?.title,
-                date: dateStr,
-                daysAway: daysAway(dateStr),
+                date: t.due_date,
+                daysAway: Math.round((d.getTime() - today.getTime()) / 86400000),
                 type: 'task'
             })
         }
-
         for (const p of data.projects) {
             if (!p.due_date || p.status === 'completed') continue
             const d = new Date(p.due_date + 'T00:00:00')
@@ -159,13 +200,11 @@ export function DashboardView(): React.JSX.Element {
                 id: `project-${p.id}`,
                 title: p.title,
                 date: p.due_date,
-                daysAway: daysAway(p.due_date),
+                daysAway: Math.round((d.getTime() - today.getTime()) / 86400000),
                 type: 'project'
             })
         }
-
-        items.sort((a, b) => a.date.localeCompare(b.date))
-        return items
+        return items.sort((a, b) => a.date.localeCompare(b.date))
     }, [data])
 
     const projectHealth = useMemo<ProjectHealth[]>(() => {
@@ -195,236 +234,171 @@ export function DashboardView(): React.JSX.Element {
             .sort((a, b) => b.tasksTotal - a.tasksTotal)
     }, [data])
 
-    if (!data)
+    if (!data || !stats)
         return (
             <div className="view">
                 <p>Loading…</p>
             </div>
         )
 
-    const todayLabel = new Date().toLocaleDateString(undefined, {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric'
-    })
-
-    const maxProjectSeconds = Math.max(1, ...Object.values(data.sessionTotals.byProject))
-
     const hasAnyTime = data.sessionTotals.totalSeconds > 0
 
     return (
-        <div className="view dashboard-view">
-            <div className="view-header">
-                <h2>Dashboard</h2>
-                <span className="view-count">{todayLabel}</span>
-            </div>
-
-            <div className="stat-grid">
-                <div className="stat-card stat-green">
-                    <span className="stat-label">Earned</span>
-                    <span className="stat-value">{formatMoney(stats.earned, displayCurrency)}</span>
-                    <span className="stat-sub">
-                        {stats.paidCount} phase
-                        {stats.paidCount === 1 ? '' : 's'} paid
-                    </span>
+        <div className="dashboard-layout">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="dashboard-grid"
+            >
+                {/* ── 1. HERO SECTION ──────────────────────────────── */}
+                <div className="bento-card hero-bento">
+                    <LiveClock />
+                    <div className="hero-summary">
+                        <h3>Today at a glance</h3>
+                        <p>
+                            You have <strong>{stats.openTasks}</strong> open tasks and{' '}
+                            <strong>{deadlines.filter((d) => d.daysAway <= 0).length}</strong>{' '}
+                            deadlines hitting today.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="stat-card stat-amber">
-                    <span className="stat-label">Outstanding</span>
-                    <span className="stat-value">
-                        {formatMoney(stats.outstanding, displayCurrency)}
-                    </span>
-                    <span className="stat-sub">
-                        {stats.unpaidCount} phase
-                        {stats.unpaidCount === 1 ? '' : 's'} open
-                    </span>
+                {/* ── 2. LINE CHART SECTION ────────────────────────── */}
+                <div className="bento-card chart-bento">
+                    <div className="bento-header">
+                        <div className="bento-title">
+                            <TrendingUp size={16} className="text-accent" />
+                            <span>Focus Trends (7 Days)</span>
+                        </div>
+                        <span className="bento-badge">+12% vs last week</span>
+                    </div>
+                    <FocusLineChart data={mockWeeklyFocus} />
                 </div>
 
-                <div className="stat-card stat-blue">
-                    <span className="stat-label">This Month</span>
-                    <span className="stat-value">
-                        {formatMoney(stats.earnedThisMonth, displayCurrency)}
-                    </span>
-                    <span className="stat-sub">
-                        {stats.thisMonthCount} payment
-                        {stats.thisMonthCount === 1 ? '' : 's'}
-                    </span>
+                {/* ── 3. STAT CARDS ────────────────────────────────── */}
+                <div className="stat-grid">
+                    <div className="stat-card stat-green">
+                        <div className="stat-icon">
+                            <TrendingUp size={20} />
+                        </div>
+                        <div className="stat-info">
+                            <span className="stat-label">Earned</span>
+                            <span className="stat-value">
+                                {formatMoney(stats.earned, displayCurrency)}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="stat-card stat-amber">
+                        <div className="stat-icon">
+                            <Clock size={20} />
+                        </div>
+                        <div className="stat-info">
+                            <span className="stat-label">Outstanding</span>
+                            <span className="stat-value">
+                                {formatMoney(stats.outstanding, displayCurrency)}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="stat-card stat-purple">
+                        <div className="stat-icon">
+                            <Target size={20} />
+                        </div>
+                        <div className="stat-info">
+                            <span className="stat-label">Tracked Time</span>
+                            <span className="stat-value">
+                                {hasAnyTime ? formatHM(data.sessionTotals.thisWeekSeconds) : '0m'}
+                            </span>
+                        </div>
+                    </div>
+                    <div
+                        className={`stat-card ${stats.overdueTasks + stats.overdueProjects > 0 ? 'stat-red' : 'stat-neutral'}`}
+                    >
+                        <div className="stat-icon">
+                            <AlertCircle size={20} />
+                        </div>
+                        <div className="stat-info">
+                            <span className="stat-label">Overdue</span>
+                            <span className="stat-value">
+                                {stats.overdueTasks + stats.overdueProjects}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="stat-card stat-purple">
-                    <span className="stat-label">Tracked This Week</span>
-                    <span className="stat-value">
-                        {hasAnyTime ? formatHM(data.sessionTotals.thisWeekSeconds) : '0m'}
-                    </span>
-                    <span className="stat-sub">
-                        {hasAnyTime
-                            ? `${formatHM(data.sessionTotals.totalSeconds)} all time`
-                            : 'Start a timer in Focus'}
-                    </span>
-                </div>
-
-                <div
-                    className={`stat-card ${
-                        stats.overdueTasks + stats.overdueProjects > 0 ? 'stat-red' : 'stat-neutral'
-                    }`}
-                >
-                    <span className="stat-label">Overdue</span>
-                    <span className="stat-value">{stats.overdueTasks + stats.overdueProjects}</span>
-                    <span className="stat-sub">
-                        {stats.overdueTasks} task
-                        {stats.overdueTasks === 1 ? '' : 's'} · {stats.overdueProjects} project
-                        {stats.overdueProjects === 1 ? '' : 's'}
-                    </span>
-                </div>
-            </div>
-
-            <div className="dashboard-row">
-                <div className="dashboard-panel">
-                    <h3>Deadlines this week</h3>
+                {/* ── 4. DEADLINES WIDGET ──────────────────────────── */}
+                <div className="bento-card deadlines-bento">
+                    <div className="bento-header">
+                        <div className="bento-title">
+                            <CalendarDays size={16} />
+                            <span>Upcoming Deadlines</span>
+                        </div>
+                    </div>
                     {deadlines.length === 0 ? (
-                        <p className="panel-empty">Nothing due in the next 7 days.</p>
+                        <p className="panel-empty">Nothing due this week.</p>
                     ) : (
                         <div className="deadline-list">
-                            {deadlines.map((d) => {
-                                const dayLabel =
-                                    d.daysAway < 0
-                                        ? `${Math.abs(d.daysAway)}d overdue`
-                                        : d.daysAway === 0
-                                          ? 'Today'
-                                          : d.daysAway === 1
-                                            ? 'Tomorrow'
-                                            : `${d.daysAway}d`
-                                return (
-                                    <div
-                                        key={d.id}
-                                        className={`deadline-row ${d.daysAway < 0 ? 'overdue' : ''}`}
-                                    >
-                                        <span className="deadline-type">
-                                            {d.type === 'project' ? '◆' : '●'}
-                                        </span>
-                                        <div className="deadline-body">
-                                            <span className="deadline-title">{d.title}</span>
-                                            {d.projectTitle && (
-                                                <span className="deadline-project">
-                                                    {d.projectTitle}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <span className="deadline-date">{dayLabel}</span>
+                            {deadlines.map((d) => (
+                                <div
+                                    key={d.id}
+                                    className={`deadline-row ${d.daysAway < 0 ? 'overdue' : ''}`}
+                                >
+                                    <div className="deadline-badge">
+                                        {d.daysAway < 0
+                                            ? 'LATE'
+                                            : d.daysAway === 0
+                                              ? 'TODAY'
+                                              : `${d.daysAway}d`}
                                     </div>
-                                )
-                            })}
+                                    <div className="deadline-body">
+                                        <span className="deadline-title">{d.title}</span>
+                                        {d.projectTitle && (
+                                            <span className="deadline-project">
+                                                {d.projectTitle}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
 
-                <div className="dashboard-panel">
-                    <h3>Quick stats</h3>
-                    <div className="quick-stats">
-                        <div className="quick-stat-row">
-                            <span>Active projects</span>
-                            <strong>{data.projects.length}</strong>
-                        </div>
-                        <div className="quick-stat-row">
-                            <span>Open tasks</span>
-                            <strong>{stats.openTasks}</strong>
-                        </div>
-                        <div className="quick-stat-row">
-                            <span>Completed (7 days)</span>
-                            <strong className="green">{stats.doneThisWeek}</strong>
-                        </div>
-                        <div className="quick-stat-row">
-                            <span>Tracked (7 days)</span>
-                            <strong className="purple">
-                                {hasAnyTime ? formatHM(data.sessionTotals.thisWeekSeconds) : '—'}
-                            </strong>
-                        </div>
-                        <div className="quick-stat-row">
-                            <span>Total tasks</span>
-                            <strong>{data.tasks.length}</strong>
+                {/* ── 5. PROJECT HEALTH WIDGET ─────────────────────── */}
+                <div className="bento-card health-bento">
+                    <div className="bento-header">
+                        <div className="bento-title">
+                            <CheckCircle2 size={16} />
+                            <span>Project Health</span>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div className="dashboard-panel">
-                <h3>Project health</h3>
-                {projectHealth.length === 0 ? (
-                    <p className="panel-empty">
-                        No active work yet. Create a project to see it here.
-                    </p>
-                ) : (
                     <div className="health-list">
-                        {projectHealth.map((h) => {
-                            const projectSeconds = data.sessionTotals.byProject[h.project.id] ?? 0
-                            return (
-                                <div key={h.project.id} className="health-row">
-                                    <div className="health-header">
-                                        <span className="health-title">{h.project.title}</span>
-                                        <span className="health-money">
-                                            {formatMoney(h.moneyPaid, h.project.currency)} /{' '}
-                                            {formatMoney(h.moneyTotal, h.project.currency)}
-                                            {h.moneyTotal > 0 && h.moneyPaid === h.moneyTotal && (
-                                                <span className="health-paid-check"> ✓</span>
-                                            )}
-                                        </span>
+                        {projectHealth.map((h) => (
+                            <div key={h.project.id} className="health-row">
+                                <div className="health-header">
+                                    <span className="health-title">{h.project.title}</span>
+                                    <span className="health-money">
+                                        {Math.round(h.moneyProgress * 100)}% Paid
+                                    </span>
+                                </div>
+                                <div className="health-bars">
+                                    <div className="progress-bar">
+                                        <div
+                                            className="progress-fill progress-blue"
+                                            style={{ width: `${h.taskProgress * 100}%` }}
+                                        />
                                     </div>
-                                    <div className="health-bars">
-                                        <div className="health-bar-wrap">
-                                            <span className="health-bar-label">Tasks</span>
-                                            <div className="progress-bar">
-                                                <div
-                                                    className="progress-fill progress-blue"
-                                                    style={{
-                                                        width: `${h.taskProgress * 100}%`
-                                                    }}
-                                                />
-                                            </div>
-                                            <span className="health-bar-count">
-                                                {h.tasksDone}/{h.tasksTotal}
-                                            </span>
-                                        </div>
-                                        <div className="health-bar-wrap">
-                                            <span className="health-bar-label">Money</span>
-                                            <div className="progress-bar">
-                                                <div
-                                                    className="progress-fill progress-green"
-                                                    style={{
-                                                        width: `${h.moneyProgress * 100}%`
-                                                    }}
-                                                />
-                                            </div>
-                                            <span className="health-bar-count">
-                                                {h.moneyTotal > 0
-                                                    ? `${Math.round(h.moneyProgress * 100)}%`
-                                                    : '—'}
-                                            </span>
-                                        </div>
-                                        {hasAnyTime && (
-                                            <div className="health-bar-wrap">
-                                                <span className="health-bar-label">Time</span>
-                                                <div className="progress-bar">
-                                                    <div
-                                                        className="progress-fill progress-purple"
-                                                        style={{
-                                                            width: `${(projectSeconds / maxProjectSeconds) * 100}%`
-                                                        }}
-                                                    />
-                                                </div>
-                                                <span className="health-bar-count">
-                                                    {projectSeconds > 0
-                                                        ? formatHM(projectSeconds)
-                                                        : '—'}
-                                                </span>
-                                            </div>
-                                        )}
+                                    <div className="progress-bar">
+                                        <div
+                                            className="progress-fill progress-green"
+                                            style={{ width: `${h.moneyProgress * 100}%` }}
+                                        />
                                     </div>
                                 </div>
-                            )
-                        })}
+                            </div>
+                        ))}
                     </div>
-                )}
-            </div>
+                </div>
+            </motion.div>
         </div>
     )
 }

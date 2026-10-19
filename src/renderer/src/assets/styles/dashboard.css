@@ -1,366 +1,321 @@
 /* ============================================================
-   DASHBOARD — Stats, deadlines, quick stats, health
+   DASHBOARD REDESIGN
    ============================================================ */
 
-.dashboard-view {
+.dashboard-layout {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg-0);
+    padding: 24px;
 }
 
-/* -------- Stat cards -------- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1200px;
+    width: 100%;
+    align-items: start;
+}
+
+/* ── Shared Bento Card Styles ────────────────────────────── */
+
+.bento-card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.bento-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-0);
+}
+
+.bento-title svg {
+    color: var(--text-3);
+}
+
+.bento-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--success);
+    background: var(--success-soft);
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+/* ── 1. Hero / Clock ─────────────────────────────────────── */
+
+.hero-bento {
+    grid-column: span 2;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, var(--bg-1) 0%, rgba(91, 141, 239, 0.05) 100%);
+}
+
+.clock-widget {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.clock-greeting {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-2);
+}
+
+.clock-time {
+    font-size: 48px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-0);
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.clock-seconds {
+    font-size: 20px;
+    color: var(--text-3);
+    margin-left: 4px;
+}
+
+.clock-date {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-3);
+    margin-top: 4px;
+}
+
+.hero-summary {
+    max-width: 280px;
+    text-align: right;
+}
+
+.hero-summary h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-0);
+    margin-bottom: 8px;
+}
+
+.hero-summary p {
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.5;
+}
+
+.hero-summary strong {
+    color: var(--accent);
+}
+
+/* ── 2. Line Chart ───────────────────────────────────────── */
+
+.chart-bento {
+    grid-column: span 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.line-chart-svg {
+    width: 100%;
+    height: auto;
+    flex: 1;
+    min-height: 100px;
+    margin-top: 12px;
+}
+
+/* ── 3. Stat Grid ────────────────────────────────────────── */
 
 .stat-grid {
+    grid-column: span 3;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
 }
 
 .stat-card {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 18px 20px;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
     background: var(--bg-1);
-    border: 1px solid var(--border-subtle);
+    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    position: relative;
-    overflow: hidden;
-    transition:
-        transform var(--dur-fast) var(--ease-out),
-        border-color var(--dur-fast),
-        box-shadow var(--dur-fast);
-    animation: stat-enter var(--dur-slow) var(--ease-out) both;
-}
-
-.stat-card:nth-child(1) {
-    animation-delay: 0ms;
-}
-
-.stat-card:nth-child(2) {
-    animation-delay: 40ms;
-}
-
-.stat-card:nth-child(3) {
-    animation-delay: 80ms;
-}
-
-.stat-card:nth-child(4) {
-    animation-delay: 120ms;
-}
-
-.stat-card:nth-child(5) {
-    animation-delay: 160ms;
-}
-
-@keyframes stat-enter {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    transition: transform var(--dur-fast);
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    border-color: var(--border);
-    box-shadow: var(--shadow);
 }
 
-.stat-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
 }
 
-.stat-card.stat-green::before {
-    background: var(--success);
-}
+.stat-card.stat-green .stat-icon { background: var(--success-soft); color: var(--success); }
+.stat-card.stat-amber .stat-icon { background: var(--warning-soft); color: var(--warning); }
+.stat-card.stat-purple .stat-icon { background: rgba(167, 139, 250, 0.15); color: var(--purple); }
+.stat-card.stat-red .stat-icon { background: var(--danger-soft); color: var(--danger); }
+.stat-card.stat-neutral .stat-icon { background: var(--bg-2); color: var(--text-2); }
 
-.stat-card.stat-amber::before {
-    background: var(--warning);
-}
-
-.stat-card.stat-blue::before {
-    background: var(--accent);
-}
-
-.stat-card.stat-red::before {
-    background: var(--danger);
-}
-
-.stat-card.stat-neutral::before {
-    background: var(--border-strong);
-}
-
-.stat-card.stat-purple::before {
-    background: var(--purple);
+.stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .stat-label {
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     color: var(--text-2);
 }
 
 .stat-value {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 600;
     color: var(--text-0);
-    line-height: 1.15;
     font-family: var(--font-mono);
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
 }
 
-.stat-sub {
-    font-size: 11px;
-    color: var(--text-2);
-    font-weight: 500;
+/* ── 4. Deadlines Widget ─────────────────────────────────── */
+
+.deadlines-bento {
+    grid-column: span 1;
 }
-
-/* -------- Two-column layout -------- */
-
-.dashboard-row {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 12px;
-}
-
-.dashboard-panel {
-    background: var(--bg-1);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
-    padding: 18px 20px;
-}
-
-.dashboard-panel h3 {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-2);
-    margin-bottom: 14px;
-}
-
-.panel-empty {
-    font-size: 13px;
-    color: var(--text-2);
-    font-style: italic;
-    padding: 8px 0;
-}
-
-/* -------- Deadlines -------- */
 
 .deadline-list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 10px;
 }
 
 .deadline-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 9px 8px;
-    border-radius: var(--radius-sm);
-    transition: background var(--dur-fast);
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.deadline-row:last-child {
+    border-bottom: none;
 }
 
-.deadline-row:hover {
+.deadline-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
     background: var(--bg-2);
+    color: var(--text-2);
+    min-width: 48px;
+    text-align: center;
 }
 
-.deadline-row.overdue {
-    color: var(--danger);
-}
-
-.deadline-type {
-    font-size: 9px;
-    color: var(--text-3);
-    flex-shrink: 0;
-    width: 12px;
-}
-
-.deadline-row.overdue .deadline-type {
+.deadline-row.overdue .deadline-badge {
+    background: var(--danger-soft);
     color: var(--danger);
 }
 
 .deadline-body {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
+    flex: 1;
     min-width: 0;
 }
 
 .deadline-title {
     font-size: 13px;
+    font-weight: 500;
     color: var(--text-0);
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: 500;
-}
-
-.deadline-row.overdue .deadline-title {
-    color: var(--danger);
 }
 
 .deadline-project {
-    font-size: 10px;
-    color: var(--text-2);
-}
-
-.deadline-date {
     font-size: 11px;
-    color: var(--text-2);
-    flex-shrink: 0;
-    font-variant-numeric: tabular-nums;
-    font-family: var(--font-mono);
-    font-weight: 500;
+    color: var(--text-3);
 }
 
-.deadline-row.overdue .deadline-date {
-    color: var(--danger);
-    font-weight: 600;
+/* ── 5. Project Health Widget ────────────────────────────── */
+
+.health-bento {
+    grid-column: span 2;
 }
-
-/* -------- Quick stats -------- */
-
-.quick-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.quick-stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 13px;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--border-subtle);
-}
-
-.quick-stat-row:last-child {
-    border-bottom: none;
-}
-
-.quick-stat-row span {
-    color: var(--text-2);
-    font-weight: 500;
-}
-
-.quick-stat-row strong {
-    color: var(--text-0);
-    font-weight: 600;
-    font-size: 15px;
-    font-variant-numeric: tabular-nums;
-    font-family: var(--font-mono);
-}
-
-.quick-stat-row strong.green {
-    color: var(--success);
-}
-
-.quick-stat-row strong.purple {
-    color: var(--purple);
-}
-
-/* -------- Project health -------- */
 
 .health-list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 16px;
 }
 
 .health-row {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 12px 8px;
-    border-radius: var(--radius);
-    transition: background var(--dur-fast);
-}
-
-.health-row:hover {
-    background: var(--bg-2);
+    gap: 8px;
 }
 
 .health-header {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 12px;
 }
 
 .health-title {
-    font-size: 13.5px;
-    color: var(--text-0);
+    font-size: 13px;
     font-weight: 500;
+    color: var(--text-0);
 }
 
 .health-money {
-    font-size: 11.5px;
-    color: var(--text-1);
-    font-variant-numeric: tabular-nums;
-    font-family: var(--font-mono);
-    font-weight: 500;
-}
-
-.health-paid-check {
+    font-size: 11px;
+    font-weight: 600;
     color: var(--success);
-    font-weight: 700;
+    font-family: var(--font-mono);
 }
 
 .health-bars {
     display: flex;
-    gap: 16px;
-}
-
-.health-bar-wrap {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.health-bar-label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-2);
-    width: 44px;
-    flex-shrink: 0;
-}
-
-.health-bar-count {
-    font-size: 10.5px;
-    color: var(--text-2);
-    width: 56px;
-    text-align: right;
-    flex-shrink: 0;
-    font-variant-numeric: tabular-nums;
-    font-family: var(--font-mono);
-    font-weight: 500;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .progress-bar {
-    flex: 1;
     height: 6px;
-    background: var(--bg-3);
+    background: var(--bg-2);
     border-radius: 3px;
     overflow: hidden;
 }
@@ -368,17 +323,36 @@
 .progress-fill {
     height: 100%;
     border-radius: 3px;
-    transition: width var(--dur-slow) var(--ease-out);
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.progress-fill.progress-blue {
-    background: linear-gradient(90deg, #4a7eff, #5b8def);
+.progress-fill.progress-blue { background: var(--accent); }
+.progress-fill.progress-green { background: var(--success); }
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    .hero-bento, .chart-bento, .stat-grid, .deadlines-bento, .health-bento {
+        grid-column: span 1;
+    }
+    .hero-bento {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .hero-summary {
+        text-align: left;
+        margin-top: 16px;
+    }
+    .stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
-.progress-fill.progress-green {
-    background: linear-gradient(90deg, #22c55e, #4ade80);
-}
-
-.progress-fill.progress-purple {
-    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+@media (max-width: 600px) {
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
 }

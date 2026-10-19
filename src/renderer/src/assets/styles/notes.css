@@ -462,3 +462,50 @@
     margin: 0 4px;
 }
 
+/* Replace the existing .project-notes-new styles in notes.css with these */
+
+.project-notes-new {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-2);
+    color: var(--text-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    /* Smooth transition for all the hover effects */
+    transition: all var(--dur-fast) var(--ease-out);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.project-notes-new:hover:not(:disabled) {
+    background: var(--bg-3);
+    color: var(--accent);
+    border-color: var(--accent-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--accent-soft);
+}
+
+.project-notes-new:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.project-notes-new:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Micro-interaction: Rotate the plus icon on hover */
+.project-notes-new svg {
+    transition: transform var(--dur) var(--ease-spring);
+}
+
+.project-notes-new:hover:not(:disabled) svg {
+    transform: rotate(90deg);
+}
