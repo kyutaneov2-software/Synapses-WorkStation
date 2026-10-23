@@ -193,3 +193,20 @@ export interface ScheduleBlockInput {
     startAt: string
     endAt: string
 }
+// Add this near your other types
+export type GoalType = 'add_it_up' | 'everyday' | 'challenge' | 'daily_target'
+
+export interface Goal {
+    id: number
+    title: string
+    description: string | null
+    type: GoalType
+    target_value: number
+    target_unit: string | null
+    created_at: string
+    archived: 0 | 1
+    // Calculated fields from the backend
+    current_value: number
+    progress: number
+    today_value: number
+}

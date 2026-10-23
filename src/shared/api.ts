@@ -11,7 +11,9 @@ import type {
     Tag,
     Note,
     NoteSummary,
-    NoteUpdate
+    NoteUpdate,
+    Goal,
+    GoalType
 } from './types'
 import type { ScheduleBlock, ScheduleBlockWithTask, ScheduleBlockInput } from './types'
 
@@ -76,4 +78,16 @@ export interface SynapsesAPI {
     createBlock: (input: ScheduleBlockInput) => Promise<ScheduleBlock>
     updateBlock: (id: number, input: ScheduleBlockInput) => Promise<ScheduleBlock>
     deleteBlock: (id: number) => Promise<void>
+
+    // Goals
+    getGoals: () => Promise<Goal[]>
+    createGoal: (
+        title: string,
+        description: string | null,
+        type: GoalType,
+        targetValue: number,
+        unit: string | null
+    ) => Promise<Goal>
+    logGoal: (goalId: number, value: number, date: string) => Promise<void>
+    deleteGoal: (id: number) => Promise<void>
 }

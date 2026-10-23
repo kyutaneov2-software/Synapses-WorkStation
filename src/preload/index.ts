@@ -76,6 +76,13 @@ const api: SynapsesAPI = {
     updateBlock: (id, input) => ipcRenderer.invoke('db:update-block', id, input),
     deleteBlock: (id: number) => ipcRenderer.invoke('db:delete-block', id),
 
+    // Goals
+    getGoals: () => ipcRenderer.invoke('db:get-goals'),
+    createGoal: (title, desc, type, targetValue, unit) =>
+        ipcRenderer.invoke('db:create-goal', title, desc, type, targetValue, unit),
+    logGoal: (goalId, value, date) => ipcRenderer.invoke('db:log-goal', goalId, value, date),
+    deleteGoal: (id) => ipcRenderer.invoke('db:delete-goal', id),
+
     // System
     healthCheck: () => ipcRenderer.invoke('db:health-check'),
     testNotification: () => ipcRenderer.invoke('system:test-notification'),

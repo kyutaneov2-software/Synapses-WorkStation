@@ -9,6 +9,7 @@ import { registerSessionHandlers } from './sessions'
 import { registerTagHandlers } from './tags'
 import { registerNoteHandlers } from './notes'
 import { registerScheduleHandlers } from './schedule'
+import { registerGoalHandlers } from './goals'
 
 const ALL_CHANNELS = [
     // Projects
@@ -63,7 +64,12 @@ const ALL_CHANNELS = [
     'db:get-schedule-range',
     'db:create-block',
     'db:update-block',
-    'db:delete-block'
+    'db:delete-block',
+    // Goals
+    'db:get-goals',
+    'db:create-goal',
+    'db:update-goal',
+    'db:delete-goal'
 ]
 
 function clearExistingHandlers(): void {
@@ -85,6 +91,7 @@ export function registerAllIpcHandlers(): void {
     registerScheduleHandlers()
     registerTagHandlers()
     registerNoteHandlers()
+    registerGoalHandlers()
 
     console.log('[ipc] all handlers registered')
 }

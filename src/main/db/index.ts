@@ -232,6 +232,50 @@ export function runMigrations(): void {
         userVersion = 9
     }
 
+    if (userVersion < 10) {
+        console.log('Running migration to version 10 — goals...')
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS goals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT,
+                target_date TEXT,
+                progress INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                archived INTEGER DEFAULT 0
+            );
+            CREATE INDEX IF NOT EXISTS idx_goals_archived ON goals(archived);
+        `)
+        db.pragma('user_version = 10')
+        userVersion = 10
+    }
+
+    if (userVersion < 11) {
+        console.log('Running migration to version 11 — goal types and logs...')
+
+        // Add type and target to goals
+        db.exec(`ALTER TABLE goals ADD COLUMN type TEXT DEFAULT 'everyday'`)
+        db.exec(`ALTER TABLE goals ADD COLUMN target_value REAL DEFAULT 1`)
+        db.exec(`ALTER TABLE goals ADD COLUMN target_unit TEXT`)
+
+        // Create the logs table
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS goal_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                goal_id INTEGER NOT NULL,
+                date TEXT NOT NULL,          -- YYYY-MM-DD
+                value REAL NOT NULL DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (goal_id) REFERENCES goals (id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_goal_logs_goal ON goal_logs(goal_id);
+            CREATE INDEX IF NOT EXISTS idx_goal_logs_date ON goal_logs(date);
+        `)
+
+        db.pragma('user_version = 11')
+        userVersion = 11
+    }
+
     // Enable foreign key enforcement for the rest of the app's lifetime.
     // Must be outside a transaction — it's a silent no-op inside one.
     db.pragma('foreign_keys = ON')
