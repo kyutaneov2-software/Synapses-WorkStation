@@ -387,6 +387,28 @@
     border-radius: 3px;
 }
 
+/* Update the badge styling to handle dynamic states */
+.bento-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--dash-green);
+    background: rgba(67, 214, 154, 0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+/* Add these specific overrides for the dynamic badge */
+.bento-badge.text-red {
+    color: var(--dash-red);
+    background: rgba(248, 113, 113, 0.1);
+}
+
+.bento-badge.text-muted {
+    color: var(--dash-text-muted);
+    background: var(--dash-surface);
+}
+
 /* ── Responsive ─────────────────────────────────────────── */
 
 @media (max-width: 1100px) {

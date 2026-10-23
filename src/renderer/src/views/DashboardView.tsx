@@ -87,7 +87,6 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
     const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ')
     const areaPath = `M ${paddingX},${height - paddingBottom} L ${polylinePoints.replace(/ /g, ' L ')} L ${width - paddingX},${height - paddingBottom} Z`
 
-    // Gridlines (3 horizontal lines)
     const gridlines = [0.25, 0.5, 0.75].map((pct) => {
         const y = height - paddingBottom - pct * (height - paddingTop - paddingBottom)
         return y
@@ -107,7 +106,6 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
                     </linearGradient>
                 </defs>
 
-                {/* Gridlines */}
                 {gridlines.map((y, i) => (
                     <line
                         key={i}
@@ -141,7 +139,6 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
                     strokeLinejoin="round"
                 />
 
-                {/* X-Axis Labels */}
                 {points.map((p, i) => (
                     <text
                         key={i}
@@ -156,7 +153,6 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
                     </text>
                 ))}
 
-                {/* Data Points with Native Tooltips */}
                 {points.map((p, i) => (
                     <motion.circle
                         key={i}
@@ -171,7 +167,8 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
                         strokeWidth="2"
                         style={{ cursor: 'pointer' }}
                     >
-                        <title>{`${p.label}: ${formatHM(p.val * 60)}`}</title>
+                        {/* p.val is in seconds now, so we pass it directly to formatHM */}
+                        <title>{`${p.label}: ${formatHM(p.val)}`}</title>
                     </motion.circle>
                 ))}
             </svg>
@@ -188,7 +185,6 @@ interface ChartSegment {
     color: string
 }
 
-// Add this interface right above the ProjectDoughnutChart function
 interface RawChartData {
     id: number | string
     title: string
@@ -204,14 +200,12 @@ function ProjectDoughnutChart({
 }): React.JSX.Element {
     const totalSeconds = sessionTotals.totalSeconds
 
-    // Calculate unassigned time
     const assignedSeconds = Object.values(sessionTotals.byProject).reduce(
         (sum, val) => sum + val,
         0
     )
     const unassignedSeconds = totalSeconds - assignedSeconds
 
-    // FIX: Explicitly type the array as RawChartData[] to allow string IDs
     const projectData: RawChartData[] = Object.entries(sessionTotals.byProject)
         .map(([id, seconds]) => {
             const project = projects.find((p) => p.id === Number(id))
@@ -223,7 +217,6 @@ function ProjectDoughnutChart({
         })
         .filter((d) => d.seconds > 0)
 
-    // Add unassigned time as a segment if it exists
     if (unassignedSeconds > 0) {
         projectData.push({ id: 'unassigned', title: 'Unassigned', seconds: unassignedSeconds })
     }
@@ -325,13 +318,21 @@ interface ProjectHealth {
 export function DashboardView(): React.JSX.Element {
     const { data } = useDashboard()
 
-    // Generate dynamic mock data for the last 7 days
-    const last7DaysLabels = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date()
-        d.setDate(d.getDate() - (6 - i))
-        return d.toLocaleDateString(undefined, { weekday: 'short' })
+    // Extract real chart data
+    const chartData = data?.sessionTotals.last7Days ?? []
+    const chartValues = chartData.map((d) => d.seconds)
+    const chartLabels = chartData.map((d) => {
+        const date = new Date(d.date + 'T00:00:00')
+        return date.toLocaleDateString(undefined, { weekday: 'short' })
     })
-    const mockWeeklyFocus = [30, 45, 20, 90, 60, 120, 45]
+
+    // Calculate real week-over-week change
+    const thisWeek = data?.sessionTotals.thisWeekSeconds ?? 0
+    const prevWeek = data?.sessionTotals.prevWeekSeconds ?? 0
+    let weekChange = 0
+    if (prevWeek > 0) {
+        weekChange = Math.round(((thisWeek - prevWeek) / prevWeek) * 100)
+    }
 
     const displayCurrency = useMemo(() => {
         if (!data || data.projects.length === 0) return 'USD'
@@ -427,7 +428,6 @@ export function DashboardView(): React.JSX.Element {
                     tasksDone: 0,
                     taskProgress: 0
                 }
-                // REMOVED the filter that was hiding projects with 0 phases
             })
             .sort((a, b) => b.moneyProgress - a.moneyProgress)
     }, [data])
@@ -463,9 +463,18 @@ export function DashboardView(): React.JSX.Element {
                             <TrendingUp size={16} className="text-accent" />
                             <span>Focus Trends (7 Days)</span>
                         </div>
-                        <span className="bento-badge">+12% vs last week</span>
+                        {prevWeek > 0 ? (
+                            <span
+                                className={`bento-badge ${weekChange >= 0 ? 'text-green' : 'text-red'}`}
+                            >
+                                {weekChange >= 0 ? '+' : ''}
+                                {weekChange}% vs last week
+                            </span>
+                        ) : (
+                            <span className="bento-badge text-muted">No previous data</span>
+                        )}
                     </div>
-                    <FocusLineChart data={mockWeeklyFocus} labels={last7DaysLabels} />
+                    <FocusLineChart data={chartValues} labels={chartLabels} />
                 </motion.div>
 
                 <motion.div variants={cardVariants} className="bento-card doughnut-bento">

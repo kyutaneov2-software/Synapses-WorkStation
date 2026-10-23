@@ -132,11 +132,12 @@ export interface DashboardData {
     sessionTotals: {
         totalSeconds: number
         thisWeekSeconds: number
+        prevWeekSeconds: number
         thisMonthSeconds: number
         byProject: Record<number, number>
+        last7Days: Array<{ date: string; seconds: number }>
     }
 }
-
 export interface SessionTotals {
     totalSeconds: number
     thisWeekSeconds: number
