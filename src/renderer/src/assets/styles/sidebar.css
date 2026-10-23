@@ -11,6 +11,18 @@
     transition: width var(--dur) var(--ease-out);
 }
 
+/* Sidebar depth enhancement */
+.sidebar {
+    background-color: #0E1016; /* Exact sidebar hex from reference */
+    border-right: 1px solid #2A2E38;
+}
+
+/* Active state styling for IconRail */
+.icon-rail {
+    background-color: #0E1016;
+    border-right: 1px solid #2A2E38;
+}
+
 .sidebar-header {
     display: flex;
     justify-content: space-between;
