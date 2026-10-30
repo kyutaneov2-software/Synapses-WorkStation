@@ -1,14 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import {
-    Home,
-    FolderKanban,
-    StickyNote,
-    Calendar,
-    Target,
-    Settings,
-    Zap,
-    CheckSquare
-} from 'lucide-react'
+import { Home, FolderKanban, StickyNote, Settings, Zap, CheckSquare } from 'lucide-react'
 import { ROUTES } from '../../lib/routes'
 
 const iconSize = 18
@@ -50,22 +41,6 @@ export function IconRail(): React.JSX.Element {
                     title="Notes"
                 >
                     <StickyNote size={iconSize} strokeWidth={stroke} />
-                </NavLink>
-
-                <NavLink
-                    to={ROUTES.schedule}
-                    className={({ isActive }) => `icon-rail-btn ${isActive ? 'active' : ''}`}
-                    title="Schedule"
-                >
-                    <Calendar size={iconSize} strokeWidth={stroke} />
-                </NavLink>
-
-                <NavLink
-                    to={ROUTES.goals}
-                    className={({ isActive }) => `icon-rail-btn ${isActive ? 'active' : ''}`}
-                    title="Goals"
-                >
-                    <Target size={iconSize} strokeWidth={stroke} />
                 </NavLink>
             </div>
 

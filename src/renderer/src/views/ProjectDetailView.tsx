@@ -15,6 +15,7 @@ import { PhaseList } from '../components/phases/PhaseList'
 import { EditableText } from '../components/common/EditableText'
 import { ProjectEditModal } from '../components/projects/ProjectEditModal'
 import { ProjectNotesList } from '../components/notes/ProjectNotesList'
+import { ProjectFilesList } from '../components/projects/ProjectFilesList'
 import { TagInput } from '../components/common/TagInput'
 import { todayStr } from '../lib/dates'
 import { PROJECT_TYPE_LABELS } from '../../../shared/constants'
@@ -385,9 +386,7 @@ export function ProjectDetailView({
 
                         {activeTab === 'files' && (
                             <div className="project-tab-panel">
-                                <div className="empty-state">
-                                    <p>File attachments coming soon.</p>
-                                </div>
+                                <ProjectFilesList projectId={projectId} />
                             </div>
                         )}
 

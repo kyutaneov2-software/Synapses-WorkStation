@@ -4,8 +4,6 @@ import { TasksSpace } from './spaces/TasksSpace'
 import { ProjectsSpace } from './spaces/ProjectsSpace'
 import { HomeSpace } from './spaces/HomeSpace'
 import { NotesSpace } from './spaces/NotesSpace'
-import { ScheduleSpace } from './spaces/ScheduleSpace'
-import { GoalsSpace } from './spaces/GoalsSpace'
 import { SettingsSpace } from './spaces/SettingsSpace'
 
 function App(): React.JSX.Element {
@@ -25,8 +23,6 @@ function App(): React.JSX.Element {
 
                     <Route path="/home" element={<HomeSpace />} />
                     <Route path="/notes/*" element={<NotesSpace />} />
-                    <Route path="/schedule" element={<ScheduleSpace />} />
-                    <Route path="/goals" element={<GoalsSpace />} />
                     <Route path="/settings" element={<SettingsSpace />} />
                     <Route path="*" element={<Navigate to="/tasks/today" replace />} />
                 </Routes>

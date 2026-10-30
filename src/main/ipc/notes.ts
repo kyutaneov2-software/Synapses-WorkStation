@@ -23,8 +23,10 @@ function rowToNote(row: NoteRow): Note {
     }
 }
 
-function getNoteById(id: number): Note {
-    const row = db.prepare('SELECT * FROM notes WHERE id = ?').get(id) as NoteRow
+// FIX: Safely return null if the note is not found
+function getNoteById(id: number): Note | null {
+    const row = db.prepare('SELECT * FROM notes WHERE id = ?').get(id) as NoteRow | undefined
+    if (!row) return null
     return rowToNote(row)
 }
 
@@ -57,7 +59,8 @@ export function registerNoteHandlers(): void {
             .all(clean) as NoteSummary[]
     })
 
-    ipcMain.handle('db:get-note', (_, id: unknown): Note => {
+    // FIX: Update return type to allow null
+    ipcMain.handle('db:get-note', (_, id: unknown): Note | null => {
         const clean = requireNumber(id, 'id')
         return getNoteById(clean)
     })
@@ -71,7 +74,11 @@ export function registerNoteHandlers(): void {
             .run(cleanTitle, cleanProjectId)
 
         broadcast('data:changed')
-        return getNoteById(result.lastInsertRowid as number)
+
+        // FIX: Safely handle the result
+        const note = getNoteById(result.lastInsertRowid as number)
+        if (!note) throw new Error('Failed to retrieve newly created note')
+        return note
     })
 
     ipcMain.handle('db:update-note', (_, id: unknown, updates: NoteUpdate): Note => {
@@ -125,7 +132,10 @@ export function registerNoteHandlers(): void {
             broadcast('data:changed')
         }
 
-        return getNoteById(cleanId)
+        // FIX: Safely handle the case where the note was deleted mid-update
+        const note = getNoteById(cleanId)
+        if (!note) throw new Error('Note not found after update')
+        return note
     })
 
     ipcMain.handle('db:delete-note', (_, id: unknown): void => {

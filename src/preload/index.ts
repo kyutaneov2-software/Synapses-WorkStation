@@ -69,24 +69,17 @@ const api: SynapsesAPI = {
     getActiveSession: () => ipcRenderer.invoke('session:get-active'),
     getSessionTotals: () => ipcRenderer.invoke('session:get-totals'),
 
-    // Schedule
-    getScheduleRange: (fromDate: string, toDate: string) =>
-        ipcRenderer.invoke('db:get-schedule-range', fromDate, toDate),
-    createBlock: (input) => ipcRenderer.invoke('db:create-block', input),
-    updateBlock: (id, input) => ipcRenderer.invoke('db:update-block', id, input),
-    deleteBlock: (id: number) => ipcRenderer.invoke('db:delete-block', id),
-
-    // Goals
-    getGoals: () => ipcRenderer.invoke('db:get-goals'),
-    createGoal: (title, desc, type, targetValue, unit) =>
-        ipcRenderer.invoke('db:create-goal', title, desc, type, targetValue, unit),
-    logGoal: (goalId, value, date) => ipcRenderer.invoke('db:log-goal', goalId, value, date),
-    deleteGoal: (id) => ipcRenderer.invoke('db:delete-goal', id),
-
     // System
     healthCheck: () => ipcRenderer.invoke('db:health-check'),
     testNotification: () => ipcRenderer.invoke('system:test-notification'),
     getDashboardData: () => ipcRenderer.invoke('dashboard:get-data'),
+
+    // Attachment
+    getAttachments: (projectId) => ipcRenderer.invoke('db:get-attachments', projectId),
+    addAttachments: (projectId, title) =>
+        ipcRenderer.invoke('db:add-attachments', projectId, title),
+    deleteAttachment: (id) => ipcRenderer.invoke('db:delete-attachment', id),
+    openAttachment: (filename) => ipcRenderer.invoke('system:open-attachment', filename),
 
     // Cross-window event subscription
     onDataChanged: (callback: () => void): (() => void) => {

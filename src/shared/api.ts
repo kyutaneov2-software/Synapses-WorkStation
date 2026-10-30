@@ -12,10 +12,8 @@ import type {
     Note,
     NoteSummary,
     NoteUpdate,
-    Goal,
-    GoalType
+    Attachment
 } from './types'
-import type { ScheduleBlock, ScheduleBlockWithTask, ScheduleBlockInput } from './types'
 
 export interface SynapsesAPI {
     getProjects: () => Promise<Project[]>
@@ -68,26 +66,14 @@ export interface SynapsesAPI {
     // Notes
     getNotes: () => Promise<NoteSummary[]>
     getNotesByProject: (projectId: number) => Promise<NoteSummary[]>
-    getNote: (id: number) => Promise<Note>
+    getNote: (id: number) => Promise<Note | null> // <--- UPDATED
     createNote: (title: string, projectId: number | null) => Promise<Note>
     updateNote: (id: number, updates: NoteUpdate) => Promise<Note>
     deleteNote: (id: number) => Promise<void>
 
-    // Schedule
-    getScheduleRange: (fromDate: string, toDate: string) => Promise<ScheduleBlockWithTask[]>
-    createBlock: (input: ScheduleBlockInput) => Promise<ScheduleBlock>
-    updateBlock: (id: number, input: ScheduleBlockInput) => Promise<ScheduleBlock>
-    deleteBlock: (id: number) => Promise<void>
-
-    // Goals
-    getGoals: () => Promise<Goal[]>
-    createGoal: (
-        title: string,
-        description: string | null,
-        type: GoalType,
-        targetValue: number,
-        unit: string | null
-    ) => Promise<Goal>
-    logGoal: (goalId: number, value: number, date: string) => Promise<void>
-    deleteGoal: (id: number) => Promise<void>
+    // Attachments
+    getAttachments: (projectId: number) => Promise<Attachment[]>
+    addAttachments: (projectId: number, title: string) => Promise<void>
+    deleteAttachment: (id: number) => Promise<void>
+    openAttachment: (filename: string) => Promise<void>
 }

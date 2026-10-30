@@ -12,7 +12,5 @@ export const ROUTES = {
     // Other spaces
     home: '/home',
     notes: '/notes',
-    schedule: '/schedule',
-    goals: '/goals',
     settings: '/settings'
 } as const

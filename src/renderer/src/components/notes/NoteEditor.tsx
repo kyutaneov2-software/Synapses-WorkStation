@@ -42,6 +42,14 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
             .getNote(noteId)
             .then((n) => {
                 if (cancelled) return
+
+                // FIX: Gracefully handle the note being deleted or not found
+                if (!n) {
+                    setNote(null)
+                    setLoading(false)
+                    return
+                }
+
                 setNote(n)
                 setTitle(n.title)
                 setTopics(n.topics ?? [])
