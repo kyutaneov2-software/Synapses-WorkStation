@@ -1,0 +1,85 @@
+/* ============================================================
+   SPLASH SCREEN
+   ============================================================ */
+
+.splash-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-canvas);
+    background-image:
+        radial-gradient(ellipse 60% 50% at 50% 0%, var(--canvas-mesh-a) 0%, transparent 70%),
+        linear-gradient(to right, var(--canvas-grid) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--canvas-grid) 1px, transparent 1px);
+    background-size: auto, 32px 32px, 32px 32px;
+    -webkit-app-region: drag; /* Allows dragging the app while loading */
+}
+
+.splash-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.splash-logo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg), var(--inset-highlight);
+}
+
+.splash-icon {
+    color: var(--accent);
+    z-index: 2;
+}
+
+.splash-icon-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--accent);
+    filter: blur(20px);
+    opacity: 0.3;
+    z-index: 1;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.1); }
+}
+
+.splash-title {
+    font-family: var(--font-sans);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-0);
+    letter-spacing: -0.04em;
+    margin: 0;
+}
+
+.splash-loader-track {
+    width: 120px;
+    height: 3px;
+    background: var(--bg-3);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.splash-loader-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: inherit;
+    box-shadow: 0 0 10px var(--accent-glow);
+}

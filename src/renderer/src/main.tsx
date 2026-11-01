@@ -42,6 +42,7 @@ import './assets/styles/icons.css'
 
 // Theme — overrides surfaces/shadows/radii on structural elements
 import './assets/styles/theme.css'
+import './assets/styles/splash.css'
 
 // Responsive — always last
 import './assets/styles/responsive.css'

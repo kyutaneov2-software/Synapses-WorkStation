@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { IconRail } from './components/layout/IconRail'
+import { SplashScreen } from './components/layout/SplashScreen'
 import { TasksSpace } from './spaces/TasksSpace'
 import { ProjectsSpace } from './spaces/ProjectsSpace'
 import { HomeSpace } from './spaces/HomeSpace'
@@ -7,8 +10,13 @@ import { NotesSpace } from './spaces/NotesSpace'
 import { SettingsSpace } from './spaces/SettingsSpace'
 
 function App(): React.JSX.Element {
+    const [showSplash, setShowSplash] = useState(true)
     return (
         <HashRouter>
+            <AnimatePresence>
+                {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+            </AnimatePresence>
+
             <div className="app-shell">
                 <IconRail />
                 <div className="space-layout">
