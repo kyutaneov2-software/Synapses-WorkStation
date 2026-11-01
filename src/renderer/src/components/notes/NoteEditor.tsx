@@ -43,7 +43,6 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
             .then((n) => {
                 if (cancelled) return
 
-                // FIX: Gracefully handle the note being deleted or not found
                 if (!n) {
                     setNote(null)
                     setLoading(false)
@@ -127,7 +126,6 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
         } else if (command === 'bold' && active.heading) {
             return // headings are already bold
         } else if (command === 'formatBlock') {
-            // Clicking Heading inside a heading turns it back into normal text.
             document.execCommand(command, false, active.heading ? 'div' : value)
         } else {
             document.execCommand(command, false, value)
@@ -138,16 +136,16 @@ export function NoteEditor({ noteId }: NoteEditorProps): React.JSX.Element {
 
     if (loading) {
         return (
-            <div className="note-editor">
-                <p style={{ color: 'var(--text-3)' }}>Loading…</p>
+            <div className="note-editor-empty">
+                <p>Loading…</p>
             </div>
         )
     }
 
     if (!note) {
         return (
-            <div className="note-editor">
-                <p style={{ color: 'var(--text-3)' }}>Note not found.</p>
+            <div className="note-editor-empty">
+                <p>Note not found.</p>
             </div>
         )
     }

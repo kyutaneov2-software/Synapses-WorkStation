@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { htmlToText } from '../../../../shared/htmlToText'
 import { relativeTime } from '../../lib/relativeTime'
 
+const easeOut = [0.16, 1, 0.3, 1] as const
+
 interface NoteRowProps {
     note: {
         id: number
@@ -12,7 +14,6 @@ interface NoteRowProps {
     }
 }
 
-// Create a motion-enabled NavLink
 const MotionNavLink = motion.create(NavLink)
 
 export function NoteRow({ note }: NoteRowProps): React.JSX.Element {
@@ -21,10 +22,10 @@ export function NoteRow({ note }: NoteRowProps): React.JSX.Element {
     return (
         <MotionNavLink
             layout
-            initial={{ opacity: 0, y: -5 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.18, ease: easeOut }}
             to={`/notes/${note.id}`}
             className={({ isActive }: { isActive: boolean }) =>
                 `note-item ${isActive ? 'active' : ''}`

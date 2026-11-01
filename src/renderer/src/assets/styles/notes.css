@@ -1,14 +1,27 @@
-.note-link-input { width: 260px; height: 28px; padding: 0 10px; background: transparent; border: 0; outline: none; color: inherit; font-size: 13px; }
-.note-icon-btn.confirming { color: #ff8a8a; }
+/* ============================================================
+   NOTES SPACE — "Command Deck"
+   ============================================================ */
 
-/* ─── Notes Layout ──────────────────────────────────────────── */
+.notes-container {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    gap: 16px;
+    padding: 28px 40px 48px;
+    background: var(--bg-0);
+}
+
+/* ── SIDEBAR (Floating Card) ─────────────────────────────── */
 .notes-sidebar {
     width: 300px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     background: var(--bg-1);
-    border-right: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow), var(--inset-highlight);
     overflow: hidden;
 }
 
@@ -17,6 +30,7 @@
     align-items: center;
     gap: 10px;
     padding: 20px 20px 12px;
+    flex-shrink: 0;
 }
 
 .notes-search-wrap {
@@ -35,7 +49,7 @@
 .notes-search {
     width: 100%;
     padding: 8px 10px 8px 30px;
-    background: var(--bg-2);
+    background: var(--bg-0);
     color: var(--text-0);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -54,7 +68,7 @@
     align-items: center;
     justify-content: center;
     background: var(--accent);
-    color: white;
+    color: var(--text-inverse);
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
@@ -68,6 +82,7 @@
     gap: 6px;
     padding: 0 20px 12px;
     border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
 }
 
 .notes-filter-pill {
@@ -102,14 +117,15 @@
     padding: 1px 5px;
     border-radius: 8px;
     color: inherit;
+    font-family: var(--font-mono);
 }
 
 /* List */
 .notes-list {
     flex: 1;
     overflow-y: auto;
-    padding: 12px 12px;
-    position: relative; /* Helps AnimatePresence popLayout */
+    padding: 12px;
+    position: relative;
 }
 
 .notes-group-label {
@@ -133,7 +149,7 @@
     text-align: left;
     text-decoration: none;
     color: inherit;
-    transition: all var(--dur-fast);
+    transition: background var(--dur-fast), border-color var(--dur-fast);
 }
 
 .note-item:hover {
@@ -170,12 +186,34 @@
     margin-top: 2px;
 }
 
-/* ─── Note Editor ──────────────────────────────────────────── */
+/* ── MAIN AREA (Floating Card) ───────────────────────────── */
+.notes-main-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow), var(--inset-highlight);
+    overflow: hidden;
+}
+
+.notes-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+}
+
+/* ── NOTE EDITOR ─────────────────────────────────────────── */
 .note-editor {
     display: flex;
     flex-direction: column;
-    flex: 1;              /* ← was: height: 100vh */
-    min-height: 0;        /* ← new — lets flex children scroll correctly */
+    flex: 1;
+    min-height: 0;
+    height: 100%;
     background: var(--bg-0);
     position: relative;
 }
@@ -184,11 +222,11 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 40px 60px 100px; /* 100px bottom padding leaves room for the toolbar */
-    max-width: 900px;
+    padding: 40px 20px 100px;
+    max-width: 1100px;
     margin: 0 auto;
     width: 100%;
-    overflow: hidden; /* Prevent the whole container from scrolling */
+    overflow-y: auto;
 }
 
 .note-editor-header {
@@ -261,9 +299,7 @@
     padding: 4px 0;
     min-height: auto;
 }
-.note-editor-meta .tag-input.focused {
-    border: none;
-}
+.note-editor-meta .tag-input.focused { border: none; }
 
 .note-editor-meta .tag-chip {
     background: var(--bg-2);
@@ -282,7 +318,6 @@
 }
 
 /* Body */
-/* Body (Rich Text) */
 .note-editor-body {
     flex: 1;
     width: 100%;
@@ -293,20 +328,18 @@
     font-family: inherit;
     font-size: 15px;
     line-height: 1.75;
-    padding: 0;
+    padding: 10px 0;
     overflow-y: auto;
     word-wrap: break-word;
     white-space: pre-wrap;
 }
 
-/* Placeholder for empty contentEditable */
 .note-editor-body:empty::before {
     content: attr(data-placeholder);
     color: var(--text-3);
     pointer-events: none;
 }
 
-/* Rich Text Elements */
 .note-editor-body h1,
 .note-editor-body h2,
 .note-editor-body h3 {
@@ -316,7 +349,6 @@
     font-weight: 600;
     line-height: 1.3;
 }
-
 .note-editor-body h2 { font-size: 20px; }
 .note-editor-body h3 { font-size: 18px; }
 
@@ -327,9 +359,7 @@
     margin-bottom: 16px;
 }
 
-.note-editor-body li {
-    margin-bottom: 4px;
-}
+.note-editor-body li { margin-bottom: 4px; }
 
 .note-editor-body a {
     color: var(--accent);
@@ -344,9 +374,7 @@
 }
 
 .note-editor-body i,
-.note-editor-body em {
-    font-style: italic;
-}
+.note-editor-body em { font-style: italic; }
 .note-editor-body::placeholder { color: var(--text-3); }
 
 .note-editor-body input[type='checkbox'] {
@@ -371,7 +399,7 @@
     text-decoration: line-through;
 }
 
-/* ─── Empty States ─────────────────────────────────────────── */
+/* ── EMPTY STATES ─────────────────────────────────────────── */
 .notes-empty-list {
     padding: 24px 16px;
     text-align: center;
@@ -387,6 +415,7 @@
     justify-content: center;
     gap: 12px;
     color: var(--text-2);
+    height: 100%;
 }
 
 .note-empty-icon {
@@ -419,7 +448,6 @@
     position: absolute;
     bottom: 32px;
     left: 50%;
-    /* Remove transform: translateX(-50%); since Framer Motion handles it */
     display: flex;
     align-items: center;
     gap: 2px;
@@ -427,7 +455,7 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 6px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), var(--inset-highlight);
     z-index: 50;
 }
 
@@ -463,7 +491,28 @@
     margin: 0 4px;
 }
 
-/* Replace the existing .project-notes-new styles in notes.css with these */
+.note-link-input {
+    width: 260px;
+    height: 28px;
+    padding: 0 10px;
+    background: transparent;
+    border: 0;
+    outline: none;
+    color: inherit;
+    font-size: 13px;
+}
+
+.note-icon-btn.confirming {
+    color: var(--danger);
+    background: var(--danger-soft);
+}
+
+/* ── PROJECT NOTES LIST (Used inside Project Detail Tab) ── */
+.project-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
 
 .project-notes-new {
     align-self: flex-start;
@@ -479,7 +528,6 @@
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
-    /* Smooth transition for all the hover effects */
     transition: all var(--dur-fast) var(--ease-out);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
@@ -502,11 +550,33 @@
     cursor: not-allowed;
 }
 
-/* Micro-interaction: Rotate the plus icon on hover */
 .project-notes-new svg {
     transition: transform var(--dur) var(--ease-spring);
 }
 
 .project-notes-new:hover:not(:disabled) svg {
     transform: rotate(90deg);
+}
+
+.project-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+    .notes-container {
+        flex-direction: column;
+        padding: 24px 20px;
+        overflow-y: auto;
+    }
+    .notes-sidebar {
+        width: 100%;
+        min-height: 250px;
+        max-height: 400px;
+    }
+    .notes-main-area {
+        min-height: 500px;
+    }
 }
