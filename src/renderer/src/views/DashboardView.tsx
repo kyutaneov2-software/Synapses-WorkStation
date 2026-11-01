@@ -1,26 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-    TrendingUp,
-    AlertCircle,
-    CheckCircle2,
-    CalendarDays,
-    PieChart as PieChartIcon
-} from 'lucide-react'
+import { PieChart as PieChartIcon } from 'lucide-react'
 import type { Project, DashboardData } from '../../../shared/types'
 import { formatHM } from '../lib/time'
 import { useDashboard } from '../lib/hooks'
 import { isOverdue } from '../lib/dates'
 import { formatMoney } from '../../../shared/money'
 
-// ── Motion — matches --ease-out in tokens.css ────────────────
 const easeOut = [0.16, 1, 0.3, 1] as const
 
 const containerVariants = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
-        transition: { staggerChildren: 0.06, delayChildren: 0.05 }
+        transition: { staggerChildren: 0.05, delayChildren: 0.05 }
     }
 }
 
@@ -33,7 +26,6 @@ const cardVariants = {
     }
 } as const
 
-// ── Chart palette — all tokens, so accent swaps propagate ────
 const CHART_COLORS = [
     'var(--accent)',
     'var(--success)',
@@ -42,8 +34,6 @@ const CHART_COLORS = [
     'var(--danger)'
 ] as const
 const UNASSIGNED_COLOR = 'var(--text-2)'
-
-// ── Helper Components ────────────────────────────────────────
 
 function LiveClock(): React.JSX.Element {
     const [time, setTime] = useState(new Date())
@@ -57,137 +47,21 @@ function LiveClock(): React.JSX.Element {
     const greeting = hours < 12 ? 'Good morning' : hours < 18 ? 'Good afternoon' : 'Good evening'
 
     return (
-        <div className="clock-widget">
-            <div className="clock-greeting">{greeting}</div>
-            <div className="clock-time" data-time>
-                {time.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                <motion.span
-                    key={time.getSeconds()}
-                    initial={{ opacity: 0.5, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.18, ease: easeOut }}
-                    className="clock-seconds"
-                >
-                    {time.toLocaleTimeString(undefined, { second: '2-digit' }).replace(/\D/g, '')}
-                </motion.span>
+        <div className="hero-clock-block">
+            <span className="hero-clock-greeting">{greeting}</span>
+            <div className="hero-clock-time" data-time>
+                {time.toLocaleTimeString(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}
             </div>
-            <div className="clock-date">
+            <span className="hero-clock-date">
                 {time.toLocaleDateString(undefined, {
                     weekday: 'long',
                     month: 'long',
                     day: 'numeric'
                 })}
-            </div>
-        </div>
-    )
-}
-
-function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }): React.JSX.Element {
-    const width = 400
-    const height = 120
-    const paddingX = 20
-    const paddingTop = 10
-    const paddingBottom = 30
-
-    const max = Math.max(...data, 1)
-
-    const points = data.map((val, i) => {
-        const x = (i / (data.length - 1)) * (width - paddingX * 2) + paddingX
-        const y = height - paddingBottom - (val / max) * (height - paddingTop - paddingBottom)
-        return { x, y, val, label: labels[i] }
-    })
-
-    const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ')
-    const areaPath = `M ${paddingX},${height - paddingBottom} L ${polylinePoints.replace(/ /g, ' L ')} L ${width - paddingX},${height - paddingBottom} Z`
-
-    const gridlines = [0.25, 0.5, 0.75].map((pct) => {
-        const y = height - paddingBottom - pct * (height - paddingTop - paddingBottom)
-        return y
-    })
-
-    return (
-        <div className="chart-wrapper">
-            <svg
-                viewBox={`0 0 ${width} ${height}`}
-                className="line-chart-svg"
-                preserveAspectRatio="none"
-            >
-                <defs>
-                    <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22" />
-                        <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-                    </linearGradient>
-                </defs>
-
-                {gridlines.map((y, i) => (
-                    <line
-                        key={i}
-                        x1={paddingX}
-                        y1={y}
-                        x2={width - paddingX}
-                        y2={y}
-                        stroke="var(--border)"
-                        strokeWidth="1"
-                        strokeDasharray="4 4"
-                    />
-                ))}
-
-                <motion.path
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.3, ease: easeOut }}
-                    d={areaPath}
-                    fill="url(#chart-fill)"
-                />
-
-                <motion.polyline
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 1.2, delay: 0.15, ease: easeOut }}
-                    points={polylinePoints}
-                    fill="none"
-                    stroke="var(--accent)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-
-                {points.map((p, i) => (
-                    <text
-                        key={i}
-                        x={p.x}
-                        y={height - 10}
-                        fill="var(--text-2)"
-                        fontSize="10"
-                        textAnchor="middle"
-                        fontFamily="var(--font-sans)"
-                    >
-                        {p.label}
-                    </text>
-                ))}
-
-                {points.map((p, i) => (
-                    <motion.circle
-                        key={i}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{
-                            delay: 0.3 + i * 0.06,
-                            duration: 0.3,
-                            ease: easeOut
-                        }}
-                        cx={p.x}
-                        cy={p.y}
-                        r="4"
-                        fill="var(--bg-1)"
-                        stroke="var(--accent)"
-                        strokeWidth="2"
-                        style={{ cursor: 'pointer' }}
-                    >
-                        <title>{`${p.label}: ${formatHM(p.val)}`}</title>
-                    </motion.circle>
-                ))}
-            </svg>
+            </span>
         </div>
     )
 }
@@ -215,11 +89,7 @@ function ProjectDoughnutChart({
     projects: Project[]
 }): React.JSX.Element {
     const totalSeconds = sessionTotals.totalSeconds
-
-    const assignedSeconds = Object.values(sessionTotals.byProject).reduce(
-        (sum, val) => sum + val,
-        0
-    )
+    const assignedSeconds = Object.values(sessionTotals.byProject).reduce((s, v) => s + v, 0)
     const unassignedSeconds = totalSeconds - assignedSeconds
 
     const projectData: RawChartData[] = Object.entries(sessionTotals.byProject)
@@ -293,9 +163,7 @@ function ProjectDoughnutChart({
                     </g>
                 </svg>
                 <div className="doughnut-center">
-                    <span className="doughnut-total" data-time>
-                        {formatHM(totalSeconds)}
-                    </span>
+                    <span className="doughnut-total">{formatHM(totalSeconds)}</span>
                     <span className="doughnut-label">Total Focus</span>
                 </div>
             </div>
@@ -304,17 +172,13 @@ function ProjectDoughnutChart({
                     <div key={d.id} className="legend-item">
                         <span className="legend-color" style={{ background: d.color }} />
                         <span className="legend-name">{d.title}</span>
-                        <span className="legend-value" data-time>
-                            {formatHM(d.seconds)}
-                        </span>
+                        <span className="legend-value">{formatHM(d.seconds)}</span>
                     </div>
                 ))}
             </div>
         </div>
     )
 }
-
-// ── Main View ────────────────────────────────────────────────
 
 interface DeadlineItem {
     id: string
@@ -327,9 +191,6 @@ interface DeadlineItem {
 
 interface ProjectHealth {
     project: Project
-    tasksTotal: number
-    tasksDone: number
-    taskProgress: number
     moneyPaid: number
     moneyTotal: number
     moneyProgress: number
@@ -339,26 +200,46 @@ export function DashboardView(): React.JSX.Element {
     const { data } = useDashboard()
 
     const chartData = data?.sessionTotals.last7Days ?? []
-    const chartValues = chartData.map((d) => d.seconds)
-    const chartLabels = chartData.map((d) => {
-        const date = new Date(d.date + 'T00:00:00')
-        return date.toLocaleDateString(undefined, { weekday: 'short' })
-    })
 
-    const thisWeek = data?.sessionTotals.thisWeekSeconds ?? 0
-    const prevWeek = data?.sessionTotals.prevWeekSeconds ?? 0
-    let weekChange = 0
-    if (prevWeek > 0) {
-        weekChange = Math.round(((thisWeek - prevWeek) / prevWeek) * 100)
-    }
-
+    // FIX: Find the currency that actually has money attached to it.
+    // If all are 0, fall back to the most frequently used currency.
     const displayCurrency = useMemo(() => {
         if (!data || data.projects.length === 0) return 'USD'
-        const counts = new Map<string, number>()
+
+        const totals = new Map<string, number>()
         for (const p of data.projects) {
-            counts.set(p.currency, (counts.get(p.currency) || 0) + 1)
+            const projectPhases = data.phases.filter((ph) => ph.project_id === p.id)
+            const projectTotal = projectPhases.reduce((sum, ph) => sum + (ph.amount_cents || 0), 0)
+            const curr = p.currency || 'USD'
+            totals.set(curr, (totals.get(curr) || 0) + projectTotal)
         }
-        return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0][0]
+
+        let maxVal = -1
+        let maxCurr = 'USD'
+        for (const [curr, val] of totals.entries()) {
+            if (val > maxVal) {
+                maxVal = val
+                maxCurr = curr
+            }
+        }
+
+        // If the highest value is 0, find the most frequent currency
+        if (maxVal === 0) {
+            const counts = new Map<string, number>()
+            for (const p of data.projects) {
+                const c = p.currency || 'USD'
+                counts.set(c, (counts.get(c) || 0) + 1)
+            }
+            let maxCount = -1
+            for (const [curr, count] of counts.entries()) {
+                if (count > maxCount) {
+                    maxCount = count
+                    maxCurr = curr
+                }
+            }
+        }
+
+        return maxCurr
     }, [data])
 
     const stats = useMemo(() => {
@@ -367,12 +248,17 @@ export function DashboardView(): React.JSX.Element {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
-        const relevant = phases.filter(
-            (p) => projects.find((proj) => proj.id === p.project_id)?.currency === displayCurrency
-        )
+        const relevant = phases.filter((p) => {
+            const proj = projects.find((proj) => proj.id === p.project_id)
+            const projCurrency = proj?.currency || 'USD'
+            return projCurrency === displayCurrency
+        })
 
         const earned = relevant.filter((p) => p.paid).reduce((s, p) => s + p.amount_cents, 0)
         const outstanding = relevant.filter((p) => !p.paid).reduce((s, p) => s + p.amount_cents, 0)
+        const totalContract = earned + outstanding
+        const collectedPct = totalContract > 0 ? Math.round((earned / totalContract) * 100) : 0
+
         const overdueTasks = tasks.filter((t) => !t.done && isOverdue(t.due_date)).length
         const overdueProjects = projects.filter(
             (p) =>
@@ -382,11 +268,14 @@ export function DashboardView(): React.JSX.Element {
         return {
             earned,
             outstanding,
+            collectedPct,
             overdueTasks,
             overdueProjects,
             openTasks: tasks.filter((t) => !t.done).length
         }
     }, [data, displayCurrency])
+
+    const todayFocusSeconds = chartData.length > 0 ? chartData[chartData.length - 1].seconds : 0
 
     const deadlines = useMemo(() => {
         if (!data) return []
@@ -430,9 +319,8 @@ export function DashboardView(): React.JSX.Element {
         if (!data) return []
         return data.projects
             .map((project) => {
-                const projectPhases = data.phases.filter(
-                    (p) => p.project_id === project.id && p.currency === project.currency
-                )
+                // FIX: Removed the invalid `p.currency === project.currency` check
+                const projectPhases = data.phases.filter((p) => p.project_id === project.id)
                 const moneyPaid = projectPhases
                     .filter((p) => p.paid)
                     .reduce((s, p) => s + p.amount_cents, 0)
@@ -441,32 +329,55 @@ export function DashboardView(): React.JSX.Element {
                     project,
                     moneyPaid,
                     moneyTotal,
-                    moneyProgress: moneyTotal ? moneyPaid / moneyTotal : 0,
-                    tasksTotal: 0,
-                    tasksDone: 0,
-                    taskProgress: 0
+                    moneyProgress: moneyTotal ? moneyPaid / moneyTotal : 0
                 }
             })
             .sort((a, b) => b.moneyProgress - a.moneyProgress)
     }, [data])
 
-    if (!data || !stats)
+    const dueToday = deadlines.filter((d) => d.daysAway <= 0).length
+    const overdueTotal = stats ? stats.overdueTasks + stats.overdueProjects : 0
+
+    if (!data || !stats) {
         return (
             <div className="view">
                 <p>Loading…</p>
             </div>
         )
+    }
 
     return (
         <div className="dashboard-container">
             <motion.div
-                initial={{ opacity: 0, y: -8 }}
+                initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: easeOut }}
-                className="dashboard-header"
+                className="dashboard-ribbon"
             >
-                <h1>Dashboard</h1>
-                <p>An overview of your activity, focus, and projects.</p>
+                <div className="ribbon-greeting">
+                    <h1>Dashboard</h1>
+                    <p>Your freelance command deck — focus, money, and momentum.</p>
+                </div>
+                <div className="ribbon-kpis">
+                    <div className="ribbon-kpi">
+                        <span className="ribbon-kpi-label">Focus Today</span>
+                        <span className="ribbon-kpi-value" data-time>
+                            {formatHM(todayFocusSeconds)}
+                        </span>
+                    </div>
+                    <div className="ribbon-kpi">
+                        <span className="ribbon-kpi-label">Open Tasks</span>
+                        <span className="ribbon-kpi-value" data-tabular>
+                            {stats.openTasks}
+                        </span>
+                    </div>
+                    <div className={`ribbon-kpi ${overdueTotal > 0 ? 'alert' : ''}`}>
+                        <span className="ribbon-kpi-label">Overdue</span>
+                        <span className="ribbon-kpi-value" data-tabular>
+                            {overdueTotal}
+                        </span>
+                    </div>
+                </div>
             </motion.div>
 
             <motion.div
@@ -475,166 +386,173 @@ export function DashboardView(): React.JSX.Element {
                 animate="show"
                 className="dashboard-grid"
             >
-                {/* ── ROW 1: Analytics ───────────────────── */}
-                <motion.div variants={cardVariants} className="bento-card chart-bento">
-                    <div className="bento-header">
-                        <div className="bento-title">
-                            <TrendingUp size={16} style={{ color: 'var(--accent)' }} />
-                            <span>Focus Trends (7 Days)</span>
+                <div className="dashboard-main">
+                    <motion.div variants={cardVariants} className="deck-card hero-card">
+                        <div className="hero-top">
+                            <LiveClock />
+                            <div className="hero-live-pill">
+                                <span className="live-dot" />
+                                Live
+                            </div>
                         </div>
-                        {prevWeek > 0 ? (
-                            <span
-                                className={`bento-badge ${weekChange >= 0 ? 'text-green' : 'text-red'}`}
-                                data-tabular
-                            >
-                                {weekChange >= 0 ? '+' : ''}
-                                {weekChange}% vs last week
+
+                        <div className="hero-summary">
+                            <span>
+                                You have <strong>{stats.openTasks}</strong> open tasks
                             </span>
-                        ) : (
-                            <span className="bento-badge text-muted">No previous data</span>
-                        )}
-                    </div>
-                    <FocusLineChart data={chartValues} labels={chartLabels} />
-                </motion.div>
-
-                <motion.div variants={cardVariants} className="bento-card doughnut-bento">
-                    <div className="bento-header">
-                        <div className="bento-title">
-                            <PieChartIcon size={16} style={{ color: 'var(--accent)' }} />
-                            <span>Tracked Time by Project</span>
+                            <span className="hero-summary-sep">·</span>
+                            <span>
+                                <strong>{dueToday}</strong> hitting today
+                            </span>
+                            {overdueTotal > 0 && (
+                                <>
+                                    <span className="hero-summary-sep">·</span>
+                                    <span style={{ color: 'var(--danger)' }}>
+                                        <strong>{overdueTotal}</strong> overdue
+                                    </span>
+                                </>
+                            )}
                         </div>
-                    </div>
-                    <ProjectDoughnutChart
-                        sessionTotals={data.sessionTotals}
-                        projects={data.projects}
-                    />
-                </motion.div>
+                    </motion.div>
 
-                {/* ── ROW 2: Summary & Clock ─────────────── */}
-                <motion.div variants={cardVariants} className="bento-card hero-bento">
-                    <LiveClock />
-                    <div className="hero-summary">
-                        <h3>Today at a glance</h3>
-                        <p>
-                            You have <strong>{stats.openTasks}</strong> open tasks and{' '}
-                            <strong>{deadlines.filter((d) => d.daysAway <= 0).length}</strong>{' '}
-                            deadlines hitting today.
-                        </p>
-                    </div>
-                </motion.div>
-
-                <motion.div variants={cardVariants} className="bento-card financial-bento">
-                    <div className="bento-header">
-                        <div className="bento-title">
-                            <AlertCircle size={16} />
-                            <span>Financial Summary</span>
+                    <motion.div variants={cardVariants} className="deck-card finance-card">
+                        <div className="finance-header">
+                            <span className="finance-label">Earned</span>
+                            <span className="finance-period">Across all projects</span>
                         </div>
-                    </div>
-                    <div className="financial-content">
-                        <div className="financial-primary">
-                            <span className="financial-label">Earned</span>
-                            <span className="financial-value-lg text-green" data-money>
-                                {formatMoney(stats.earned, displayCurrency)}
+                        <div className="finance-hero-value text-green" data-money>
+                            {formatMoney(stats.earned, displayCurrency)}
+                        </div>
+                        <div className="finance-progress">
+                            <div className="finance-progress-bar">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${stats.collectedPct}%` }}
+                                    transition={{ duration: 0.9, delay: 0.2, ease: easeOut }}
+                                    className="finance-progress-fill"
+                                />
+                            </div>
+                            <span className="finance-progress-label">
+                                {stats.collectedPct}% collected
                             </span>
                         </div>
-                        <div className="financial-secondary">
-                            <div className="financial-row">
-                                <span className="financial-label">Outstanding</span>
-                                <span className="financial-value-md text-amber" data-money>
+                        <div className="finance-outstanding">
+                            <div className="finance-outstanding-row">
+                                <span className="finance-outstanding-label">Outstanding</span>
+                                <span className="finance-outstanding-value" data-money>
                                     {formatMoney(stats.outstanding, displayCurrency)}
                                 </span>
                             </div>
-                            <div className="financial-row">
-                                <span className="financial-label">Overdue Items</span>
-                                <span
-                                    className={`financial-value-sm ${
-                                        stats.overdueTasks + stats.overdueProjects > 0
-                                            ? 'text-red'
-                                            : 'text-muted'
-                                    }`}
-                                    data-tabular
-                                >
-                                    {stats.overdueTasks + stats.overdueProjects}
+                            {overdueTotal > 0 && (
+                                <span className="finance-overdue-pill">
+                                    <span className="finance-overdue-dot" />
+                                    {overdueTotal} overdue
                                 </span>
-                            </div>
+                            )}
                         </div>
-                    </div>
-                </motion.div>
+                    </motion.div>
 
-                {/* ── ROW 3: Deadlines & Health ──────────── */}
-                <motion.div variants={cardVariants} className="bento-card deadlines-bento">
-                    <div className="bento-header">
-                        <div className="bento-title">
-                            <CalendarDays size={16} />
-                            <span>Upcoming Deadlines</span>
+                    <motion.div variants={cardVariants} className="deck-card health-card">
+                        <div className="health-header">
+                            <span className="health-title">Project Health</span>
+                            <span className="health-meta" data-tabular>
+                                {projectHealth.length} active
+                            </span>
                         </div>
-                    </div>
-                    {deadlines.length === 0 ? (
-                        <div className="empty-state-mini">
-                            <p>Nothing due this week.</p>
-                        </div>
-                    ) : (
-                        <div className="deadline-list">
-                            {deadlines.map((d) => (
-                                <motion.div
-                                    key={d.id}
-                                    whileHover={{ x: 3 }}
-                                    transition={{ duration: 0.18, ease: easeOut }}
-                                    className={`deadline-row ${d.daysAway < 0 ? 'overdue' : ''}`}
-                                >
-                                    <div className="deadline-badge" data-tabular>
-                                        {d.daysAway < 0
-                                            ? 'LATE'
-                                            : d.daysAway === 0
-                                              ? 'TODAY'
-                                              : `${d.daysAway}d`}
-                                    </div>
-                                    <div className="deadline-body">
-                                        <span className="deadline-title">{d.title}</span>
-                                        {d.projectTitle && (
-                                            <span className="deadline-project">
-                                                {d.projectTitle}
-                                            </span>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    )}
-                </motion.div>
-
-                <motion.div variants={cardVariants} className="bento-card health-bento">
-                    <div className="bento-header">
-                        <div className="bento-title">
-                            <CheckCircle2 size={16} />
-                            <span>Project Health</span>
-                        </div>
-                    </div>
-                    <div className="health-list">
-                        {projectHealth.map((h) => (
-                            <div key={h.project.id} className="health-row">
-                                <div className="health-header">
-                                    <span className="health-title">{h.project.title}</span>
-                                    <span className="health-money" data-tabular>
-                                        {Math.round(h.moneyProgress * 100)}% Paid
-                                    </span>
-                                </div>
-                                <div className="progress-track">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${h.moneyProgress * 100}%` }}
-                                        transition={{
-                                            duration: 0.9,
-                                            delay: 0.15,
-                                            ease: easeOut
-                                        }}
-                                        className="progress-fill"
-                                    />
-                                </div>
+                        {projectHealth.length === 0 ? (
+                            <div className="empty-state-mini">
+                                <p>No projects yet.</p>
                             </div>
-                        ))}
-                    </div>
-                </motion.div>
+                        ) : (
+                            <div className="health-grid">
+                                {projectHealth.map((h) => (
+                                    <div key={h.project.id} className="health-mini">
+                                        <div className="health-mini-title">{h.project.title}</div>
+                                        <div className="health-mini-progress">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${h.moneyProgress * 100}%` }}
+                                                transition={{
+                                                    duration: 0.8,
+                                                    delay: 0.1,
+                                                    ease: easeOut
+                                                }}
+                                                className="health-mini-fill"
+                                            />
+                                        </div>
+                                        <div className="health-mini-pct">
+                                            {Math.round(h.moneyProgress * 100)}% paid
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </motion.div>
+                </div>
+
+                <div className="dashboard-rail">
+                    <motion.div variants={cardVariants} className="deck-card doughnut-card">
+                        <div className="doughnut-header">
+                            <span className="doughnut-title">Time by Project</span>
+                            <span className="doughnut-subtitle">All-time focus</span>
+                        </div>
+                        <ProjectDoughnutChart
+                            sessionTotals={data.sessionTotals}
+                            projects={data.projects}
+                        />
+                    </motion.div>
+
+                    <motion.div variants={cardVariants} className="deck-card deadlines-card">
+                        <div className="deadlines-header">
+                            <span className="deadlines-title">Upcoming</span>
+                            <span className="deadlines-count" data-tabular>
+                                {deadlines.length}
+                            </span>
+                        </div>
+                        {deadlines.length === 0 ? (
+                            <div className="empty-state-mini">
+                                <p>Nothing due this week. Breathe.</p>
+                            </div>
+                        ) : (
+                            <div className="deadlines-list">
+                                {deadlines.map((d) => {
+                                    const isOverdue = d.daysAway < 0
+                                    const isSoon = d.daysAway >= 0 && d.daysAway <= 2
+                                    return (
+                                        <div
+                                            key={d.id}
+                                            className={`deadline-item ${isOverdue ? 'overdue' : isSoon ? 'soon' : ''}`}
+                                        >
+                                            <div className="deadline-marker">
+                                                <div className="deadline-dot" />
+                                                <div className="deadline-line" />
+                                            </div>
+                                            <div className="deadline-content">
+                                                <span className="deadline-when">
+                                                    {isOverdue
+                                                        ? 'Overdue'
+                                                        : d.daysAway === 0
+                                                          ? 'Today'
+                                                          : d.daysAway === 1
+                                                            ? 'Tomorrow'
+                                                            : `In ${d.daysAway}d`}
+                                                </span>
+                                                <span className="deadline-title-text">
+                                                    {d.title}
+                                                </span>
+                                                {d.projectTitle && (
+                                                    <span className="deadline-project-text">
+                                                        {d.projectTitle}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </motion.div>
+                </div>
             </motion.div>
         </div>
     )

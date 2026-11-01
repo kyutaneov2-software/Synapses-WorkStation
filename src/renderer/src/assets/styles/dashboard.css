@@ -1,12 +1,9 @@
 /* ============================================================
-   DASHBOARD — "Obsidian" pass
-   Uses design tokens exclusively. --dash-* kept as aliases
-   for backward compatibility with React code that may reference
-   them inline. All real values come from tokens.css.
+   DASHBOARD — "Command Deck"
+   Editorial 2-column layout: main narrative + situational rail
    ============================================================ */
 
 :root {
-    /* Legacy aliases → canonical tokens */
     --dash-bg:          var(--bg-0);
     --dash-card:        var(--bg-1);
     --dash-surface:     var(--bg-2);
@@ -24,49 +21,129 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    flex: 1;                 /* ← was: height: 100vh */
-    min-height: 0;           /* ← new — enables inner scroll */
-    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden; /* Changed from auto: stops the whole page from scrolling */
     background: var(--bg-0);
-    padding: 36px 48px 48px;
+    padding: 28px 40px 48px;
 }
 
-/* ── Page Header ────────────────────────────────────────── */
-.dashboard-header {
-    margin-bottom: 32px;
+/* ── TOP RIBBON (greeting + KPI strip) ─────────────────── */
+.dashboard-ribbon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
     max-width: 1600px;
     width: 100%;
     margin-inline: auto;
+    flex-shrink: 0;
 }
 
-.dashboard-header h1 {
-    font-size: 26px;
+.ribbon-greeting {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.ribbon-greeting h1 {
+    font-size: 22px;
     font-weight: 600;
     color: var(--text-0);
-    margin: 0 0 6px 0;
+    margin: 0;
     letter-spacing: -0.022em;
 }
 
-.dashboard-header p {
-    font-size: 13px;
+.ribbon-greeting p {
+    font-size: 12.5px;
     color: var(--text-2);
     margin: 0;
-    letter-spacing: -0.005em;
+    letter-spacing: -0.003em;
 }
 
-/* ── The Grid ───────────────────────────────────────────── */
+.ribbon-kpis {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ribbon-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 14px;
+    background: var(--bg-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    min-width: 88px;
+    transition:
+        border-color var(--dur) var(--ease-out),
+        background var(--dur) var(--ease-out);
+}
+
+.ribbon-kpi:hover {
+    border-color: var(--border);
+    background: var(--bg-2);
+}
+
+.ribbon-kpi.alert {
+    border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+.ribbon-kpi-label {
+    font-size: 9.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--text-3);
+}
+
+.ribbon-kpi-value {
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--text-0);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.ribbon-kpi.alert .ribbon-kpi-value {
+    color: var(--danger);
+}
+
+/* ── MAIN GRID ─────────────────────────────────────────── */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
+    grid-template-columns: minmax(0, 1fr) 340px;
     gap: 16px;
     max-width: 1600px;
     width: 100%;
     margin-inline: auto;
-    align-items: stretch;
+    flex: 1; /* Takes remaining height */
+    min-height: 0; /* Crucial for inner scroll */
 }
 
-/* ── Bento Card (shared) ───────────────────────────────── */
-.bento-card {
+.dashboard-main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    min-height: 0;
+}
+
+.dashboard-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* ── SHARED CARD BASE ──────────────────────────────────── */
+.deck-card {
     background: var(--bg-1);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -76,100 +153,392 @@
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    height: 100%;
     transition:
         border-color var(--dur) var(--ease-out),
         box-shadow var(--dur) var(--ease-out);
 }
 
-.bento-card:hover {
+.deck-card:hover {
     border-color: var(--border-strong);
-    box-shadow: var(--shadow-lg), var(--inset-highlight);
 }
 
-.bento-header {
+/* ── HERO CARD (clock + summary) ───────────────────────── */
+.hero-card {
+    padding: 40px 32px;
+    background:
+        radial-gradient(ellipse 70% 55% at 100% 0%,
+            color-mix(in srgb, var(--accent) 7%, transparent) 0%,
+            transparent 60%),
+        var(--bg-1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 240px;
+    flex-shrink: 0; /* Prevents squashing */
+}
+
+.hero-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.hero-clock-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.hero-clock-greeting {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    letter-spacing: -0.005em;
+}
+
+.hero-clock-time {
+    font-size: 84px;
+    font-weight: 700;
+    color: var(--text-0);
+    line-height: 0.92;
+    letter-spacing: -0.055em;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.hero-clock-date {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.hero-live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--success-soft);
+    border: 1px solid color-mix(in srgb, var(--success) 25%, transparent);
+    color: var(--success);
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+.hero-summary {
+    font-size: 14px;
+    color: var(--text-1);
+    line-height: 1.5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.hero-summary strong {
+    color: var(--text-0);
+    font-weight: 600;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+
+.hero-summary-sep {
+    color: var(--text-3);
+    opacity: 0.6;
+}
+
+/* ── FINANCIAL CARD ─────────────────────────────────────── */
+.finance-card {
+    padding: 24px 28px;
+    flex-shrink: 0; /* Prevents squashing */
+}
+
+.finance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+}
+
+.finance-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+}
+
+.finance-period {
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+}
+
+.finance-hero-value {
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--text-0);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 16px;
+}
+
+.finance-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.finance-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-2);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.finance-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg,
+        color-mix(in srgb, var(--success) 85%, transparent) 0%,
+        var(--success) 100%);
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--success) 35%, transparent);
+    transition: width var(--dur-slow) var(--ease-out);
+}
+
+.finance-progress-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--success);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+}
+
+.finance-outstanding {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-subtle);
     gap: 12px;
+    flex-wrap: wrap;
 }
 
-.bento-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-2);
-}
-
-.bento-title svg {
-    color: var(--text-2);
-    opacity: 0.7;
-}
-
-.bento-badge {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--success);
-    background: var(--success-soft);
-    padding: 4px 10px;
-    border-radius: var(--radius-full);
-    letter-spacing: -0.005em;
-    font-variant-numeric: tabular-nums;
-    transition: var(--transition-color);
-}
-
-.bento-badge.text-red {
-    color: var(--danger);
-    background: var(--danger-soft);
-}
-
-.bento-badge.text-muted {
-    color: var(--text-2);
-    background: var(--bg-2);
-}
-
-/* ── ROW 1: Charts ──────────────────────────────────────── */
-.chart-bento     { grid-column: span 6; }
-.doughnut-bento  { grid-column: span 6; }
-
-.chart-wrapper {
-    flex: 1;
+.finance-outstanding-row {
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    min-height: 0;
+    gap: 2px;
 }
 
-.line-chart-svg {
-    width: 100%;
-    height: auto;
-    max-height: 190px;
+.finance-outstanding-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
 }
 
-/* Doughnut */
-.doughnut-container {
-    display: flex;
+.finance-outstanding-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--warning);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+
+.finance-overdue-pill {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-radius: var(--radius-full);
+    display: inline-flex;
     align-items: center;
-    gap: 32px;
-    flex: 1;
+    gap: 5px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
 }
 
-.doughnut-graphic {
-    position: relative;
-    width: 176px;
-    height: 176px;
+.finance-overdue-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--danger);
+}
+
+/* ── PROJECT HEALTH CARD (Scrollable) ──────────────────── */
+.health-card {
+    padding: 22px 26px;
+    flex: 1; /* Fills remaining vertical space */
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.health-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
     flex-shrink: 0;
+}
+
+.health-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+}
+
+.health-meta {
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+}
+
+.health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    flex: 1;
+    overflow-y: auto;
+    align-content: start;
+    padding-right: 4px;
+    padding-bottom: 4px;
+}
+
+.health-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    transition:
+        border-color var(--dur-fast) var(--ease-out),
+        background var(--dur-fast) var(--ease-out);
+}
+
+.health-mini:hover {
+    border-color: var(--border-strong);
+    background: var(--bg-3);
+}
+
+.health-mini-title {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-0);
+    letter-spacing: -0.005em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.health-mini-progress {
+    height: 4px;
+    background: var(--bg-3);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.health-mini-fill {
+    height: 100%;
+    background: linear-gradient(90deg,
+        color-mix(in srgb, var(--success) 85%, transparent) 0%,
+        var(--success) 100%);
+    border-radius: var(--radius-full);
+    transition: width var(--dur-slow) var(--ease-out);
+}
+
+.health-mini-pct {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text-2);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.005em;
+}
+
+/* ── DOUGHNUT CARD (rail) ──────────────────────────────── */
+.doughnut-card {
+    padding: 22px 20px;
+    flex-shrink: 0; /* Prevents squashing */
+}
+
+.doughnut-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 16px;
+}
+
+.doughnut-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+}
+
+.doughnut-subtitle {
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+}
+
+.doughnut-card .doughnut-container {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.doughnut-card .doughnut-graphic {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    flex-shrink: 0;
+    margin: 0 auto 8px;
 }
 
 .doughnut-svg {
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 0 24px rgba(92, 143, 247, 0.08));
+    display: block;
 }
 
 .doughnut-center {
@@ -180,6 +549,7 @@
     align-items: center;
     justify-content: center;
     pointer-events: none;
+    z-index: 2;
 }
 
 .doughnut-total {
@@ -193,31 +563,28 @@
 }
 
 .doughnut-label {
-    font-size: 10px;
+    font-size: 9.5px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--text-3);
     font-weight: 600;
-    margin-top: 8px;
+    margin-top: 6px;
 }
 
-.doughnut-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex: 1;
-    min-width: 0;
-    max-height: 176px;
+.doughnut-card .doughnut-legend {
+    width: 100%;
+    max-height: 140px;
     overflow-y: auto;
-    padding-right: 4px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 12px;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 12px;
-    padding: 2px 0;
+    font-size: 11.5px;
+    padding: 3px 0;
 }
 
 .legend-color {
@@ -242,7 +609,155 @@
     font-family: var(--font-mono);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
-    font-size: 11.5px;
+    font-size: 11px;
+}
+
+/* ── DEADLINES CARD (Scrollable) ───────────────────────── */
+.deadlines-card {
+    padding: 22px 20px;
+    flex: 1; /* Fills remaining vertical space in rail */
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.deadlines-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+}
+
+.deadlines-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+}
+
+.deadlines-count {
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 500;
+}
+
+.deadlines-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+    padding-bottom: 4px;
+}
+
+.deadline-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+}
+
+.deadline-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 8px;
+    padding-top: 4px;
+}
+
+.deadline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+    flex-shrink: 0;
+    transition: box-shadow var(--dur) var(--ease-out);
+}
+
+.deadline-item.overdue .deadline-dot {
+    background: var(--danger);
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.45);
+}
+
+.deadline-item.soon .deadline-dot {
+    background: var(--warning);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.45);
+}
+
+.deadline-line {
+    width: 1px;
+    flex: 1;
+    min-height: 22px;
+    background: var(--border);
+    margin-top: 4px;
+}
+
+.deadline-item:last-child .deadline-line {
+    display: none;
+}
+
+.deadline-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
+    padding-bottom: 4px;
+}
+
+.deadline-when {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.deadline-item.overdue .deadline-when {
+    color: var(--danger);
+}
+
+.deadline-item.soon .deadline-when {
+    color: var(--warning);
+}
+
+.deadline-title-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-0);
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+    overflow: hidden;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.deadline-project-text {
+    font-size: 11px;
+    color: var(--text-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── EMPTY STATES ──────────────────────────────────────── */
+.empty-state-mini {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 20px;
+    color: var(--text-3);
+    font-size: 12.5px;
+    font-style: italic;
+    text-align: center;
 }
 
 .empty-state-chart {
@@ -251,280 +766,88 @@
     align-items: center;
     justify-content: center;
     flex: 1;
+    gap: 10px;
     color: var(--text-3);
-    gap: 12px;
-    font-size: 13px;
-}
-
-/* ── ROW 2: Hero + Financial ───────────────────────────── */
-.hero-bento {
-    grid-column: span 7;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 32px 36px;
-    background:
-        radial-gradient(ellipse at top right,
-            color-mix(in srgb, var(--accent) 6%, transparent) 0%,
-            transparent 60%),
-        var(--bg-1);
-}
-
-.financial-bento {
-    grid-column: span 5;
-    justify-content: center;
-}
-
-/* Clock */
-.clock-widget { display: flex; flex-direction: column; gap: 4px; }
-
-.clock-greeting {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-2);
-    letter-spacing: -0.005em;
-}
-
-.clock-time {
-    font-size: 56px;
-    font-weight: 700;
-    color: var(--text-0);
-    line-height: 1;
-    letter-spacing: -0.045em;
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-}
-
-.clock-seconds {
-    font-size: 20px;
-    color: var(--text-3);
-    margin-left: 4px;
-    font-weight: 500;
-}
-
-.clock-date {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-2);
-    margin-top: 8px;
-}
-
-.hero-summary {
-    max-width: 320px;
-    text-align: right;
-}
-
-.hero-summary h3 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-0);
-    margin: 0 0 8px 0;
-    letter-spacing: -0.01em;
-}
-
-.hero-summary p {
-    font-size: 13px;
-    color: var(--text-1);
-    line-height: 1.55;
-    margin: 0;
-}
-
-.hero-summary strong {
-    color: var(--accent);
-    font-weight: 600;
-}
-
-/* Financial */
-.financial-content {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.financial-primary {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-bottom: 18px;
-    border-bottom: 1px solid var(--border-subtle);
-}
-
-.financial-label {
-    font-size: 10.5px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-3);
-}
-
-.financial-value-lg {
-    font-size: 34px;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    line-height: 1.05;
-    letter-spacing: -0.035em;
-    color: var(--text-0);
-}
-
-.financial-secondary {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.financial-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-}
-
-.financial-value-md {
-    font-size: 20px;
-    font-weight: 600;
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
-}
-
-.financial-value-sm {
-    font-size: 15px;
-    font-weight: 600;
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.015em;
-}
-
-.text-green { color: var(--success); }
-.text-amber { color: var(--warning); }
-.text-red   { color: var(--danger); }
-.text-muted { color: var(--text-2); }
-
-/* ── ROW 3: Deadlines + Health ─────────────────────────── */
-.deadlines-bento { grid-column: span 4; }
-.health-bento    { grid-column: span 8; }
-
-.empty-state-mini {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    color: var(--text-3);
-    font-size: 13px;
-    font-style: italic;
-}
-
-.deadline-list { display: flex; flex-direction: column; gap: 4px; }
-
-.deadline-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 0;
-}
-
-.deadline-row:not(:last-child) {
-    border-bottom: 1px solid var(--border-subtle);
-}
-
-.deadline-badge {
-    font-size: 10px;
-    font-weight: 700;
-    padding: 5px 9px;
-    border-radius: var(--radius-sm);
-    background: var(--bg-2);
-    color: var(--text-2);
-    min-width: 56px;
+    font-size: 12.5px;
     text-align: center;
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
+    padding: 20px 0;
 }
 
-.deadline-row.overdue .deadline-badge {
-    background: var(--danger-soft);
-    color: var(--danger);
-}
-
-.deadline-body {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-    min-width: 0;
-}
-
-.deadline-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-0);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: -0.005em;
-}
-
-.deadline-project {
-    font-size: 11px;
-    color: var(--text-2);
-}
-
-/* Health */
-.health-list { display: flex; flex-direction: column; gap: 18px; }
-
-.health-row { display: flex; flex-direction: column; gap: 8px; }
-
-.health-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-}
-
-.health-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-0);
-    letter-spacing: -0.005em;
-}
-
-.health-money {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--success);
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-}
-
-.progress-track {
-    height: 5px;
-    background: var(--bg-2);
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg,
-        color-mix(in srgb, var(--success) 85%, transparent) 0%,
-        var(--success) 100%);
-    border-radius: var(--radius-full);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--success) 35%, transparent);
-    transition: width var(--dur-slow) var(--ease-out);
-}
-
-/* ── Responsive ─────────────────────────────────────────── */
-@media (max-width: 1100px) {
-    .dashboard-grid { grid-template-columns: 1fr; }
-    .chart-bento, .doughnut-bento, .hero-bento,
-    .financial-bento, .deadlines-bento, .health-bento {
-        grid-column: span 1;
+/* ── RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: minmax(0, 1fr) 300px;
     }
-    .hero-bento {
+    .hero-clock-time {
+        font-size: 68px;
+    }
+    .dashboard-container {
+        padding: 24px 28px 40px;
+    }
+}
+
+@media (max-width: 1000px) {
+    /* Revert internal scrolling to page scrolling for stacked mobile view */
+    .dashboard-container {
+        overflow-y: auto;
+    }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        flex: none;
+    }
+    .dashboard-rail {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .health-card,
+    .deadlines-card {
+        flex: none;
+        overflow: visible;
+    }
+    .health-grid,
+    .deadlines-list {
+        overflow-y: visible;
+    }
+    .doughnut-card,
+    .deadlines-card {
+        flex: 1;
+        min-width: 260px;
+    }
+    .dashboard-container {
+        padding: 24px 20px 32px;
+    }
+    .dashboard-ribbon {
         flex-direction: column;
         align-items: flex-start;
-        gap: 24px;
+        gap: 14px;
     }
-    .hero-summary { text-align: left; max-width: 100%; }
-    .doughnut-container { flex-direction: column; gap: 24px; }
-    .dashboard-container { padding: 24px 20px 32px; }
+    .ribbon-kpis {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+    .ribbon-kpi {
+        flex: 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .hero-card {
+        padding: 28px 20px;
+    }
+    .hero-clock-time {
+        font-size: 56px;
+    }
+    .finance-hero-value {
+        font-size: 34px;
+    }
+    .health-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+    .ribbon-kpi {
+        min-width: 70px;
+        padding: 6px 10px;
+    }
+    .ribbon-kpi-value {
+        font-size: 13px;
+    }
 }
