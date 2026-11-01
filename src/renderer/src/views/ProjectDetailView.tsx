@@ -22,7 +22,6 @@ import { PROJECT_TYPE_LABELS } from '../../../shared/constants'
 import { projectTypeIcon } from '../lib/projectIcons'
 import { formatMoney } from '../../../shared/money'
 
-/** Matches --ease-out in tokens.css — one motion language everywhere */
 const easeOut = [0.16, 1, 0.3, 1] as const
 
 interface ProjectDetailViewProps {
@@ -95,7 +94,7 @@ export function ProjectDetailView({
 
     if (loading) {
         return (
-            <div className="view">
+            <div className="project-empty-state">
                 <p>Loading…</p>
             </div>
         )
@@ -103,7 +102,7 @@ export function ProjectDetailView({
 
     if (!project) {
         return (
-            <div className="view">
+            <div className="project-empty-state">
                 <p>Project not found.</p>
             </div>
         )
@@ -119,9 +118,9 @@ export function ProjectDetailView({
     const status = project.status || 'active'
 
     return (
-        <div className="project-detail-scroll">
-            {/* ── HEADER CARD ──────────────────────────────── */}
-            <div className="project-header-card">
+        <div className="project-detail-layout">
+            {/* ── HEADER ──────────────────────────────── */}
+            <div className="project-header">
                 <div className="project-header-top">
                     <div className="project-title-block">
                         <div className="project-title-row">
@@ -213,8 +212,8 @@ export function ProjectDetailView({
                 ))}
             </div>
 
-            {/* ── TAB CONTENT ──────────────────────────────── */}
-            <div className="project-tab-content-wrapper">
+            {/* ── TAB CONTENT (Scrollable) ─────────────────── */}
+            <div className="project-tab-scroll">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={activeTab}
@@ -389,7 +388,7 @@ export function ProjectDetailView({
                                     </section>
                                 )}
                                 {tasks.length === 0 && (
-                                    <div className="empty-state">
+                                    <div className="empty-state-mini">
                                         <p>No tasks yet.</p>
                                     </div>
                                 )}

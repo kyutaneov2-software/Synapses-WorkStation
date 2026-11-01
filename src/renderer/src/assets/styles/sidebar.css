@@ -197,3 +197,34 @@
     color: var(--text-0);
     border-color: var(--border-strong);
 }
+
+/* ============================================================
+   SIDEBAR — Floating Card
+   ============================================================ */
+
+.sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow), var(--inset-highlight);
+    overflow: hidden;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 18px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.project-list {
+    list-style: none;
+    overflow-y: auto;
+    flex: 1;
+    padding: 8px;
+}

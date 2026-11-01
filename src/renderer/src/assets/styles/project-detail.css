@@ -1,37 +1,50 @@
 /* ============================================================
-   PROJECT DETAIL
+   PROJECTS SPACE — "Command Deck"
    ============================================================ */
 
-.project-detail-layout {
+.projects-container {
     display: flex;
     flex: 1;
-    height: 100vh;
+    min-height: 0;
     overflow: hidden;
+    gap: 16px;
+    padding: 28px 40px 48px;
     background: var(--bg-0);
-    padding: 16px;
 }
 
-.project-detail-scroll {
+/* ── MAIN CARD ────────────────────────────────────────── */
+.projects-main-area {
     flex: 1;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-    padding-bottom: 32px;
-    padding-top: 32px;
-}
-
-/* ── HEADER CARD ───────────────────────────────────────────── */
-
-.project-header-card {
     background: var(--bg-1);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow), var(--inset-highlight);
+    overflow: hidden;
+    min-width: 0;
+}
+
+.projects-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+}
+
+.project-detail-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.project-header {
+    padding: 32px 32px 24px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-subtle);
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -74,7 +87,7 @@
     font-size: 14px;
     color: var(--text-2);
     font-weight: 500;
-    margin-left: 36px; /* Align with title text, past the icon */
+    margin-left: 36px;
 }
 
 .project-client-input {
@@ -154,13 +167,14 @@
     margin: -8px;
 }
 
-/* ── TABS ──────────────────────────────────────────────────── */
-
+/* ── TABS ──────────────────────────────────────────────── */
 .project-tabs {
     display: flex;
     gap: 4px;
-    border-bottom: 1px solid var(--border);
-    padding: 0 8px;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+    background: var(--bg-1);
 }
 
 .project-tabs button {
@@ -174,6 +188,7 @@
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     transition: all var(--dur-fast);
+    position: relative;
 }
 
 .project-tabs button:hover {
@@ -182,31 +197,49 @@
 
 .project-tabs button.active {
     color: var(--accent);
-    border-bottom-color: var(--accent);
+    border-bottom-color: transparent;
 }
 
-/* ── TAB CONTENT AREA ──────────────────────────────────────── */
+.active-tab-underline {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--accent);
+    border-radius: 2px 2px 0 0;
+}
+
+/* ── CONTENT AREA (Scrollable) ─────────────────────────── */
+.project-tab-scroll {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 24px 32px 48px;
+}
 
 .project-tab-content {
-    flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 100%;
 }
 
+/* Remove inner card styling from the panels since we are inside a card now */
 .project-tab-panel {
-    background: var(--bg-1);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-/* ── OVERVIEW GRID & CARDS ─────────────────────────────────── */
-
+/* ── OVERVIEW GRID ─────────────────────────────────────── */
 .project-overview-grid {
     display: grid;
     grid-template-columns: 1fr 1.5fr;
-    gap: 16px;
+    gap: 24px;
     align-items: start;
 }
 
@@ -217,11 +250,10 @@
 }
 
 .detail-card {
-    background: var(--bg-1);
-    border: 1px solid var(--border);
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -278,42 +310,7 @@
     font-style: italic;
 }
 
-/* ── Responsive ────────────────────────────────────────────── */
-
-@media (max-width: 900px) {
-    .project-overview-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ============================================================
-   PROJECTS SPACE (Main Layout & Empty State)
-   ============================================================ */
-
-    .projects-main-area {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;                 /* ← lets flex compute the available height */
-    /* height: 100vh;               ← removed — inherits from .space-layout */
-    overflow: hidden;
-    background: var(--bg-0);
-}
-
-
-@keyframes project-fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(8px) scale(0.99);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* ── Empty State ───────────────────────────────────────────── */
-
+/* ── EMPTY STATE ───────────────────────────────────────── */
 .project-empty-state {
     flex: 1;
     display: flex;
@@ -368,45 +365,17 @@
     font-weight: 600;
 }
 
-/* Append to the bottom of project-detail.css */
-
-.projects-content-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0; /* Prevents flex blowout */
-}
-
-/* Remove the old CSS animation */
-.projects-main-area > * {
-    animation: none;
-}
-
-/* Animated Tab Underline */
-.project-tabs button {
-    position: relative;
-    /* remove the old bottom border from the button */
-    border-bottom: 2px solid transparent;
-}
-
-.project-tabs button.active {
-    color: var(--accent);
-    border-bottom-color: transparent; /* Hide the CSS border, motion handles it */
-}
-
-.active-tab-underline {
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--accent);
-    border-radius: 2px 2px 0 0;
-}
-
-.project-tab-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
+/* ── RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 1000px) {
+    .projects-container {
+        flex-direction: column;
+        padding: 24px 20px;
+        overflow-y: auto;
+    }
+    .projects-main-area {
+        min-height: 500px;
+    }
+    .project-overview-grid {
+        grid-template-columns: 1fr;
+    }
 }
