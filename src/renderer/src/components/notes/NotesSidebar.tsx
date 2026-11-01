@@ -76,13 +76,19 @@ export function NotesSidebar({ projectId }: NotesSidebarProps): React.JSX.Elemen
                     className={`notes-filter-pill ${filter === 'all' ? 'active' : ''}`}
                     onClick={() => setFilter('all')}
                 >
-                    All <span className="pill-count">{totalCount}</span>
+                    All{' '}
+                    <span className="pill-count" data-tabular>
+                        {totalCount}
+                    </span>
                 </button>
                 <button
                     className={`notes-filter-pill ${filter === 'pinned' ? 'active' : ''}`}
                     onClick={() => setFilter('pinned')}
                 >
-                    Pinned <span className="pill-count">{pinnedCount}</span>
+                    Pinned{' '}
+                    <span className="pill-count" data-tabular>
+                        {pinnedCount}
+                    </span>
                 </button>
             </div>
 

@@ -174,7 +174,8 @@
 .note-editor {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    flex: 1;              /* ← was: height: 100vh */
+    min-height: 0;        /* ← new — lets flex children scroll correctly */
     background: var(--bg-0);
     position: relative;
 }

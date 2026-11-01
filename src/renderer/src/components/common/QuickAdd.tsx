@@ -124,6 +124,7 @@ export function QuickAdd({
                     className="quick-add-submit"
                     disabled={!text.trim() || submitting}
                     title="Add task (Enter)"
+                    aria-label="Add task"
                 >
                     ↵
                 </button>

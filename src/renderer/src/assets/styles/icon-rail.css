@@ -1,9 +1,6 @@
-.app-shell {
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-    background: var(--bg-0);
-}
+/* ============================================================
+   ICON RAIL — floating dock, sitting on the canvas
+   ============================================================ */
 
 .icon-rail {
     width: 56px;
@@ -12,8 +9,11 @@
     flex-direction: column;
     justify-content: space-between;
     padding: 12px 0;
-    background: var(--bg-1, #0f0f12);
-    border-right: 1px solid var(--border, #23232a);
+    background: var(--bg-1);
+    border-radius: var(--radius-2xl);
+    box-shadow:
+        var(--inset-frame),
+        var(--elev-3);
 }
 
 .icon-rail-top,
@@ -31,36 +31,35 @@
     align-items: center;
     justify-content: center;
     border: 0;
-    border-radius: var(--radius-md, 8px);
+    border-radius: var(--radius-lg);
     background: transparent;
-    color: var(--text-2, #8888a0);
+    color: var(--text-2);
     cursor: pointer;
-    transition:
-        background 0.15s,
-        color 0.15s;
+    transition: var(--transition-color);
+    position: relative;
 }
 
 .icon-rail-btn:hover {
-    background: var(--bg-2, #1a1a1f);
-    color: var(--text-0, #e7e7ea);
+    background: var(--bg-2);
+    color: var(--text-0);
 }
 
 .icon-rail-btn.active {
-    background: var(--bg-3, #22222a);
-    color: var(--accent, #6c8cff);
+    background: var(--bg-3);
+    color: var(--accent);
+    box-shadow: var(--inset-highlight);
 }
 
-.space-layout {
-    display: flex;
-    flex: 1;
-    min-width: 0;
-    height: 100vh;
-}
-
-.space-layout .main-area {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+/* Accent indicator — a slim bar on the left edge of the active item */
+.icon-rail-btn.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 0 3px 3px 0;
+    box-shadow: 0 0 10px var(--accent-glow);
 }

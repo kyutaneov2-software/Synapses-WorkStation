@@ -1,12 +1,13 @@
 /* ============================================================
-   MODAL — Overlay, panel, form fields, buttons
+   MODAL — "Obsidian" pass
    ============================================================ */
 
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -23,23 +24,15 @@
     max-width: 500px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: var(--shadow-lg);
-    animation: modal-enter var(--dur-slow) var(--ease-spring);
+    box-shadow: var(--shadow-lg), var(--inset-highlight);
+    animation: modal-enter var(--dur) var(--ease-out);
 }
-.modal-panel-wide {
-    max-width: 640px;
-}
+
+.modal-panel-wide { max-width: 640px; }
 
 @keyframes modal-enter {
-    from {
-        opacity: 0;
-        transform: scale(0.94) translateY(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+    from { opacity: 0; transform: translateY(6px) scale(0.985); }
+    to   { opacity: 1; transform: translateY(0)  scale(1); }
 }
 
 .modal-header {
@@ -53,7 +46,8 @@
 .modal-header h3 {
     font-size: 15px;
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.012em;
+    color: var(--text-0);
 }
 
 .modal-close {
@@ -66,8 +60,8 @@
     padding: 0 6px;
     border-radius: var(--radius-sm);
     transition:
-        color var(--dur-fast),
-        background var(--dur-fast);
+        color var(--dur-fast) var(--ease-out),
+        background var(--dur-fast) var(--ease-out);
 }
 
 .modal-close:hover {
@@ -90,10 +84,10 @@
 }
 
 .form-field > span {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.09em;
     color: var(--text-2);
 }
 
@@ -108,8 +102,8 @@
     font-size: 13px;
     outline: none;
     transition:
-        border-color var(--dur-fast),
-        box-shadow var(--dur-fast);
+        border-color var(--dur-fast) var(--ease-out),
+        box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .form-field input:focus,
@@ -129,10 +123,7 @@
     color: var(--text-0);
 }
 
-.form-row {
-    display: flex;
-    gap: 12px;
-}
+.form-row { display: flex; gap: 12px; }
 
 .modal-footer {
     display: flex;
@@ -143,39 +134,37 @@
     gap: 8px;
 }
 
-.modal-footer-right {
-    display: flex;
-    gap: 8px;
-}
+.modal-footer-right { display: flex; gap: 8px; }
 
-/* -------- Buttons -------- */
-
+/* ── Buttons ──────────────────────────────────────────── */
 .btn-primary {
     background: var(--accent);
-    color: white;
+    color: var(--text-inverse);
     border: none;
     padding: 9px 18px;
     border-radius: var(--radius);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: -0.005em;
     cursor: pointer;
     transition:
-        background var(--dur-fast),
-        transform var(--dur-fast);
+        background var(--dur-fast) var(--ease-out),
+        transform var(--dur-fast) var(--ease-out),
+        box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .btn-primary:hover:not(:disabled) {
     background: var(--accent-hover);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
-.btn-primary:active:not(:disabled) {
-    transform: scale(0.97);
-}
+.btn-primary:active:not(:disabled) { transform: scale(0.97); }
 
 .btn-primary:disabled {
     background: var(--bg-3);
     color: var(--text-3);
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 .btn-ghost {
@@ -188,8 +177,8 @@
     font-weight: 500;
     cursor: pointer;
     transition:
-        color var(--dur-fast),
-        border-color var(--dur-fast);
+        color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out);
 }
 
 .btn-ghost:hover {
@@ -200,20 +189,19 @@
 .btn-danger {
     background: none;
     color: var(--danger);
-    border: 1px solid rgba(255, 107, 107, 0.3);
+    border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
     padding: 9px 16px;
     border-radius: var(--radius);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition:
-        background var(--dur-fast),
-        color var(--dur-fast);
+        background var(--dur-fast) var(--ease-out),
+        color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out);
 }
 
-.btn-danger:hover {
-    background: var(--danger-soft);
-}
+.btn-danger:hover { background: var(--danger-soft); }
 
 .btn-danger.confirming {
     background: var(--danger-soft);

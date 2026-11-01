@@ -2,12 +2,13 @@
    TASKS DASHBOARD
    ============================================================ */
 
-.tasks-dashboard-layout {
+    .tasks-dashboard-layout {
     display: flex;
     flex: 1;
+    min-height: 0;                  /* ✦ lets the flex algorithm compute height */
     gap: 16px;
     padding: 16px;
-    height: 100vh;
+    /* height: 100vh removed — inherits from .space-layout */
     background: var(--bg-0);
     overflow: hidden;
 }

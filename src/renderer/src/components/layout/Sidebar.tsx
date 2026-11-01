@@ -5,6 +5,9 @@ import { useProjects } from '../../lib/hooks'
 import { ROUTES } from '../../lib/routes'
 import { projectTypeIcon } from '../../lib/projectIcons'
 
+/** Matches --ease-out in tokens.css */
+const easeOut = [0.16, 1, 0.3, 1] as const
+
 export function Sidebar(): React.JSX.Element {
     const { projects } = useProjects()
     const navigate = useNavigate()
@@ -15,7 +18,6 @@ export function Sidebar(): React.JSX.Element {
     const [client, setClient] = useState('')
     const [submitting, setSubmitting] = useState(false)
 
-    // Matches /projects/123
     const match = location.pathname.match(/^\/projects\/(\d+)/)
     const activeProjectId = match ? Number(match[1]) : null
 
@@ -46,7 +48,12 @@ export function Sidebar(): React.JSX.Element {
         <aside className="sidebar">
             <div className="sidebar-header">
                 <h3>Projects</h3>
-                <button className="new-btn" title="New Project" onClick={() => setCreating(true)}>
+                <button
+                    className="new-btn"
+                    title="New Project"
+                    aria-label="New Project"
+                    onClick={() => setCreating(true)}
+                >
                     +
                 </button>
             </div>
@@ -57,7 +64,7 @@ export function Sidebar(): React.JSX.Element {
                         initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
                         animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
                         exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                        transition={{ duration: 0.2 }}
+                        transition={{ duration: 0.22, ease: easeOut }}
                         className="new-project-form"
                         onSubmit={handleSubmit}
                     >
@@ -90,31 +97,37 @@ export function Sidebar(): React.JSX.Element {
 
             <ul className="project-list">
                 <AnimatePresence mode="popLayout">
-                    {projects.map((p) => (
-                        <motion.li
-                            layout
-                            key={p.id}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            whileHover={{ x: 4 }}
-                            transition={{ duration: 0.15 }}
-                            className={p.id === activeProjectId ? 'active' : ''}
-                        >
-                            <Link to={ROUTES.projectDetail(p.id)}>
-                                <span className="project-title-row">
-                                    {projectTypeIcon(p.type, 13)}
-                                    <span className="project-title">{p.title}</span>
-                                </span>
-                                <span className="project-client">{p.client}</span>
-                            </Link>
-                        </motion.li>
-                    ))}
+                    {projects.map((p) => {
+                        const isActive = p.id === activeProjectId
+                        return (
+                            <motion.li
+                                layout
+                                key={p.id}
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, scale: 0.97 }}
+                                transition={{ duration: 0.18, ease: easeOut }}
+                                className={isActive ? 'active' : ''}
+                            >
+                                <Link
+                                    to={ROUTES.projectDetail(p.id)}
+                                    aria-current={isActive ? 'page' : undefined}
+                                >
+                                    <span className="project-title-row">
+                                        {projectTypeIcon(p.type, 13)}
+                                        <span className="project-title">{p.title}</span>
+                                    </span>
+                                    <span className="project-client">{p.client}</span>
+                                </Link>
+                            </motion.li>
+                        )
+                    })}
                 </AnimatePresence>
                 {projects.length === 0 && !creating && (
                     <motion.li
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
+                        transition={{ duration: 0.22, ease: easeOut }}
                         className="empty-hint"
                     >
                         No projects yet. Click + to add one.

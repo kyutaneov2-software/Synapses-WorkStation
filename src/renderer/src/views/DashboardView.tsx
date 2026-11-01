@@ -13,25 +13,37 @@ import { useDashboard } from '../lib/hooks'
 import { isOverdue } from '../lib/dates'
 import { formatMoney } from '../../../shared/money'
 
-// ── Animation Variants ────────────────────────────────────────
+// ── Motion — matches --ease-out in tokens.css ────────────────
+const easeOut = [0.16, 1, 0.3, 1] as const
+
 const containerVariants = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
-        transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+        transition: { staggerChildren: 0.06, delayChildren: 0.05 }
     }
 }
 
 const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 12 },
     show: {
         opacity: 1,
         y: 0,
-        transition: { type: 'spring', stiffness: 300, damping: 24 }
+        transition: { type: 'spring', stiffness: 280, damping: 28 }
     }
 } as const
 
-// ── Helper Components ─────────────────────────────────────────
+// ── Chart palette — all tokens, so accent swaps propagate ────
+const CHART_COLORS = [
+    'var(--accent)',
+    'var(--success)',
+    'var(--purple)',
+    'var(--warning)',
+    'var(--danger)'
+] as const
+const UNASSIGNED_COLOR = 'var(--text-2)'
+
+// ── Helper Components ────────────────────────────────────────
 
 function LiveClock(): React.JSX.Element {
     const [time, setTime] = useState(new Date())
@@ -47,12 +59,13 @@ function LiveClock(): React.JSX.Element {
     return (
         <div className="clock-widget">
             <div className="clock-greeting">{greeting}</div>
-            <div className="clock-time">
+            <div className="clock-time" data-time>
                 {time.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                 <motion.span
                     key={time.getSeconds()}
                     initial={{ opacity: 0.5, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.18, ease: easeOut }}
                     className="clock-seconds"
                 >
                     {time.toLocaleTimeString(undefined, { second: '2-digit' }).replace(/\D/g, '')}
@@ -101,8 +114,8 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
             >
                 <defs>
                     <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#6294FF" stopOpacity="0.2" />
-                        <stop offset="100%" stopColor="#6294FF" stopOpacity="0" />
+                        <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22" />
+                        <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
                     </linearGradient>
                 </defs>
 
@@ -113,7 +126,7 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
                         y1={y}
                         x2={width - paddingX}
                         y2={y}
-                        stroke="#2A2E38"
+                        stroke="var(--border)"
                         strokeWidth="1"
                         strokeDasharray="4 4"
                     />
@@ -122,7 +135,7 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
                 <motion.path
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 1, delay: 0.5 }}
+                    transition={{ duration: 0.6, delay: 0.3, ease: easeOut }}
                     d={areaPath}
                     fill="url(#chart-fill)"
                 />
@@ -130,11 +143,11 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
                 <motion.polyline
                     initial={{ pathLength: 0 }}
                     animate={{ pathLength: 1 }}
-                    transition={{ duration: 1.5, ease: 'easeInOut' }}
+                    transition={{ duration: 1.2, delay: 0.15, ease: easeOut }}
                     points={polylinePoints}
                     fill="none"
-                    stroke="#6294FF"
-                    strokeWidth="2.5"
+                    stroke="var(--accent)"
+                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                 />
@@ -144,10 +157,10 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
                         key={i}
                         x={p.x}
                         y={height - 10}
-                        fill="#9299AA"
+                        fill="var(--text-2)"
                         fontSize="10"
                         textAnchor="middle"
-                        fontFamily="Inter"
+                        fontFamily="var(--font-sans)"
                     >
                         {p.label}
                     </text>
@@ -158,16 +171,19 @@ function FocusLineChart({ data, labels }: { data: number[]; labels: string[] }):
                         key={i}
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.5 + i * 0.1, type: 'spring' }}
+                        transition={{
+                            delay: 0.3 + i * 0.06,
+                            duration: 0.3,
+                            ease: easeOut
+                        }}
                         cx={p.x}
                         cy={p.y}
                         r="4"
-                        fill="#15171D"
-                        stroke="#6294FF"
+                        fill="var(--bg-1)"
+                        stroke="var(--accent)"
                         strokeWidth="2"
                         style={{ cursor: 'pointer' }}
                     >
-                        {/* p.val is in seconds now, so we pass it directly to formatHM */}
                         <title>{`${p.label}: ${formatHM(p.val)}`}</title>
                     </motion.circle>
                 ))}
@@ -232,7 +248,6 @@ function ProjectDoughnutChart({
         )
     }
 
-    const colors = ['#6294FF', '#43D69A', '#9D84FF', '#F4BC34', '#F87171', '#64748B']
     const radius = 60
     const circumference = 2 * Math.PI * radius
 
@@ -245,7 +260,8 @@ function ProjectDoughnutChart({
                 ...d,
                 dash,
                 offset,
-                color: d.id === 'unassigned' ? '#64748B' : colors[i % (colors.length - 1)]
+                color:
+                    d.id === 'unassigned' ? UNASSIGNED_COLOR : CHART_COLORS[i % CHART_COLORS.length]
             })
             acc.runningOffset += dash
             return acc
@@ -263,7 +279,7 @@ function ProjectDoughnutChart({
                                 key={d.id}
                                 initial={{ strokeDasharray: `0 ${circumference}` }}
                                 animate={{ strokeDasharray: `${d.dash} ${circumference}` }}
-                                transition={{ duration: 1, delay: i * 0.1, ease: 'easeOut' }}
+                                transition={{ duration: 0.9, delay: i * 0.08, ease: easeOut }}
                                 cx="80"
                                 cy="80"
                                 r={radius}
@@ -277,7 +293,9 @@ function ProjectDoughnutChart({
                     </g>
                 </svg>
                 <div className="doughnut-center">
-                    <span className="doughnut-total">{formatHM(totalSeconds)}</span>
+                    <span className="doughnut-total" data-time>
+                        {formatHM(totalSeconds)}
+                    </span>
                     <span className="doughnut-label">Total Focus</span>
                 </div>
             </div>
@@ -286,7 +304,9 @@ function ProjectDoughnutChart({
                     <div key={d.id} className="legend-item">
                         <span className="legend-color" style={{ background: d.color }} />
                         <span className="legend-name">{d.title}</span>
-                        <span className="legend-value">{formatHM(d.seconds)}</span>
+                        <span className="legend-value" data-time>
+                            {formatHM(d.seconds)}
+                        </span>
                     </div>
                 ))}
             </div>
@@ -294,7 +314,7 @@ function ProjectDoughnutChart({
     )
 }
 
-// ── Main View ─────────────────────────────────────────────────
+// ── Main View ────────────────────────────────────────────────
 
 interface DeadlineItem {
     id: string
@@ -318,7 +338,6 @@ interface ProjectHealth {
 export function DashboardView(): React.JSX.Element {
     const { data } = useDashboard()
 
-    // Extract real chart data
     const chartData = data?.sessionTotals.last7Days ?? []
     const chartValues = chartData.map((d) => d.seconds)
     const chartLabels = chartData.map((d) => {
@@ -326,7 +345,6 @@ export function DashboardView(): React.JSX.Element {
         return date.toLocaleDateString(undefined, { weekday: 'short' })
     })
 
-    // Calculate real week-over-week change
     const thisWeek = data?.sessionTotals.thisWeekSeconds ?? 0
     const prevWeek = data?.sessionTotals.prevWeekSeconds ?? 0
     let weekChange = 0
@@ -442,8 +460,9 @@ export function DashboardView(): React.JSX.Element {
     return (
         <div className="dashboard-container">
             <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: easeOut }}
                 className="dashboard-header"
             >
                 <h1>Dashboard</h1>
@@ -460,12 +479,13 @@ export function DashboardView(): React.JSX.Element {
                 <motion.div variants={cardVariants} className="bento-card chart-bento">
                     <div className="bento-header">
                         <div className="bento-title">
-                            <TrendingUp size={16} className="text-accent" />
+                            <TrendingUp size={16} style={{ color: 'var(--accent)' }} />
                             <span>Focus Trends (7 Days)</span>
                         </div>
                         {prevWeek > 0 ? (
                             <span
                                 className={`bento-badge ${weekChange >= 0 ? 'text-green' : 'text-red'}`}
+                                data-tabular
                             >
                                 {weekChange >= 0 ? '+' : ''}
                                 {weekChange}% vs last week
@@ -480,7 +500,7 @@ export function DashboardView(): React.JSX.Element {
                 <motion.div variants={cardVariants} className="bento-card doughnut-bento">
                     <div className="bento-header">
                         <div className="bento-title">
-                            <PieChartIcon size={16} className="text-accent" />
+                            <PieChartIcon size={16} style={{ color: 'var(--accent)' }} />
                             <span>Tracked Time by Project</span>
                         </div>
                     </div>
@@ -513,21 +533,26 @@ export function DashboardView(): React.JSX.Element {
                     <div className="financial-content">
                         <div className="financial-primary">
                             <span className="financial-label">Earned</span>
-                            <span className="financial-value-lg text-green">
+                            <span className="financial-value-lg text-green" data-money>
                                 {formatMoney(stats.earned, displayCurrency)}
                             </span>
                         </div>
                         <div className="financial-secondary">
                             <div className="financial-row">
                                 <span className="financial-label">Outstanding</span>
-                                <span className="financial-value-md text-amber">
+                                <span className="financial-value-md text-amber" data-money>
                                     {formatMoney(stats.outstanding, displayCurrency)}
                                 </span>
                             </div>
                             <div className="financial-row">
                                 <span className="financial-label">Overdue Items</span>
                                 <span
-                                    className={`financial-value-sm ${stats.overdueTasks + stats.overdueProjects > 0 ? 'text-red' : 'text-muted'}`}
+                                    className={`financial-value-sm ${
+                                        stats.overdueTasks + stats.overdueProjects > 0
+                                            ? 'text-red'
+                                            : 'text-muted'
+                                    }`}
+                                    data-tabular
                                 >
                                     {stats.overdueTasks + stats.overdueProjects}
                                 </span>
@@ -553,10 +578,11 @@ export function DashboardView(): React.JSX.Element {
                             {deadlines.map((d) => (
                                 <motion.div
                                     key={d.id}
-                                    whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.02)' }}
+                                    whileHover={{ x: 3 }}
+                                    transition={{ duration: 0.18, ease: easeOut }}
                                     className={`deadline-row ${d.daysAway < 0 ? 'overdue' : ''}`}
                                 >
-                                    <div className="deadline-badge">
+                                    <div className="deadline-badge" data-tabular>
                                         {d.daysAway < 0
                                             ? 'LATE'
                                             : d.daysAway === 0
@@ -589,7 +615,7 @@ export function DashboardView(): React.JSX.Element {
                             <div key={h.project.id} className="health-row">
                                 <div className="health-header">
                                     <span className="health-title">{h.project.title}</span>
-                                    <span className="health-money">
+                                    <span className="health-money" data-tabular>
                                         {Math.round(h.moneyProgress * 100)}% Paid
                                     </span>
                                 </div>
@@ -597,7 +623,11 @@ export function DashboardView(): React.JSX.Element {
                                     <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${h.moneyProgress * 100}%` }}
-                                        transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
+                                        transition={{
+                                            duration: 0.9,
+                                            delay: 0.15,
+                                            ease: easeOut
+                                        }}
                                         className="progress-fill"
                                     />
                                 </div>

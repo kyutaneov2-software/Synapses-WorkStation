@@ -1,0 +1,64 @@
+/* ============================================================
+   THEME — "Layered Obsidian"
+   Structural layer: canvas, noise, floating window frame.
+   This is what makes the app feel like a device, not a webpage.
+   ============================================================ */
+
+/* ── THE CANVAS ──────────────────────────────────────────────
+   The deepest layer. Mesh gradients + grid + noise = atmosphere
+   that everything else floats on. */
+.app-shell {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    padding: 10px;
+    gap: 10px;
+    background-color: var(--bg-canvas);
+    background-image:
+        /* Accent mesh (top-right) */
+        radial-gradient(ellipse 55% 45% at 88% 0%,
+            var(--canvas-mesh-a) 0%, transparent 65%),
+        /* Violet mesh (bottom-left) */
+        radial-gradient(ellipse 50% 60% at 0% 100%,
+            var(--canvas-mesh-b) 0%, transparent 60%),
+        /* Faint 1px grid */
+        linear-gradient(to right, var(--canvas-grid) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--canvas-grid) 1px, transparent 1px);
+    background-size: auto, auto, 32px 32px, 32px 32px;
+    position: relative;
+    isolation: isolate;
+}
+
+/* Film-grain noise — the "premium" tell */
+.app-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: var(--canvas-noise);
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+}
+
+/* Ensure all content sits above the noise */
+.app-shell > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── THE FLOATING WINDOW ──────────────────────────────────────
+   The main content shell — a physical card hovering on the canvas. */
+.space-layout {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    height: auto;
+    background: var(--bg-1);
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    box-shadow:
+        var(--inset-frame),   /* carved 1px edge */
+        var(--elev-3);        /* soft outer glow on canvas */
+}

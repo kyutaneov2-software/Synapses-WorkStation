@@ -11,21 +11,21 @@ function App(): React.JSX.Element {
         <HashRouter>
             <div className="app-shell">
                 <IconRail />
-                <Routes>
-                    <Route path="/" element={<Navigate to="/tasks/today" replace />} />
-
-                    {/* New Domains */}
-                    <Route path="/tasks/*" element={<TasksSpace />} />
-                    <Route path="/projects/*" element={<ProjectsSpace />} />
-
-                    {/* Redirect old bookmarks */}
-                    <Route path="/commissions/*" element={<Navigate to="/tasks/today" replace />} />
-
-                    <Route path="/home" element={<HomeSpace />} />
-                    <Route path="/notes/*" element={<NotesSpace />} />
-                    <Route path="/settings" element={<SettingsSpace />} />
-                    <Route path="*" element={<Navigate to="/tasks/today" replace />} />
-                </Routes>
+                <div className="space-layout">
+                    <Routes>
+                        <Route path="/" element={<Navigate to="/tasks/today" replace />} />
+                        <Route path="/tasks/*" element={<TasksSpace />} />
+                        <Route path="/projects/*" element={<ProjectsSpace />} />
+                        <Route
+                            path="/commissions/*"
+                            element={<Navigate to="/tasks/today" replace />}
+                        />
+                        <Route path="/home" element={<HomeSpace />} />
+                        <Route path="/notes/*" element={<NotesSpace />} />
+                        <Route path="/settings" element={<SettingsSpace />} />
+                        <Route path="*" element={<Navigate to="/tasks/today" replace />} />
+                    </Routes>
+                </div>
             </div>
         </HashRouter>
     )

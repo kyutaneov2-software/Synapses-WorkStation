@@ -290,21 +290,16 @@
    PROJECTS SPACE (Main Layout & Empty State)
    ============================================================ */
 
-.projects-main-area {
+    .projects-main-area {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    flex: 1;
+    min-height: 0;                 /* ← lets flex compute the available height */
+    /* height: 100vh;               ← removed — inherits from .space-layout */
     overflow: hidden;
     background: var(--bg-0);
 }
 
-/* Wrap the routes in an animation container */
-.projects-main-area > * {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    animation: project-fade-in var(--dur-slow) var(--ease-out);
-}
 
 @keyframes project-fade-in {
     from {

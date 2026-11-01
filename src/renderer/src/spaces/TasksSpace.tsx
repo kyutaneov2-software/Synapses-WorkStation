@@ -7,16 +7,17 @@ const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        transition: { staggerChildren: 0.1 }
+        transition: { staggerChildren: 0.06 }
     }
 }
 
 const columnVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 12 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: { type: 'spring', stiffness: 300, damping: 24 }
+        // Near-critical damping — smooth settle, no bounce
+        transition: { type: 'spring', stiffness: 280, damping: 28 }
     }
 } as const
 

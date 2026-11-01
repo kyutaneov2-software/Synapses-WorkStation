@@ -5,6 +5,9 @@ import { Sidebar } from '../components/layout/Sidebar'
 import { ProjectDetailView } from '../views/ProjectDetailView'
 import { ROUTES } from '../lib/routes'
 
+/** Matches --ease-out in tokens.css — one motion language everywhere */
+const easeOut = [0.16, 1, 0.3, 1] as const
+
 function ProjectDetailRoute(): React.JSX.Element {
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
@@ -36,16 +39,16 @@ export function ProjectsSpace(): React.JSX.Element {
     const location = useLocation()
 
     return (
-        <div className="space-layout">
+        <>
             <Sidebar />
             <div className="main-area projects-main-area">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={location.pathname}
-                        initial={{ opacity: 0, y: 10, scale: 0.99 }}
+                        initial={{ opacity: 0, y: 8, scale: 0.995 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.99 }}
-                        transition={{ duration: 0.2 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.995 }}
+                        transition={{ duration: 0.22, ease: easeOut }}
                         className="projects-content-wrapper"
                     >
                         <Routes location={location}>
@@ -56,6 +59,6 @@ export function ProjectsSpace(): React.JSX.Element {
                     </motion.div>
                 </AnimatePresence>
             </div>
-        </div>
+        </>
     )
 }

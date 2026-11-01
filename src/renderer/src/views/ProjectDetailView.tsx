@@ -22,6 +22,9 @@ import { PROJECT_TYPE_LABELS } from '../../../shared/constants'
 import { projectTypeIcon } from '../lib/projectIcons'
 import { formatMoney } from '../../../shared/money'
 
+/** Matches --ease-out in tokens.css — one motion language everywhere */
+const easeOut = [0.16, 1, 0.3, 1] as const
+
 interface ProjectDetailViewProps {
     projectId: number
     onDeleted: () => void
@@ -29,10 +32,18 @@ interface ProjectDetailViewProps {
 
 type Tab = 'overview' | 'tasks' | 'payments' | 'files' | 'notes'
 
+const TAB_ORDER: Tab[] = ['overview', 'tasks', 'payments', 'files', 'notes']
+
 function formatDate(dateStr: string | null): string {
     if (!dateStr) return '—'
     const d = new Date(dateStr + 'T00:00:00')
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function tabLabel(tab: Tab, taskCount: number, phaseCount: number): string {
+    if (tab === 'tasks') return `Tasks (${taskCount})`
+    if (tab === 'payments') return `Payments (${phaseCount})`
+    return tab.charAt(0).toUpperCase() + tab.slice(1)
 }
 
 export function ProjectDetailView({
@@ -82,18 +93,21 @@ export function ProjectDetailView({
         await window.api.setProjectTags(projectId, newTags)
     }
 
-    if (loading)
+    if (loading) {
         return (
             <div className="view">
                 <p>Loading…</p>
             </div>
         )
-    if (!project)
+    }
+
+    if (!project) {
         return (
             <div className="view">
                 <p>Project not found.</p>
             </div>
         )
+    }
 
     const total = phases.reduce((sum, p) => sum + (p.amount_cents || 0), 0)
     const paid = phases.filter((p) => p.paid).reduce((sum, p) => sum + (p.amount_cents || 0), 0)
@@ -137,16 +151,19 @@ export function ProjectDetailView({
                             <div className="money-summary-card">
                                 <span className="money-summary-label">Financials</span>
                                 <div className="money-summary-row">
-                                    <span className="money-paid">
+                                    <span className="money-paid" data-money>
                                         {formatMoney(paid, currency)}
                                     </span>
-                                    <span className="money-sep">/</span>
-                                    <span className="money-total">
+                                    <span className="money-sep" data-tabular>
+                                        /
+                                    </span>
+                                    <span className="money-total" data-money>
                                         {formatMoney(total, currency)}
                                     </span>
                                 </div>
                                 <span
                                     className={`money-remaining ${remaining > 0 ? 'owed' : 'clear'}`}
+                                    data-money
                                 >
                                     {remaining > 0
                                         ? `${formatMoney(remaining, currency)} remaining`
@@ -154,7 +171,12 @@ export function ProjectDetailView({
                                 </span>
                             </div>
                         )}
-                        <button className="edit-project-btn" onClick={() => setShowEdit(true)}>
+                        <button
+                            className="edit-project-btn"
+                            onClick={() => setShowEdit(true)}
+                            title="Edit project"
+                            aria-label="Edit project"
+                        >
                             <Settings size={16} strokeWidth={2} />
                         </button>
                     </div>
@@ -173,17 +195,13 @@ export function ProjectDetailView({
 
             {/* ── TABS ─────────────────────────────────────── */}
             <div className="project-tabs">
-                {(['overview', 'tasks', 'payments', 'files', 'notes'] as Tab[]).map((tab) => (
+                {TAB_ORDER.map((tab) => (
                     <button
                         key={tab}
                         className={activeTab === tab ? 'active' : ''}
                         onClick={() => setActiveTab(tab)}
                     >
-                        {tab === 'tasks'
-                            ? `Tasks (${tasks.length})`
-                            : tab === 'payments'
-                              ? `Payments (${phases.length})`
-                              : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        {tabLabel(tab, tasks.length, phases.length)}
                         {activeTab === tab && (
                             <motion.div
                                 layoutId="active-project-tab"
@@ -200,10 +218,14 @@ export function ProjectDetailView({
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={activeTab}
-                        initial={{ opacity: 0, y: 8 }}
+                        initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.15 } }}
-                        transition={{ duration: 0.2 }}
+                        exit={{
+                            opacity: 0,
+                            scale: 0.985,
+                            transition: { duration: 0.15, ease: easeOut }
+                        }}
+                        transition={{ duration: 0.22, ease: easeOut }}
                         className="project-tab-content"
                     >
                         {activeTab === 'overview' && (
@@ -215,13 +237,13 @@ export function ProjectDetailView({
                                         </div>
                                         <div className="detail-row">
                                             <span className="detail-label">Start Date</span>
-                                            <span className="detail-value">
+                                            <span className="detail-value" data-tabular>
                                                 {formatDate(project.start_date)}
                                             </span>
                                         </div>
                                         <div className="detail-row">
                                             <span className="detail-label">Due Date</span>
-                                            <span className="detail-value">
+                                            <span className="detail-value" data-tabular>
                                                 {formatDate(project.due_date)}
                                             </span>
                                         </div>
@@ -241,7 +263,7 @@ export function ProjectDetailView({
                                         </div>
                                         <div className="detail-row">
                                             <span className="detail-label">Hourly Rate</span>
-                                            <span className="detail-value">
+                                            <span className="detail-value" data-money>
                                                 {project.hourly_rate_cents
                                                     ? `${formatMoney(project.hourly_rate_cents, currency)}/hr`
                                                     : '—'}
@@ -249,7 +271,9 @@ export function ProjectDetailView({
                                         </div>
                                         <div className="detail-row">
                                             <span className="detail-label">Currency</span>
-                                            <span className="detail-value">{currency}</span>
+                                            <span className="detail-value" data-tabular>
+                                                {currency}
+                                            </span>
                                         </div>
                                         <div className="detail-row">
                                             <span className="detail-label">Client Contact</span>

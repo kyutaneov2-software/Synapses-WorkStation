@@ -29,6 +29,7 @@ export function PriorityBadge({ value, onChange }: PriorityBadgeProps): React.JS
             onClick={handleClick}
             title={`${PRIORITY_LABELS[level]} — click to change`}
             aria-label={`Priority: ${PRIORITY_LABELS[level]}`}
+            style={{ padding: '4px', boxSizing: 'content-box' }}
         />
     )
 }

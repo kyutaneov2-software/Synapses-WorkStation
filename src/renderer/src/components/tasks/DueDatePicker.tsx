@@ -71,6 +71,8 @@ export function DueDatePicker({ value, onChange }: DueDatePickerProps): React.JS
         badgeClass += ' empty'
     }
 
+    const label = value ? formatLabel(value) : null
+
     return (
         <div className="due-picker-wrap" ref={ref}>
             <button
@@ -80,9 +82,12 @@ export function DueDatePicker({ value, onChange }: DueDatePickerProps): React.JS
                     e.stopPropagation()
                     setOpen((o) => !o)
                 }}
-                title={value ? `Due ${value} — click to change` : 'Set due date'}
+                title={label ? `${label} — click to change` : 'Set due date'}
+                aria-label={label ? `${label}, click to change` : 'Set due date'}
+                aria-expanded={open}
+                data-tabular
             >
-                {value ? formatLabel(value) : <Calendar size={13} strokeWidth={2} />}
+                {value ? label : <Calendar size={13} strokeWidth={2} />}
             </button>
 
             {open && (

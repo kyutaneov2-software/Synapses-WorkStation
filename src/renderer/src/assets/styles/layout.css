@@ -1,38 +1,31 @@
 /* ============================================================
-   APP LAYOUT — Shell, Main Area, Topbar, Content
+   MAIN AREA — content well inside the floating window
    ============================================================ */
-
-.app-shell {
-    display: flex;
-    height: 100vh;
-    background: var(--bg-0);
-}
 
 .main-area {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    min-width: 0;
-    background:
-        radial-gradient(circle at top right, rgba(91, 141, 239, 0.06), transparent 60%), var(--bg-0);
+    overflow: hidden;
+    background: var(--bg-0);
+    position: relative;
 }
 
-/* -------- Topbar -------- */
-
+/* ── Topbar ────────────────────────────────────────────── */
 .topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 20px;
-    background: transparent;
+    padding: 12px 24px;
+    background: color-mix(in srgb, var(--bg-0) 82%, transparent);
     border-bottom: 1px solid var(--border-subtle);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    flex-shrink: 0;
 }
 
-.topbar-tabs {
-    display: flex;
-    gap: 2px;
-}
+.topbar-tabs { display: flex; gap: 2px; }
 
 .topbar button {
     background: transparent;
@@ -43,9 +36,8 @@
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
-    transition:
-        background var(--dur-fast),
-        color var(--dur-fast);
+    letter-spacing: -0.005em;
+    transition: var(--transition-color);
 }
 
 .topbar button:hover {
@@ -56,6 +48,7 @@
 .topbar button.active {
     background: var(--bg-3);
     color: var(--text-0);
+    box-shadow: var(--inset-highlight);
 }
 
 .focus-toggle {
@@ -69,55 +62,49 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition:
-        background var(--dur-fast),
-        color var(--dur-fast),
-        border-color var(--dur-fast) !important;
+    transition: var(--transition-surface) !important;
 }
 
 .focus-toggle:hover {
     background: var(--bg-3) !important;
     color: var(--accent) !important;
-    border-color: var(--accent) !important;
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent) !important;
 }
 
-/* -------- Content & Views -------- */
-
-.content {
-    flex: 1;
-    overflow-y: auto;
-}
+/* ── Content ───────────────────────────────────────────── */
+.content { flex: 1; overflow-y: auto; }
 
 .view {
     max-width: 1000px;
     margin: 0 auto;
+    padding: 24px;
     animation: view-enter var(--dur-slow) var(--ease-out);
 }
 
 .view h2 {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 600;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.022em;
     margin-bottom: 4px;
+    color: var(--text-0);
 }
 
 .view-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     gap: 16px;
 }
 
 .view-count {
-    color: var(--text-2);
+    color: var(--text-3);
     font-size: 12px;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
 }
 
-/* -------- Tabs (project detail) -------- */
-
+/* ── Tabs ──────────────────────────────────────────────── */
 .tabs {
     display: flex;
     gap: 2px;
@@ -133,16 +120,13 @@
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
+    letter-spacing: -0.005em;
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
-    transition:
-        color var(--dur-fast),
-        border-color var(--dur-fast);
+    transition: var(--transition-color);
 }
 
-.tabs button:hover {
-    color: var(--text-0);
-}
+.tabs button:hover { color: var(--text-0); }
 
 .tabs button.active {
     color: var(--text-0);

@@ -7,6 +7,7 @@
             ├── schema.sql
             ├── sql.d.ts
         └── 📁ipc
+            ├── attachments.ts
             ├── dashboard.ts
             ├── focus.ts
             ├── index.ts
@@ -42,6 +43,7 @@
                     ├── due-picker.css
                     ├── editable-text.css
                     ├── empty-state.css
+                    ├── file.css
                     ├── icon-rail.css
                     ├── icons.css
                     ├── layout.css
@@ -84,6 +86,7 @@
                     ├── PhaseList.tsx
                 └── 📁projects
                     ├── ProjectEditModal.tsx
+                    ├── ProjectFilesList.tsx
                 └── 📁tasks
                     ├── DueDatePicker.tsx
                     ├── PriorityBadge.tsx

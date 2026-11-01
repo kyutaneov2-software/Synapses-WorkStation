@@ -59,9 +59,10 @@ export function PhaseList({
                     <motion.div
                         layout
                         key={phase.id}
-                        initial={{ opacity: 0, y: -10 }}
+                        initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                         className={`phase-item ${phase.paid ? 'paid' : ''}`}
                     >
                         <button
@@ -84,17 +85,20 @@ export function PhaseList({
                                 inputClassName="phase-name-input-inline"
                             />
                             {phase.paid_at && (
-                                <span className="phase-paid-date">
+                                <span className="phase-paid-date" data-tabular>
                                     Paid {parseSqliteDate(phase.paid_at).toLocaleDateString()}
                                 </span>
                             )}
                         </div>
 
                         <div className="phase-amount-group">
-                            <span className="currency-symbol">{symbol}</span>
+                            <span className="currency-symbol" data-tabular>
+                                {symbol}
+                            </span>
                             <input
                                 type="number"
                                 className="phase-amount-input"
+                                data-money
                                 defaultValue={phase.amount_cents / 100}
                                 step="0.01"
                                 onBlur={(e) => {
@@ -105,7 +109,9 @@ export function PhaseList({
                                     if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
                                 }}
                             />
-                            <span className="currency-code">{currency}</span>
+                            <span className="currency-code" data-tabular>
+                                {currency}
+                            </span>
                         </div>
 
                         <button
@@ -123,6 +129,7 @@ export function PhaseList({
                 <motion.form
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                     className="phase-item phase-add-form"
                     onSubmit={handleSubmit}
                 >
@@ -138,16 +145,21 @@ export function PhaseList({
                         autoFocus
                     />
                     <div className="phase-amount-group">
-                        <span className="currency-symbol">{symbol}</span>
+                        <span className="currency-symbol" data-tabular>
+                            {symbol}
+                        </span>
                         <input
                             type="number"
                             className="phase-amount-input"
+                            data-money
                             placeholder="0"
                             step="0.01"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
                         />
-                        <span className="currency-code">{currency}</span>
+                        <span className="currency-code" data-tabular>
+                            {currency}
+                        </span>
                     </div>
                     <button type="submit" className="phase-save">
                         Save

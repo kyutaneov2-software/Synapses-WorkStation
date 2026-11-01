@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { NotesSidebar } from '../components/notes/NotesSidebar'
 import { NoteEditor } from '../components/notes/NoteEditor'
 
+/** Matches --ease-out in tokens.css — one motion language everywhere */
+const easeOut = [0.16, 1, 0.3, 1] as const
+
 function NoteEditorRoute(): React.JSX.Element {
     const { id } = useParams<{ id: string }>()
     const noteId = Number(id)
@@ -41,17 +44,17 @@ export function NotesSpace(): React.JSX.Element {
     const location = useLocation()
 
     return (
-        <div className="space-layout">
+        <>
             <NotesSidebar />
-            <div className="main-area" style={{ overflow: 'hidden', position: 'relative' }}>
+            <div className="main-area notes-main-area">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={location.pathname}
-                        initial={{ opacity: 0, x: 10 }}
+                        initial={{ opacity: 0, x: 8 }}
                         animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.2 }}
-                        style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+                        exit={{ opacity: 0, x: -8 }}
+                        transition={{ duration: 0.22, ease: easeOut }}
+                        className="notes-content-wrapper"
                     >
                         <Routes location={location}>
                             <Route index element={<EmptyState />} />
@@ -60,6 +63,6 @@ export function NotesSpace(): React.JSX.Element {
                     </motion.div>
                 </AnimatePresence>
             </div>
-        </div>
+        </>
     )
 }

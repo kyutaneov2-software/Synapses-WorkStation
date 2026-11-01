@@ -33,9 +33,14 @@ export function TaskItem({
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+            exit={{
+                opacity: 0,
+                scale: 0.97,
+                transition: { duration: 0.15, ease: [0.16, 1, 0.3, 1] }
+            }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className={`task-item ${task.done ? 'done' : ''} ${isPinned ? 'pinned' : ''}`}
             style={{ originY: 0 }}
         >

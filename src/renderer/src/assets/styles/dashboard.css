@@ -1,113 +1,142 @@
 /* ============================================================
-   DASHBOARD REDESIGN (Follow-up Layout)
+   DASHBOARD — "Obsidian" pass
+   Uses design tokens exclusively. --dash-* kept as aliases
+   for backward compatibility with React code that may reference
+   them inline. All real values come from tokens.css.
    ============================================================ */
 
 :root {
-    --dash-bg: #0B0D12;
-    --dash-card: #15171D;
-    --dash-surface: #1A1D25;
-    --dash-border: #2A2E38;
-    --dash-text: #F1F3F8;
-    --dash-text-muted: #9299AA;
-    --dash-blue: #6294FF;
-    --dash-violet: #9D84FF;
-    --dash-green: #43D69A;
-    --dash-amber: #F4BC34;
-    --dash-red: #F87171;
+    /* Legacy aliases → canonical tokens */
+    --dash-bg:          var(--bg-0);
+    --dash-card:        var(--bg-1);
+    --dash-surface:     var(--bg-2);
+    --dash-border:      var(--border);
+    --dash-text:        var(--text-0);
+    --dash-text-muted:  var(--text-2);
+    --dash-blue:        var(--accent);
+    --dash-violet:      var(--purple);
+    --dash-green:       var(--success);
+    --dash-amber:       var(--warning);
+    --dash-red:         var(--danger);
 }
 
 .dashboard-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100vh;
+    flex: 1;                 /* ← was: height: 100vh */
+    min-height: 0;           /* ← new — enables inner scroll */
     overflow-y: auto;
-    background-color: var(--dash-bg);
-    padding: 32px 40px;
+    background: var(--bg-0);
+    padding: 36px 48px 48px;
 }
 
 /* ── Page Header ────────────────────────────────────────── */
 .dashboard-header {
-    margin-bottom: 28px;
+    margin-bottom: 32px;
     max-width: 1600px;
     width: 100%;
     margin-inline: auto;
 }
 
 .dashboard-header h1 {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 600;
-    color: var(--dash-text);
+    color: var(--text-0);
     margin: 0 0 6px 0;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.022em;
 }
 
 .dashboard-header p {
     font-size: 13px;
-    color: var(--dash-text-muted);
+    color: var(--text-2);
     margin: 0;
+    letter-spacing: -0.005em;
 }
 
-/* ── The Grid System ────────────────────────────────────── */
+/* ── The Grid ───────────────────────────────────────────── */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 20px;
+    gap: 16px;
     max-width: 1600px;
     width: 100%;
     margin-inline: auto;
-    /* Ensures cards in the same row stretch to match heights */
     align-items: stretch;
 }
 
-/* ── Shared Card Styles ─────────────────────────────────── */
+/* ── Bento Card (shared) ───────────────────────────────── */
 .bento-card {
-    background: var(--dash-card);
-    border: 1px solid var(--dash-border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px 26px;
+    box-shadow: var(--shadow), var(--inset-highlight);
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    height: 100%; /* Fills the grid cell */
+    height: 100%;
+    transition:
+        border-color var(--dur) var(--ease-out),
+        box-shadow var(--dur) var(--ease-out);
+}
+
+.bento-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-lg), var(--inset-highlight);
 }
 
 .bento-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
+    gap: 12px;
 }
 
 .bento-title {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--dash-text);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-2);
 }
 
 .bento-title svg {
-    color: var(--dash-text-muted);
+    color: var(--text-2);
+    opacity: 0.7;
 }
 
 .bento-badge {
     font-size: 11px;
     font-weight: 600;
-    color: var(--dash-green);
-    background: rgba(67, 214, 154, 0.1);
+    color: var(--success);
+    background: var(--success-soft);
     padding: 4px 10px;
-    border-radius: 20px;
+    border-radius: var(--radius-full);
+    letter-spacing: -0.005em;
+    font-variant-numeric: tabular-nums;
+    transition: var(--transition-color);
 }
 
-/* ── ROW 1: Analytics ───────────────────────────────────── */
-.chart-bento { grid-column: span 6; }
-.doughnut-bento { grid-column: span 6; }
+.bento-badge.text-red {
+    color: var(--danger);
+    background: var(--danger-soft);
+}
 
-/* Chart Wrapper */
+.bento-badge.text-muted {
+    color: var(--text-2);
+    background: var(--bg-2);
+}
+
+/* ── ROW 1: Charts ──────────────────────────────────────── */
+.chart-bento     { grid-column: span 6; }
+.doughnut-bento  { grid-column: span 6; }
+
 .chart-wrapper {
     flex: 1;
     display: flex;
@@ -119,10 +148,10 @@
 .line-chart-svg {
     width: 100%;
     height: auto;
-    max-height: 180px;
+    max-height: 190px;
 }
 
-/* Doughnut Chart Styles */
+/* Doughnut */
 .doughnut-container {
     display: flex;
     align-items: center;
@@ -132,14 +161,15 @@
 
 .doughnut-graphic {
     position: relative;
-    width: 180px;
-    height: 180px;
+    width: 176px;
+    height: 176px;
     flex-shrink: 0;
 }
 
 .doughnut-svg {
     width: 100%;
     height: 100%;
+    filter: drop-shadow(0 0 24px rgba(92, 143, 247, 0.08));
 }
 
 .doughnut-center {
@@ -153,19 +183,22 @@
 }
 
 .doughnut-total {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 700;
-    color: var(--dash-text);
+    color: var(--text-0);
     font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    line-height: 1;
 }
 
 .doughnut-label {
     font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--dash-text-muted);
+    letter-spacing: 0.1em;
+    color: var(--text-3);
     font-weight: 600;
-    margin-top: 4px;
+    margin-top: 8px;
 }
 
 .doughnut-legend {
@@ -174,8 +207,9 @@
     gap: 10px;
     flex: 1;
     min-width: 0;
-    max-height: 180px;
-    overflow-y: auto; /* Allows scrolling if too many projects */
+    max-height: 176px;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 .legend-item {
@@ -183,27 +217,32 @@
     align-items: center;
     gap: 10px;
     font-size: 12px;
+    padding: 2px 0;
 }
 
 .legend-color {
-    width: 10px;
-    height: 10px;
-    border-radius: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
     flex-shrink: 0;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.03);
 }
 
 .legend-name {
-    color: var(--dash-text-muted);
+    color: var(--text-1);
     flex: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    letter-spacing: -0.005em;
 }
 
 .legend-value {
-    color: var(--dash-text);
+    color: var(--text-0);
     font-family: var(--font-mono);
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-size: 11.5px;
 }
 
 .empty-state-chart {
@@ -212,72 +251,120 @@
     align-items: center;
     justify-content: center;
     flex: 1;
-    color: var(--dash-text-muted);
+    color: var(--text-3);
     gap: 12px;
+    font-size: 13px;
 }
 
-/* ── ROW 2: Summary & Clock ─────────────────────────────── */
+/* ── ROW 2: Hero + Financial ───────────────────────────── */
 .hero-bento {
     grid-column: span 7;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 32px;
-    background: linear-gradient(135deg, var(--dash-card) 0%, rgba(98, 148, 255, 0.03) 100%);
+    padding: 32px 36px;
+    background:
+        radial-gradient(ellipse at top right,
+            color-mix(in srgb, var(--accent) 6%, transparent) 0%,
+            transparent 60%),
+        var(--bg-1);
 }
 
 .financial-bento {
     grid-column: span 5;
-    justify-content: center; /* Centers the content vertically */
+    justify-content: center;
 }
 
 /* Clock */
 .clock-widget { display: flex; flex-direction: column; gap: 4px; }
-.clock-greeting { font-size: 14px; font-weight: 500; color: var(--dash-text-muted); }
+
+.clock-greeting {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    letter-spacing: -0.005em;
+}
+
 .clock-time {
     font-size: 56px;
     font-weight: 700;
-    color: var(--dash-text);
+    color: var(--text-0);
     line-height: 1;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.045em;
     font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
 }
-.clock-seconds { font-size: 20px; color: var(--dash-text-muted); margin-left: 4px; }
-.clock-date { font-size: 14px; font-weight: 500; color: var(--dash-text-muted); margin-top: 6px; }
 
-.hero-summary { max-width: 300px; text-align: right; }
-.hero-summary h3 { font-size: 16px; font-weight: 600; color: var(--dash-text); margin: 0 0 8px 0; }
-.hero-summary p { font-size: 13px; color: var(--dash-text-muted); line-height: 1.5; margin: 0; }
-.hero-summary strong { color: var(--dash-blue); }
+.clock-seconds {
+    font-size: 20px;
+    color: var(--text-3);
+    margin-left: 4px;
+    font-weight: 500;
+}
 
-/* Financial Summary */
+.clock-date {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+    margin-top: 8px;
+}
+
+.hero-summary {
+    max-width: 320px;
+    text-align: right;
+}
+
+.hero-summary h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-0);
+    margin: 0 0 8px 0;
+    letter-spacing: -0.01em;
+}
+
+.hero-summary p {
+    font-size: 13px;
+    color: var(--text-1);
+    line-height: 1.55;
+    margin: 0;
+}
+
+.hero-summary strong {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* Financial */
 .financial-content {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 18px;
 }
 
 .financial-primary {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--dash-border);
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .financial-label {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--dash-text-muted);
+    letter-spacing: 0.08em;
+    color: var(--text-3);
 }
 
 .financial-value-lg {
-    font-size: 32px;
+    font-size: 34px;
     font-weight: 700;
     font-family: var(--font-mono);
-    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    color: var(--text-0);
 }
 
 .financial-secondary {
@@ -289,131 +376,147 @@
 .financial-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
 }
 
 .financial-value-md {
     font-size: 20px;
     font-weight: 600;
     font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
 }
 
 .financial-value-sm {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.015em;
 }
 
-.text-green { color: var(--dash-green); }
-.text-amber { color: var(--dash-amber); }
-.text-red { color: var(--dash-red); }
-.text-muted { color: var(--dash-text-muted); }
+.text-green { color: var(--success); }
+.text-amber { color: var(--warning); }
+.text-red   { color: var(--danger); }
+.text-muted { color: var(--text-2); }
 
-/* ── ROW 3: Deadlines & Health ──────────────────────────── */
+/* ── ROW 3: Deadlines + Health ─────────────────────────── */
 .deadlines-bento { grid-column: span 4; }
-.health-bento { grid-column: span 8; }
+.health-bento    { grid-column: span 8; }
 
 .empty-state-mini {
     display: flex;
     align-items: center;
     justify-content: center;
     flex: 1;
-    color: var(--dash-text-muted);
+    color: var(--text-3);
     font-size: 13px;
     font-style: italic;
 }
 
-.deadline-list { display: flex; flex-direction: column; gap: 12px; }
+.deadline-list { display: flex; flex-direction: column; gap: 4px; }
+
 .deadline-row {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 8px 0;
+    padding: 12px 0;
 }
+
 .deadline-row:not(:last-child) {
-    border-bottom: 1px solid var(--dash-border);
-    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .deadline-badge {
     font-size: 10px;
     font-weight: 700;
-    padding: 4px 8px;
-    border-radius: 6px;
-    background: var(--dash-surface);
-    color: var(--dash-text-muted);
-    min-width: 52px;
+    padding: 5px 9px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-2);
+    color: var(--text-2);
+    min-width: 56px;
     text-align: center;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
 }
-.deadline-row.overdue .deadline-badge { background: rgba(248, 113, 113, 0.15); color: var(--dash-red); }
 
-.deadline-body { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.deadline-row.overdue .deadline-badge {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.deadline-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
 .deadline-title {
     font-size: 13px;
     font-weight: 500;
-    color: var(--dash-text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--text-0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.005em;
 }
-.deadline-project { font-size: 11px; color: var(--dash-text-muted); }
 
-/* Project Health */
-.health-list { display: flex; flex-direction: column; gap: 16px; }
+.deadline-project {
+    font-size: 11px;
+    color: var(--text-2);
+}
+
+/* Health */
+.health-list { display: flex; flex-direction: column; gap: 18px; }
+
 .health-row { display: flex; flex-direction: column; gap: 8px; }
-.health-header { display: flex; justify-content: space-between; align-items: baseline; }
+
+.health-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
 
 .health-title {
     font-size: 13px;
     font-weight: 500;
-    color: var(--dash-text);
+    color: var(--text-0);
+    letter-spacing: -0.005em;
 }
 
 .health-money {
     font-size: 12px;
     font-weight: 600;
-    color: var(--dash-green);
+    color: var(--success);
     font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
 }
 
 .progress-track {
-    height: 6px;
-    background: var(--dash-surface);
-    border-radius: 3px;
+    height: 5px;
+    background: var(--bg-2);
+    border-radius: var(--radius-full);
     overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .progress-fill {
     height: 100%;
-    background: var(--dash-green);
-    border-radius: 3px;
-}
-
-/* Update the badge styling to handle dynamic states */
-.bento-badge {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--dash-green);
-    background: rgba(67, 214, 154, 0.1);
-    padding: 4px 10px;
-    border-radius: 20px;
-    transition: all 0.3s ease;
-}
-
-/* Add these specific overrides for the dynamic badge */
-.bento-badge.text-red {
-    color: var(--dash-red);
-    background: rgba(248, 113, 113, 0.1);
-}
-
-.bento-badge.text-muted {
-    color: var(--dash-text-muted);
-    background: var(--dash-surface);
+    background: linear-gradient(90deg,
+        color-mix(in srgb, var(--success) 85%, transparent) 0%,
+        var(--success) 100%);
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--success) 35%, transparent);
+    transition: width var(--dur-slow) var(--ease-out);
 }
 
 /* ── Responsive ─────────────────────────────────────────── */
-
 @media (max-width: 1100px) {
     .dashboard-grid { grid-template-columns: 1fr; }
-    .chart-bento, .doughnut-bento, .hero-bento, .financial-bento, .deadlines-bento, .health-bento {
+    .chart-bento, .doughnut-bento, .hero-bento,
+    .financial-bento, .deadlines-bento, .health-bento {
         grid-column: span 1;
     }
     .hero-bento {
@@ -423,4 +526,5 @@
     }
     .hero-summary { text-align: left; max-width: 100%; }
     .doughnut-container { flex-direction: column; gap: 24px; }
+    .dashboard-container { padding: 24px 20px 32px; }
 }

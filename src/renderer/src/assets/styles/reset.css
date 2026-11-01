@@ -1,5 +1,5 @@
 /* ============================================================
-   RESET & BASE
+   RESET & BASE — "Obsidian" pass
    ============================================================ */
 
 * {
@@ -8,11 +8,7 @@
     padding: 0;
 }
 
-html,
-body,
-#root {
-    height: 100%;
-}
+html, body, #root { height: 100%; }
 
 body {
     font-family: var(--font-sans);
@@ -24,7 +20,7 @@ body {
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.011em;
 }
 
 button {
@@ -32,33 +28,34 @@ button {
     letter-spacing: inherit;
 }
 
-input,
-textarea,
-select {
+input, textarea, select {
     font-family: inherit;
     letter-spacing: inherit;
 }
 
-/* Custom scrollbars */
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+/* ── Focus visibility ────────────────────────────────── */
+:focus { outline: none; }
+:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
 }
 
-::-webkit-scrollbar-track {
-    background: transparent;
-}
+/* ── Branded scrollbars ──────────────────────────────── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+
+::-webkit-scrollbar-track { background: transparent; }
 
 ::-webkit-scrollbar-thumb {
-    background: #2a2a32;
+    background: var(--bg-3);
     border-radius: 5px;
     border: 2px solid transparent;
     background-clip: content-box;
-    transition: background var(--dur);
+    transition: background var(--dur) var(--ease-out);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #3a3a44;
+    background: var(--bg-4);
     background-clip: content-box;
     border: 2px solid transparent;
 }

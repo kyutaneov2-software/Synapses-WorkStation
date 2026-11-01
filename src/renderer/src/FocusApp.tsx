@@ -66,9 +66,6 @@ function FocusApp(): React.JSX.Element {
 
     const handleComplete = async (): Promise<void> => {
         if (!task) return
-        // focus:complete already stops any active session bound to this task
-        // (or unbound) and marks the task done in a single IPC call. No need
-        // to also call stopSession here.
         const next = await window.api.focusComplete(task.id)
         setTrackingTaskId(null)
         setStartedAt(null)
@@ -139,7 +136,9 @@ function FocusApp(): React.JSX.Element {
             {isTracking && (
                 <div className="focus-timer-badge no-drag">
                     <span className="focus-timer-dot" />
-                    <span className="focus-timer-time">{formatHMS(elapsed)}</span>
+                    <span className="focus-timer-time" data-time>
+                        {formatHMS(elapsed)}
+                    </span>
                 </div>
             )}
 

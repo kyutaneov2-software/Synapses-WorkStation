@@ -1,66 +1,137 @@
 /* ============================================================
-   DESIGN TOKENS
+   DESIGN TOKENS — "Layered Obsidian"
+   Layer system: CANVAS (deepest) → RAIL → WINDOW → CONTENT → CARDS
    ============================================================ */
 
 :root {
-    /* Typography */
+    /* ─── Typography ✦ (Geist replaces Inter) ─────────────── */
     --font-sans:
-        'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        'Geist Variable', 'Inter Variable', -apple-system, BlinkMacSystemFont,
+        'Segoe UI', Roboto, sans-serif;
     --font-mono:
-        'JetBrains Mono Variable', ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+        'Geist Mono Variable', 'JetBrains Mono Variable', ui-monospace,
+        'Cascadia Mono', 'SF Mono', Consolas, monospace;
 
-    /* Surfaces */
-    --bg-0: #0e0e10;
-    --bg-1: #16161a;
-    --bg-2: #1c1c21;
-    --bg-3: #24242b;
-    --bg-hover: #26262e;
+    /* ─── Canvas (the outermost layer) ✦ ──────────────────── */
+    --bg-canvas:        #050507;                    /* deeper than bg-0 */
+    --canvas-mesh-a:    rgba(92, 143, 247, 0.055);  /* accent hue */
+    --canvas-mesh-b:    rgba(167, 139, 250, 0.035); /* violet hue */
+    --canvas-grid:      rgba(255, 255, 255, 0.014); /* barely-there grid */
+    --canvas-noise:     0.022;                      /* noise overlay opacity */
 
-    /* Borders */
-    --border-subtle: #22222a;
-    --border: #2c2c35;
-    --border-strong: #3a3a44;
+    /* ─── Surfaces (top-down) ─────────────────────────────── */
+    --bg-0:     #08080a;   /* content well (inside window)      */
+    --bg-1:     #0f0f12;   /* rail / window panel               */
+    --bg-2:     #16161a;   /* raised card                       */
+    --bg-3:     #1e1e24;   /* elevated / active surface         */
+    --bg-hover: #26262e;   /* hover composite                   */
+    --bg-4:     #2e2e38;   /* highest surface / pressed         */
 
-    /* Text */
-    --text-0: #f4f4f6;
-    --text-1: #a8a8b3;
-    --text-2: #6e6e7a;
-    --text-3: #4a4a54;
+    /* ─── Borders (hairline — composite over any surface) ─── */
+    --border-subtle: rgba(255, 255, 255, 0.055);
+    --border:        rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.15);
+    --border-focus:  var(--accent-glow);
+    --inset-frame:   inset 0 0 0 1px rgba(255, 255, 255, 0.03);  /* ✦ carved edge */
 
-    /* Accents */
-    --accent: #5b8def;
+    /* ─── Text ────────────────────────────────────────────── */
+    --text-0:       #ededf0;
+    --text-1:       #a3a3b0;
+    --text-2:       #72727f;
+    --text-3:       #4e4e58;
+    --text-inverse: #0a0a0c;
+
+    /* ─── Accent (electric blue) ──────────────────────────── */
+    --accent:       #5c8ff7;
     --accent-hover: #7ba4ff;
-    --accent-soft: rgba(91, 141, 239, 0.12);
-    --accent-glow: rgba(91, 141, 239, 0.35);
+    --accent-soft:  rgba(92, 143, 247, 0.12);
+    --accent-glow:  rgba(92, 143, 247, 0.35);
 
-    --success: #4ade80;
+    /* ── Ember swap (uncomment to try warm variant):
+    --accent:       #e8a65d;
+    --accent-hover: #f0b570;
+    --accent-soft:  rgba(232, 166, 93, 0.12);
+    --accent-glow:  rgba(232, 166, 93, 0.35);
+    ─────────────────────────────────────────────────────── */
+
+    /* ─── Semantic ────────────────────────────────────────── */
+    --success:      #4ade80;
     --success-soft: rgba(74, 222, 128, 0.12);
-
-    --warning: #fbbf24;
+    --warning:      #fbbf24;
     --warning-soft: rgba(251, 191, 36, 0.12);
+    --danger:       #ff6b6b;
+    --danger-soft:  rgba(255, 107, 107, 0.12);
+    --purple:       #a78bfa;
+    --purple-soft:  rgba(167, 139, 250, 0.12);
 
-    --danger: #ff6b6b;
-    --danger-soft: rgba(255, 107, 107, 0.12);
+    /* ─── Radii ───────────────────────────────────────────── */
+    --radius-sm:   4px;
+    --radius:      6px;
+    --radius-lg:   10px;
+    --radius-xl:   14px;
+    --radius-2xl:  18px;    /* ✦ window / large shells */
+    --radius-full: 9999px;
 
-    --purple: #a78bfa;
-    --purple-soft: rgba(167, 139, 250, 0.12);
+    /* ─── Elevation scale ✦ (the depth system) ─────────────
+       5 tiers. Every raised element uses exactly one of these. */
+    --elev-0: none;
+    --elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --elev-2: 0 1px 2px rgba(0, 0, 0, 0.35),
+              0 6px 20px rgba(0, 0, 0, 0.4);
+    --elev-3: 0 2px 4px rgba(0, 0, 0, 0.3),
+              0 14px 40px rgba(0, 0, 0, 0.5);
+    --elev-4: 0 4px 8px rgba(0, 0, 0, 0.3),
+              0 32px 72px rgba(0, 0, 0, 0.55);
 
-    /* Radii */
-    --radius-sm: 4px;
-    --radius: 6px;
-    --radius-lg: 10px;
-    --radius-xl: 14px;
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+    /* ─── Legacy shadow aliases (backward compat) ─────────── */
+    --shadow-sm:   var(--elev-1);
+    --shadow:      var(--elev-2);
+    --shadow-lg:   var(--elev-3);
     --shadow-glow: 0 0 20px var(--accent-glow);
+    --inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.045);
 
-    /* Motion */
-    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* ─── Motion ──────────────────────────────────────────── */
+    --ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);
     --dur-fast: 120ms;
-    --dur: 200ms;
+    --dur:      200ms;
     --dur-slow: 320ms;
+
+    --transition-color:
+        color var(--dur-fast) var(--ease-out),
+        background-color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out);
+    --transition-surface:
+        background-color var(--dur) var(--ease-out),
+        border-color var(--dur) var(--ease-out),
+        box-shadow var(--dur) var(--ease-out),
+        transform var(--dur) var(--ease-out);
+
+    /* ─── Spacing scale ✦ ─────────────────────────────────── */
+    --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+    --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+
+    /* ─── Focus ───────────────────────────────────────────── */
+    --focus-ring: 0 0 0 2px var(--bg-0), 0 0 0 4px var(--accent-glow);
+}
+
+/* ─── Global typographic polish ───────────────────────────── */
+html {
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+[data-money], [data-time], [data-tabular] {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+
+::selection {
+    background: var(--accent-soft);
+    color: var(--text-0);
 }
