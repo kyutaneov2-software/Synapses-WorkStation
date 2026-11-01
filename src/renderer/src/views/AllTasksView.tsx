@@ -86,25 +86,26 @@ export function AllTasksView(): React.JSX.Element {
     const doneCount = tasks.filter((t) => t.done).length
     const overdueCount = tasks.filter((t) => !t.done && isOverdue(t.due_date)).length
 
-    if (loading)
+    if (loading) {
         return (
-            <div className="view">
-                <p>Loading…</p>
+            <div className="task-column-body">
+                <p className="empty-state">Loading…</p>
             </div>
         )
+    }
 
     return (
-        <div className="view all-tasks-view">
-            <div className="view-header">
+        <div className="task-column-body">
+            <div className="task-column-header">
                 <h2>All Tasks</h2>
-                <span className="view-count">
-                    {filtered.length} of {totalCount}
+                <span className="task-column-count" data-tabular>
+                    {filtered.length} / {totalCount}
                 </span>
             </div>
 
             <QuickAdd onAdd={handleAdd} placeholder="Add a task…" projects={projects} />
 
-            <div className="filter-bar">
+            <div className="compact-filter-bar">
                 <input
                     type="text"
                     className="filter-search"
@@ -114,12 +115,6 @@ export function AllTasksView(): React.JSX.Element {
                 />
 
                 <div className="filter-chips">
-                    <button
-                        className={`filter-chip ${statusFilter === 'all' ? 'active' : ''}`}
-                        onClick={() => setStatusFilter('all')}
-                    >
-                        All <span className="chip-count">{totalCount}</span>
-                    </button>
                     <button
                         className={`filter-chip ${statusFilter === 'open' ? 'active' : ''}`}
                         onClick={() => setStatusFilter('open')}
@@ -132,13 +127,19 @@ export function AllTasksView(): React.JSX.Element {
                         }`}
                         onClick={() => setStatusFilter('overdue')}
                     >
-                        Overdue <span className="chip-count">{overdueCount}</span>
+                        Late <span className="chip-count">{overdueCount}</span>
                     </button>
                     <button
                         className={`filter-chip ${statusFilter === 'done' ? 'active' : ''}`}
                         onClick={() => setStatusFilter('done')}
                     >
                         Done <span className="chip-count">{doneCount}</span>
+                    </button>
+                    <button
+                        className={`filter-chip ${statusFilter === 'all' ? 'active' : ''}`}
+                        onClick={() => setStatusFilter('all')}
+                    >
+                        All <span className="chip-count">{totalCount}</span>
                     </button>
                 </div>
 
@@ -184,50 +185,52 @@ export function AllTasksView(): React.JSX.Element {
                 </div>
             </div>
 
-            {filtered.length === 0 && (
-                <div className="empty-state">
-                    <p>
-                        {search || statusFilter !== 'all' || projectFilter !== 'all'
-                            ? 'No tasks match these filters.'
-                            : 'No tasks yet. Add one above.'}
-                    </p>
-                </div>
-            )}
+            <div className="task-scroll-area">
+                {filtered.length === 0 && (
+                    <div className="empty-state-mini">
+                        <p>
+                            {search || statusFilter !== 'all' || projectFilter !== 'all'
+                                ? 'No tasks match these filters.'
+                                : 'No tasks yet. Add one above.'}
+                        </p>
+                    </div>
+                )}
 
-            {grouped ? (
-                Array.from(grouped.entries()).map(([key, groupTasks]) => {
-                    const project = key === 'inbox' ? null : projectById.get(key)
-                    return (
-                        <section key={String(key)} className="task-group">
-                            <h3 className="group-title">
-                                {project ? project.title : 'Inbox'}
-                                <span className="group-count">{groupTasks.length}</span>
-                            </h3>
-                            <AnimatePresence mode="popLayout">
-                                {groupTasks.map((t) => (
-                                    <TaskItem
-                                        key={t.id}
-                                        task={t}
-                                        project={project ?? undefined}
-                                        {...actions}
-                                    />
-                                ))}
-                            </AnimatePresence>
-                        </section>
-                    )
-                })
-            ) : (
-                <AnimatePresence mode="popLayout">
-                    {filtered.map((t) => (
-                        <TaskItem
-                            key={t.id}
-                            task={t}
-                            project={t.project_id ? projectById.get(t.project_id) : undefined}
-                            {...actions}
-                        />
-                    ))}
-                </AnimatePresence>
-            )}
+                {grouped ? (
+                    Array.from(grouped.entries()).map(([key, groupTasks]) => {
+                        const project = key === 'inbox' ? null : projectById.get(key)
+                        return (
+                            <section key={String(key)} className="task-group">
+                                <h3 className="group-title">
+                                    {project ? project.title : 'Inbox'}
+                                    <span className="group-count">{groupTasks.length}</span>
+                                </h3>
+                                <AnimatePresence mode="popLayout">
+                                    {groupTasks.map((t) => (
+                                        <TaskItem
+                                            key={t.id}
+                                            task={t}
+                                            project={project ?? undefined}
+                                            {...actions}
+                                        />
+                                    ))}
+                                </AnimatePresence>
+                            </section>
+                        )
+                    })
+                ) : (
+                    <AnimatePresence mode="popLayout">
+                        {filtered.map((t) => (
+                            <TaskItem
+                                key={t.id}
+                                task={t}
+                                project={t.project_id ? projectById.get(t.project_id) : undefined}
+                                {...actions}
+                            />
+                        ))}
+                    </AnimatePresence>
+                )}
+            </div>
         </div>
     )
 }

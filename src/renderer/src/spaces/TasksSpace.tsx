@@ -3,6 +3,8 @@ import { TodayView } from '../views/TodayView'
 import { TomorrowView } from '../views/TomorrowView'
 import { AllTasksView } from '../views/AllTasksView'
 
+const easeOut = [0.16, 1, 0.3, 1] as const
+
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -16,28 +18,41 @@ const columnVariants = {
     visible: {
         opacity: 1,
         y: 0,
-        // Near-critical damping — smooth settle, no bounce
         transition: { type: 'spring', stiffness: 280, damping: 28 }
     }
 } as const
 
 export function TasksSpace(): React.JSX.Element {
     return (
-        <motion.div
-            className="tasks-dashboard-layout"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-        >
-            <motion.div className="tasks-column" variants={columnVariants}>
-                <TodayView />
+        <div className="tasks-container">
+            <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: easeOut }}
+                className="dashboard-ribbon"
+            >
+                <div className="ribbon-greeting">
+                    <h1>Tasks</h1>
+                    <p>Your agenda — focus on today, plan for tomorrow.</p>
+                </div>
             </motion.div>
-            <motion.div className="tasks-column" variants={columnVariants}>
-                <TomorrowView />
+
+            <motion.div
+                className="tasks-dashboard-layout"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+            >
+                <motion.div className="tasks-column" variants={columnVariants}>
+                    <TodayView />
+                </motion.div>
+                <motion.div className="tasks-column" variants={columnVariants}>
+                    <TomorrowView />
+                </motion.div>
+                <motion.div className="tasks-column tasks-column-wide" variants={columnVariants}>
+                    <AllTasksView />
+                </motion.div>
             </motion.div>
-            <motion.div className="tasks-column tasks-column-wide" variants={columnVariants}>
-                <AllTasksView />
-            </motion.div>
-        </motion.div>
+        </div>
     )
 }

@@ -24,19 +24,20 @@ export function TodayView(): React.JSX.Element {
     const regular = tasks.filter((t) => !isOverdue(t.due_date))
     const projectById = new Map(projects.map((p) => [p.id, p]))
 
-    if (loading)
+    if (loading) {
         return (
-            <div className="view">
-                <p>Loading…</p>
+            <div className="task-column-body">
+                <p className="empty-state">Loading…</p>
             </div>
         )
+    }
 
     return (
-        <div className="view">
-            <div className="view-header">
+        <div className="task-column-body">
+            <div className="task-column-header">
                 <h2>Today</h2>
-                <span className="view-count">
-                    {tasks.length} task{tasks.length === 1 ? '' : 's'}
+                <span className="task-column-count" data-tabular>
+                    {tasks.length}
                 </span>
             </div>
 
@@ -47,43 +48,49 @@ export function TodayView(): React.JSX.Element {
                 hidePlannedFor
             />
 
-            {overdue.length > 0 && (
-                <section className="task-group">
-                    <h3 className="group-title overdue-title">Overdue</h3>
-                    <AnimatePresence mode="popLayout">
-                        {overdue.map((t) => (
-                            <TaskItem
-                                key={t.id}
-                                task={t}
-                                project={t.project_id ? projectById.get(t.project_id) : undefined}
-                                {...actions}
-                            />
-                        ))}
-                    </AnimatePresence>
-                </section>
-            )}
+            <div className="task-scroll-area">
+                {overdue.length > 0 && (
+                    <section className="task-group">
+                        <h3 className="group-title overdue-title">Overdue</h3>
+                        <AnimatePresence mode="popLayout">
+                            {overdue.map((t) => (
+                                <TaskItem
+                                    key={t.id}
+                                    task={t}
+                                    project={
+                                        t.project_id ? projectById.get(t.project_id) : undefined
+                                    }
+                                    {...actions}
+                                />
+                            ))}
+                        </AnimatePresence>
+                    </section>
+                )}
 
-            {regular.length > 0 && (
-                <section className="task-group">
-                    {overdue.length > 0 && <h3 className="group-title">Today</h3>}
-                    <AnimatePresence mode="popLayout">
-                        {regular.map((t) => (
-                            <TaskItem
-                                key={t.id}
-                                task={t}
-                                project={t.project_id ? projectById.get(t.project_id) : undefined}
-                                {...actions}
-                            />
-                        ))}
-                    </AnimatePresence>
-                </section>
-            )}
+                {regular.length > 0 && (
+                    <section className="task-group">
+                        {overdue.length > 0 && <h3 className="group-title">Scheduled</h3>}
+                        <AnimatePresence mode="popLayout">
+                            {regular.map((t) => (
+                                <TaskItem
+                                    key={t.id}
+                                    task={t}
+                                    project={
+                                        t.project_id ? projectById.get(t.project_id) : undefined
+                                    }
+                                    {...actions}
+                                />
+                            ))}
+                        </AnimatePresence>
+                    </section>
+                )}
 
-            {tasks.length === 0 && (
-                <div className="empty-state">
-                    <p>{"Nothing on today's plate. Enjoy it while it lasts."}</p>
-                </div>
-            )}
+                {tasks.length === 0 && (
+                    <div className="empty-state-mini">
+                        <p>{"Nothing on today's plate. Enjoy it while it lasts."}</p>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

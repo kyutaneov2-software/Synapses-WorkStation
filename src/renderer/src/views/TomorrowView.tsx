@@ -22,19 +22,20 @@ export function TomorrowView(): React.JSX.Element {
 
     const projectById = new Map(projects.map((p) => [p.id, p]))
 
-    if (loading)
+    if (loading) {
         return (
-            <div className="view">
-                <p>Loading…</p>
+            <div className="task-column-body">
+                <p className="empty-state">Loading…</p>
             </div>
         )
+    }
 
     return (
-        <div className="view">
-            <div className="view-header">
+        <div className="task-column-body">
+            <div className="task-column-header">
                 <h2>Tomorrow</h2>
-                <span className="view-count">
-                    {tasks.length} task{tasks.length === 1 ? '' : 's'}
+                <span className="task-column-count" data-tabular>
+                    {tasks.length}
                 </span>
             </div>
 
@@ -45,22 +46,24 @@ export function TomorrowView(): React.JSX.Element {
                 hidePlannedFor
             />
 
-            <AnimatePresence mode="popLayout">
-                {tasks.map((t) => (
-                    <TaskItem
-                        key={t.id}
-                        task={t}
-                        project={t.project_id ? projectById.get(t.project_id) : undefined}
-                        {...actions}
-                    />
-                ))}
-            </AnimatePresence>
+            <div className="task-scroll-area">
+                <AnimatePresence mode="popLayout">
+                    {tasks.map((t) => (
+                        <TaskItem
+                            key={t.id}
+                            task={t}
+                            project={t.project_id ? projectById.get(t.project_id) : undefined}
+                            {...actions}
+                        />
+                    ))}
+                </AnimatePresence>
 
-            {tasks.length === 0 && (
-                <div className="empty-state">
-                    <p>Tomorrow is a blank slate. Add something to plan ahead.</p>
-                </div>
-            )}
+                {tasks.length === 0 && (
+                    <div className="empty-state-mini">
+                        <p>Tomorrow is a blank slate. Add something to plan ahead.</p>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
