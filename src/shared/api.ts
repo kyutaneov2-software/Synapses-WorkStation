@@ -12,7 +12,10 @@ import type {
     Note,
     NoteSummary,
     NoteUpdate,
-    Attachment
+    Attachment,
+    SettingsPatch,
+    AppSettings,
+    SystemInfo
 } from './types'
 
 export interface SynapsesAPI {
@@ -57,9 +60,12 @@ export interface SynapsesAPI {
     getActiveSession: () => Promise<Session | null>
     getSessionTotals: () => Promise<SessionTotals>
 
+    // System
     healthCheck: () => Promise<{ alive: number }>
     testNotification: () => Promise<void>
     getDashboardData: () => Promise<DashboardData>
+    getSystemInfo: () => Promise<SystemInfo>
+    openUserDataFolder: () => Promise<void>
 
     onDataChanged: (callback: () => void) => () => void
 
@@ -76,4 +82,10 @@ export interface SynapsesAPI {
     addAttachments: (projectId: number, title: string) => Promise<void>
     deleteAttachment: (id: number) => Promise<void>
     openAttachment: (filename: string) => Promise<void>
+
+    // Settings
+    getSettings: () => Promise<AppSettings>
+    updateSettings: (patch: SettingsPatch) => Promise<AppSettings>
+    onSettingsChanged: (callback: (settings: AppSettings) => void) => () => void
+    resetSettings: () => Promise<AppSettings | null>
 }

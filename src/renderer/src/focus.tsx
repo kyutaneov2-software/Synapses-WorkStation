@@ -9,6 +9,7 @@ import '@fontsource-variable/geist-mono'
 // The Focus window is a separate entry point, so it needs its own
 // access to the tokens and reset. (focus.css overrides the reset's
 // solid background to keep the window transparent).
+import { ThemeMount } from './components/layout/ThemeMount'
 import './assets/styles/tokens.css'
 import './assets/styles/reset.css'
 
@@ -19,6 +20,7 @@ import FocusApp from './FocusApp'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
+        <ThemeMount />
         <FocusApp />
     </React.StrictMode>
 )

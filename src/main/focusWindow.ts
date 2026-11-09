@@ -1,7 +1,7 @@
 import { BrowserWindow, screen } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
-import { readSettings, writeSettings } from './services/settings'
+import { readSettings, readResolvedSettings, writeSettings } from './services/settings'
 
 let focusWindow: BrowserWindow | null = null
 
@@ -15,8 +15,12 @@ export function createFocusWindow(): BrowserWindow {
         return focusWindow
     }
 
-    const settings = readSettings()
-    const pos = settings.focusWindowPosition || getDefaultPosition()
+    // Read both views — they serve different purposes:
+    //   readSettings()        → includes focusWindowPosition (internal state)
+    //   readResolvedSettings() → includes focusAlwaysOnTop (user pref, resolved)
+    const disk = readSettings()
+    const resolved = readResolvedSettings()
+    const pos = disk.focusWindowPosition || getDefaultPosition()
 
     focusWindow = new BrowserWindow({
         width: 360,
@@ -24,9 +28,8 @@ export function createFocusWindow(): BrowserWindow {
         x: pos.x,
         y: pos.y,
         frame: false,
-        transparent: true, // ← new
-        backgroundColor: '#00000000', // ← new (fully transparent)
-        alwaysOnTop: true,
+        transparent: true,
+        backgroundColor: '#00000000',
         skipTaskbar: true,
         resizable: false,
         show: false,
@@ -35,7 +38,8 @@ export function createFocusWindow(): BrowserWindow {
             sandbox: false,
             contextIsolation: true,
             nodeIntegration: false
-        }
+        },
+        alwaysOnTop: resolved.focusAlwaysOnTop
     })
 
     focusWindow.on('ready-to-show', () => focusWindow?.show())

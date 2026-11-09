@@ -9,6 +9,7 @@ import { registerSessionHandlers } from './sessions'
 import { registerTagHandlers } from './tags'
 import { registerNoteHandlers } from './notes'
 import { registerAttachmentHandlers } from './attachments'
+import { registerSettingsIpcHandlers, SETTINGS_CHANNELS } from './settings'
 
 const ALL_CHANNELS = [
     // Projects
@@ -59,11 +60,15 @@ const ALL_CHANNELS = [
     // System
     'db:health-check',
     'system:test-notification',
+    'system:get-info', // ← new
+    'system:open-user-data',
     // Attachment
     'db:get-attachments',
     'db:add-attachments',
     'db:delete-attachment',
-    'system:open-attachment'
+    'system:open-attachment',
+    // Settings
+    ...SETTINGS_CHANNELS
 ]
 
 function clearExistingHandlers(): void {
@@ -85,6 +90,7 @@ export function registerAllIpcHandlers(): void {
     registerTagHandlers()
     registerNoteHandlers()
     registerAttachmentHandlers()
+    registerSettingsIpcHandlers()
 
     console.log('[ipc] all handlers registered')
 }

@@ -210,3 +210,33 @@ export interface Goal {
     progress: number
     today_value: number
 }
+
+// ── Settings ────────────────────────────────────────────────
+export type Theme = 'dark' | 'light' | 'system'
+export type AccentColor = 'blue' | 'ember' | 'violet' | 'emerald' | 'rose'
+
+/**
+ * User-facing application settings. All fields are required — defaults
+ * are resolved by the main process before this is sent to the renderer.
+ * `focusWindowPosition` is intentionally excluded: it's internal state
+ * managed entirely by the main process.
+ */
+export interface AppSettings {
+    launchOnStartup: boolean
+    theme: Theme
+    accentColor: AccentColor
+    username: string
+    defaultCurrency: string
+    notificationsEnabled: boolean
+    minimizeToTrayOnClose: boolean
+    focusAlwaysOnTop: boolean
+}
+
+/** A partial patch — only the keys the caller wants to change. */
+export type SettingsPatch = Partial<AppSettings>
+
+// ── System ──────────────────────────────────────────────────
+export interface SystemInfo {
+    version: string
+    userDataPath: string
+}

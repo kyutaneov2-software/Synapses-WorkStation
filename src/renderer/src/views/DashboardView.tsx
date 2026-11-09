@@ -6,6 +6,7 @@ import { formatHM } from '../lib/time'
 import { useDashboard } from '../lib/hooks'
 import { isOverdue } from '../lib/dates'
 import { formatMoney } from '../../../shared/money'
+import { useSettings } from '../lib/hooks'
 
 const easeOut = [0.16, 1, 0.3, 1] as const
 
@@ -37,6 +38,7 @@ const UNASSIGNED_COLOR = 'var(--text-2)'
 
 function LiveClock(): React.JSX.Element {
     const [time, setTime] = useState(new Date())
+    const { settings } = useSettings()
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000)
@@ -44,7 +46,10 @@ function LiveClock(): React.JSX.Element {
     }, [])
 
     const hours = time.getHours()
-    const greeting = hours < 12 ? 'Good morning' : hours < 18 ? 'Good afternoon' : 'Good evening'
+    const baseGreeting =
+        hours < 12 ? 'Good morning' : hours < 18 ? 'Good afternoon' : 'Good evening'
+
+    const greeting = settings.username ? `${baseGreeting}, ${settings.username}` : baseGreeting
 
     return (
         <div className="hero-clock-block">
@@ -198,49 +203,27 @@ interface ProjectHealth {
 
 export function DashboardView(): React.JSX.Element {
     const { data } = useDashboard()
+    const { settings } = useSettings()
 
     const chartData = data?.sessionTotals.last7Days ?? []
 
     // FIX: Find the currency that actually has money attached to it.
     // If all are 0, fall back to the most frequently used currency.
     const displayCurrency = useMemo(() => {
-        if (!data || data.projects.length === 0) return 'USD'
+        // 1. If no data or no projects, use the user's default setting
+        if (!data || data.projects.length === 0) return settings.defaultCurrency
 
-        const totals = new Map<string, number>()
+        // 2. Otherwise, still try to find the most common currency from actual projects
+        const counts = new Map<string, number>()
         for (const p of data.projects) {
-            const projectPhases = data.phases.filter((ph) => ph.project_id === p.id)
-            const projectTotal = projectPhases.reduce((sum, ph) => sum + (ph.amount_cents || 0), 0)
-            const curr = p.currency || 'USD'
-            totals.set(curr, (totals.get(curr) || 0) + projectTotal)
+            counts.set(p.currency, (counts.get(p.currency) || 0) + 1)
         }
 
-        let maxVal = -1
-        let maxCurr = 'USD'
-        for (const [curr, val] of totals.entries()) {
-            if (val > maxVal) {
-                maxVal = val
-                maxCurr = curr
-            }
-        }
+        // 3. If all projects are empty (0 count), fall back to settings
+        if (counts.size === 0) return settings.defaultCurrency
 
-        // If the highest value is 0, find the most frequent currency
-        if (maxVal === 0) {
-            const counts = new Map<string, number>()
-            for (const p of data.projects) {
-                const c = p.currency || 'USD'
-                counts.set(c, (counts.get(c) || 0) + 1)
-            }
-            let maxCount = -1
-            for (const [curr, count] of counts.entries()) {
-                if (count > maxCount) {
-                    maxCount = count
-                    maxCurr = curr
-                }
-            }
-        }
-
-        return maxCurr
-    }, [data])
+        return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0][0]
+    }, [data, settings.defaultCurrency])
 
     const stats = useMemo(() => {
         if (!data) return null

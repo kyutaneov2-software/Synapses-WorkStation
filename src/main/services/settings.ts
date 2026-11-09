@@ -1,36 +1,41 @@
-import { app } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import fs from 'fs'
 import path from 'path'
+import type { AppSettings, SettingsPatch } from '../../shared/types'
 
-export interface Settings {
-    focusWindowPosition?: { x: number; y: number }
-    launchOnStartup?: boolean
-}
 
 /**
- * Compute the settings path lazily rather than at module load. This makes
- * the module testable (userData can be overridden) and avoids depending on
- * Electron's app being ready at import time.
+ * Internal disk representation. May include focusWindowPosition (which
+ * the renderer never sees) and may be missing keys that haven't been
+ * set yet (existing installs upgrading from older versions).
  */
+interface DiskSettings extends Partial<AppSettings> {
+    focusWindowPosition?: { x: number; y: number }
+}
+
+const DEFAULT_SETTINGS: AppSettings = {
+    launchOnStartup: true,
+    theme: 'dark',
+    accentColor: 'blue',
+    username: '',
+    defaultCurrency: 'USD',
+    notificationsEnabled: true,
+    minimizeToTrayOnClose: true,
+    focusAlwaysOnTop: true
+}
+
 function getSettingsPath(): string {
     return path.join(app.getPath('userData'), 'settings.json')
 }
 
-/**
- * In-memory cache. Authoritative for the current process. Disk is
- * write-through. This avoids read-modify-write races: callers mutate the
- * cache, and persistence is a single atomic write of the whole object.
- */
-let cache: Settings | null = null
+let cache: DiskSettings | null = null
 
-function loadFromDisk(): Settings {
+function loadFromDisk(): DiskSettings {
     try {
         const raw = fs.readFileSync(getSettingsPath(), 'utf-8')
         const parsed = JSON.parse(raw)
-        return parsed && typeof parsed === 'object' ? (parsed as Settings) : {}
+        return parsed && typeof parsed === 'object' ? (parsed as DiskSettings) : {}
     } catch (e) {
-        // Missing file is normal on first run. Malformed file is not — log it
-        // but recover gracefully so a bad write doesn't permanently brick the app.
         if ((e as NodeJS.ErrnoException).code !== 'ENOENT') {
             console.error('[settings] failed to read settings, using defaults:', e)
         }
@@ -38,31 +43,19 @@ function loadFromDisk(): Settings {
     }
 }
 
-function getCache(): Settings {
+function getCache(): DiskSettings {
     if (cache === null) cache = loadFromDisk()
     return cache
 }
 
-export function readSettings(): Settings {
-    return { ...getCache() }
-}
-
-export function writeSettings(settings: Settings): void {
-    cache = { ...settings }
-
+function persist(settings: DiskSettings): void {
     const target = getSettingsPath()
     const tmp = `${target}.tmp`
-
     try {
-        // Atomic write: write the full file to a sibling, then rename over
-        // the target. rename is atomic on the same filesystem (all modern
-        // OSes), so a crash mid-write leaves either the old file intact
-        // or the new file fully in place — never a truncated file.
-        fs.writeFileSync(tmp, JSON.stringify(cache, null, 2), 'utf-8')
+        fs.writeFileSync(tmp, JSON.stringify(settings, null, 2), 'utf-8')
         fs.renameSync(tmp, target)
     } catch (e) {
         console.error('[settings] failed to write settings:', e)
-        // Best effort: clean up the temp file if we can.
         try {
             fs.unlinkSync(tmp)
         } catch {
@@ -70,3 +63,58 @@ export function writeSettings(settings: Settings): void {
         }
     }
 }
+
+function resolveSettings(disk: DiskSettings): AppSettings {
+    return {
+        launchOnStartup: disk.launchOnStartup ?? DEFAULT_SETTINGS.launchOnStartup,
+        theme: disk.theme ?? DEFAULT_SETTINGS.theme,
+        accentColor: disk.accentColor ?? DEFAULT_SETTINGS.accentColor,
+        username: disk.username ?? DEFAULT_SETTINGS.username,
+        defaultCurrency: disk.defaultCurrency ?? DEFAULT_SETTINGS.defaultCurrency,
+        notificationsEnabled: disk.notificationsEnabled ?? DEFAULT_SETTINGS.notificationsEnabled,
+        minimizeToTrayOnClose: disk.minimizeToTrayOnClose ?? DEFAULT_SETTINGS.minimizeToTrayOnClose,
+        focusAlwaysOnTop: disk.focusAlwaysOnTop ?? DEFAULT_SETTINGS.focusAlwaysOnTop
+    }
+}
+
+/** Raw disk view — may include focusWindowPosition, may have undefined keys. */
+export function readSettings(): DiskSettings {
+    return { ...getCache() }
+}
+
+/** Resolved view — all fields filled with defaults. Safe to send to renderer. */
+export function readResolvedSettings(): AppSettings {
+    return resolveSettings(getCache())
+}
+
+/**
+ * Low-level write. Does NOT broadcast. Use this for internal state
+ * changes like focus window position (which fires continuously on drag).
+ */
+export function writeSettings(settings: DiskSettings): void {
+    cache = { ...settings }
+    persist(settings)
+}
+
+/**
+ * High-level update for user preferences. Merges the patch, persists to
+ * disk, and broadcasts the resolved settings to every window so the UI
+ * can react instantly (main window + Focus widget).
+ */
+export function updateSettings(patch: SettingsPatch): AppSettings {
+    const merged: DiskSettings = { ...getCache(), ...patch }
+    writeSettings(merged)
+    const resolved = resolveSettings(merged)
+    broadcastSettingsChanged(resolved)
+    return resolved
+}
+
+function broadcastSettingsChanged(settings: AppSettings): void {
+    for (const win of BrowserWindow.getAllWindows()) {
+        if (!win.isDestroyed()) {
+            win.webContents.send('settings:changed', settings)
+        }
+    }
+}
+
+export { DEFAULT_SETTINGS }

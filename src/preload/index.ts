@@ -1,7 +1,14 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type { SynapsesAPI } from '../shared/api'
-import type { ProjectUpdate, TaskUpdate, PhaseUpdate, NoteUpdate } from '../shared/types'
+import type {
+    ProjectUpdate,
+    TaskUpdate,
+    PhaseUpdate,
+    NoteUpdate,
+    AppSettings,
+    SettingsPatch
+} from '../shared/types'
 
 const api: SynapsesAPI = {
     // Projects
@@ -73,6 +80,8 @@ const api: SynapsesAPI = {
     healthCheck: () => ipcRenderer.invoke('db:health-check'),
     testNotification: () => ipcRenderer.invoke('system:test-notification'),
     getDashboardData: () => ipcRenderer.invoke('dashboard:get-data'),
+    getSystemInfo: () => ipcRenderer.invoke('system:get-info'),
+    openUserDataFolder: () => ipcRenderer.invoke('system:open-user-data'),
 
     // Attachment
     getAttachments: (projectId) => ipcRenderer.invoke('db:get-attachments', projectId),
@@ -80,6 +89,18 @@ const api: SynapsesAPI = {
         ipcRenderer.invoke('db:add-attachments', projectId, title),
     deleteAttachment: (id) => ipcRenderer.invoke('db:delete-attachment', id),
     openAttachment: (filename) => ipcRenderer.invoke('system:open-attachment', filename),
+
+    // Settings
+    getSettings: () => ipcRenderer.invoke('settings:get'),
+    updateSettings: (patch: SettingsPatch) => ipcRenderer.invoke('settings:update', patch),
+    onSettingsChanged: (callback: (settings: AppSettings) => void): (() => void) => {
+        const listener = (_event: unknown, settings: AppSettings): void => callback(settings)
+        ipcRenderer.on('settings:changed', listener)
+        return () => {
+            ipcRenderer.removeListener('settings:changed', listener)
+        }
+    },
+    resetSettings: () => ipcRenderer.invoke('settings:reset'),
 
     // Cross-window event subscription
     onDataChanged: (callback: () => void): (() => void) => {

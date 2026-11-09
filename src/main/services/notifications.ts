@@ -3,6 +3,7 @@ import schedule, { type Job } from 'node-schedule'
 import db from '../db'
 import type { Task, Project } from '../../shared/types'
 import { todayStr } from '../../shared/dates'
+import { readResolvedSettings } from './settings'
 
 interface DueItem {
     text: string
@@ -120,7 +121,10 @@ function getOverdue(): DueItem[] {
 }
 
 function showDeadlineNotification(): void {
+    // Respect the user's preference — silent bail before any work
+    if (!readResolvedSettings().notificationsEnabled) return
     if (!canNotify()) return
+
     const items = getDueToday()
 
     if (items.length === 0) {
@@ -150,6 +154,8 @@ function showDeadlineNotification(): void {
 }
 
 function showOverdueNotification(): void {
+    // Respect the user's preference — silent bail before any work
+    if (!readResolvedSettings().notificationsEnabled) return
     if (!canNotify()) return
 
     const items = getOverdue()

@@ -2,6 +2,7 @@ import { BrowserWindow, shell } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { readResolvedSettings } from './services/settings'
 
 let mainWindow: BrowserWindow | null = null
 let isQuitting = false
@@ -45,8 +46,13 @@ export function createMainWindow(): BrowserWindow {
         }
     })
 
-    win.on('closed', () => {
-        setMainWindow(null)
+    win.on('close', (e) => {
+        const settings = readResolvedSettings() // <-- Read settings
+        if (!isQuitting && settings.minimizeToTrayOnClose) {
+            e.preventDefault()
+            win.hide()
+            console.log('[main] window hidden — app still running in tray')
+        }
     })
 
     win.webContents.setWindowOpenHandler((details) => {
