@@ -50,9 +50,18 @@
     box-shadow: var(--inset-highlight);
 }
 
-/* Accent indicator — a slim bar on the left edge of the active item */
-.icon-rail-btn.active::before {
-    content: '';
+/* Add this to center the inner wrapper */
+.rail-link-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* The new animated sliding bar */
+.rail-active-bar {
     position: absolute;
     left: -8px;
     top: 50%;
@@ -62,4 +71,9 @@
     background: var(--accent);
     border-radius: 0 3px 3px 0;
     box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Remove the old CSS bar */
+.icon-rail-btn.active::before {
+    display: none !important;
 }

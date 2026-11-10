@@ -422,14 +422,17 @@ export function ProjectDetailView({
                 </AnimatePresence>
             </div>
 
-            {showEdit && (
-                <ProjectEditModal
-                    project={project}
-                    onSave={handleUpdateProject}
-                    onDelete={handleDeleteProject}
-                    onClose={() => setShowEdit(false)}
-                />
-            )}
+            {/* ── MODAL (AnimatePresence wrapper for smooth exit) ── */}
+            <AnimatePresence>
+                {showEdit && (
+                    <ProjectEditModal
+                        project={project}
+                        onSave={handleUpdateProject}
+                        onDelete={handleDeleteProject}
+                        onClose={() => setShowEdit(false)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     )
 }

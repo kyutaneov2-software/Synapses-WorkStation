@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Pin, Plus, StickyNote } from 'lucide-react'
 import { useNotesByProject } from '../../lib/hooks'
 import { parseSqliteDate } from '../../lib/dates'
+import { htmlToText } from '../../../../shared/htmlToText' // <--- ADD THIS IMPORT
 
 interface ProjectNotesListProps {
     projectId: number
@@ -48,7 +49,10 @@ export function ProjectNotesList({ projectId }: ProjectNotesListProps): React.JS
                                 {n.pinned === 1 && <Pin size={11} strokeWidth={2.5} />}
                                 <span>{n.title || 'Untitled'}</span>
                             </div>
-                            {n.preview && <div className="note-item-preview">{n.preview}</div>}
+                            {/* FIX: Strip the HTML tags before rendering */}
+                            {n.preview && (
+                                <div className="note-item-preview">{htmlToText(n.preview)}</div>
+                            )}
                             <div className="note-item-meta">
                                 {parseSqliteDate(n.updated_at).toLocaleDateString(undefined, {
                                     month: 'short',

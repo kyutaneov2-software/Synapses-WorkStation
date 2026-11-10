@@ -277,20 +277,21 @@
 @media (max-width: 1100px) {
     .tasks-container {
         padding: 24px 20px;
+        overflow-y: auto; /* <--- Allow the whole page to scroll */
     }
 
     .tasks-dashboard-layout {
         flex-direction: column;
-        height: auto;
-        overflow-y: visible;
+        height: auto; /* <--- Let it grow beyond the viewport */
+        min-height: 100%;
     }
 
     .tasks-column {
-        min-height: 400px;
+        min-height: 400px; /* <--- Ensure columns don't collapse */
         flex: none;
     }
 
     .task-scroll-area {
-        overflow-y: visible;
+        overflow-y: visible; /* <--- Let the main container handle the scroll */
     }
 }

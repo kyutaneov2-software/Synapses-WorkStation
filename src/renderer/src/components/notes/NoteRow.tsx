@@ -3,8 +3,6 @@ import { motion } from 'framer-motion'
 import { htmlToText } from '../../../../shared/htmlToText'
 import { relativeTime } from '../../lib/relativeTime'
 
-const easeOut = [0.16, 1, 0.3, 1] as const
-
 interface NoteRowProps {
     note: {
         id: number
@@ -21,11 +19,13 @@ export function NoteRow({ note }: NoteRowProps): React.JSX.Element {
 
     return (
         <MotionNavLink
-            layout
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97 }}
-            transition={{ duration: 0.18, ease: easeOut }}
+            layout="position" // <--- THE FIX: Only animate position, not size
+            initial={{ opacity: 0, scale: 0.96, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.15 } }}
+            // Apple-esque spring: Snappy, minimal bounce, interruptible
+            transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }}
+            whileTap={{ scale: 0.98 }} // Press feedback
             to={`/notes/${note.id}`}
             className={({ isActive }: { isActive: boolean }) =>
                 `note-item ${isActive ? 'active' : ''}`

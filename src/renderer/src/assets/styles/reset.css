@@ -59,3 +59,13 @@ input, textarea, select {
     background-clip: content-box;
     border: 2px solid transparent;
 }
+
+/* Add this to the main scrollable containers */
+.tasks-container,
+.projects-container,
+.notes-container,
+.settings-container,
+.dashboard-container {
+    scroll-behavior: smooth;
+    overscroll-behavior-y: contain; /* Prevents scroll chaining to the body */
+}

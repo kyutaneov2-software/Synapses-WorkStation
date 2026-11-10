@@ -14,6 +14,9 @@ import { TechStackPicker } from '../common/TechStackPicker'
 import { ReferenceLinksEditor } from '../common/ReferenceLinksEditor'
 import { parseMoney } from '../../../../shared/money'
 
+// Apple-like spring for smooth, snappy modals
+const SPRING = { type: 'spring', stiffness: 500, damping: 35, mass: 0.8 } as const
+
 interface ProjectEditModalProps {
     project: Project
     onSave: (updates: Partial<Project>) => Promise<void>
@@ -84,14 +87,15 @@ export function ProjectEditModal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
             className="modal-overlay"
             onClick={onClose}
         >
             <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                initial={{ opacity: 0, scale: 0.96, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                exit={{ opacity: 0, scale: 0.96, y: 8 }}
+                transition={SPRING}
                 className="modal-panel modal-panel-wide"
                 onClick={(e) => e.stopPropagation()}
             >
@@ -109,7 +113,6 @@ export function ProjectEditModal({
                     </div>
 
                     <div className="modal-body">
-                        {/* ... (Keep existing form fields unchanged) ... */}
                         <label className="form-field">
                             <span>Title</span>
                             <input

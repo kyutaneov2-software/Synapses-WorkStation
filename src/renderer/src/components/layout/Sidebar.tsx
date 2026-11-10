@@ -5,8 +5,9 @@ import { useProjects } from '../../lib/hooks'
 import { ROUTES } from '../../lib/routes'
 import { projectTypeIcon } from '../../lib/projectIcons'
 
-/** Matches --ease-out in tokens.css */
-const easeOut = [0.16, 1, 0.3, 1] as const
+// Apple-like spring for lists and buttons
+const SPRING = { type: 'spring', stiffness: 500, damping: 35, mass: 0.8 } as const
+const EASE_OUT = [0.16, 1, 0.3, 1] as const
 
 export function Sidebar(): React.JSX.Element {
     const { projects } = useProjects()
@@ -48,14 +49,16 @@ export function Sidebar(): React.JSX.Element {
         <aside className="sidebar">
             <div className="sidebar-header">
                 <h3>Projects</h3>
-                <button
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    transition={SPRING}
                     className="new-btn"
                     title="New Project"
                     aria-label="New Project"
                     onClick={() => setCreating(true)}
                 >
                     +
-                </button>
+                </motion.button>
             </div>
 
             <AnimatePresence initial={false}>
@@ -64,7 +67,7 @@ export function Sidebar(): React.JSX.Element {
                         initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
                         animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
                         exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                        transition={{ duration: 0.22, ease: easeOut }}
+                        transition={{ duration: 0.22, ease: EASE_OUT }}
                         className="new-project-form"
                         onSubmit={handleSubmit}
                     >
@@ -84,12 +87,21 @@ export function Sidebar(): React.JSX.Element {
                             disabled={submitting}
                         />
                         <div className="new-project-actions">
-                            <button type="submit" disabled={!title.trim() || submitting}>
+                            <motion.button
+                                whileTap={{ scale: 0.97 }}
+                                type="submit"
+                                disabled={!title.trim() || submitting}
+                            >
                                 {submitting ? 'Creating…' : 'Create'}
-                            </button>
-                            <button type="button" onClick={handleCancel} disabled={submitting}>
+                            </motion.button>
+                            <motion.button
+                                whileTap={{ scale: 0.97 }}
+                                type="button"
+                                onClick={handleCancel}
+                                disabled={submitting}
+                            >
                                 Cancel
-                            </button>
+                            </motion.button>
                         </div>
                     </motion.form>
                 )}
@@ -101,23 +113,26 @@ export function Sidebar(): React.JSX.Element {
                         const isActive = p.id === activeProjectId
                         return (
                             <motion.li
-                                layout
+                                layout="position" // <--- FIX: Only animate positions
                                 key={p.id}
-                                initial={{ opacity: 0, x: -8 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, scale: 0.97 }}
-                                transition={{ duration: 0.18, ease: easeOut }}
+                                initial={{ opacity: 0, scale: 0.96, y: -10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.15 } }}
+                                transition={SPRING}
                                 className={isActive ? 'active' : ''}
                             >
                                 <Link
                                     to={ROUTES.projectDetail(p.id)}
                                     aria-current={isActive ? 'page' : undefined}
                                 >
-                                    <span className="project-title-row">
-                                        {projectTypeIcon(p.type, 13)}
-                                        <span className="project-title">{p.title}</span>
-                                    </span>
-                                    <span className="project-client">{p.client}</span>
+                                    {/* Tactile press feedback */}
+                                    <motion.div whileTap={{ scale: 0.97 }} transition={SPRING}>
+                                        <span className="project-title-row">
+                                            {projectTypeIcon(p.type, 13)}
+                                            <span className="project-title">{p.title}</span>
+                                        </span>
+                                        <span className="project-client">{p.client}</span>
+                                    </motion.div>
                                 </Link>
                             </motion.li>
                         )
@@ -127,7 +142,7 @@ export function Sidebar(): React.JSX.Element {
                     <motion.li
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ duration: 0.22, ease: easeOut }}
+                        transition={{ duration: 0.22, ease: EASE_OUT }}
                         className="empty-hint"
                     >
                         No projects yet. Click + to add one.

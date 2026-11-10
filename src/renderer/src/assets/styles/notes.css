@@ -4,10 +4,10 @@
 
 .notes-container {
     display: flex;
+    flex-direction: column; /* ← Change to column */
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    gap: 16px;
     padding: 28px 40px 48px;
     background: var(--bg-0);
 }
@@ -22,6 +22,17 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow), var(--inset-highlight);
+    overflow: hidden;
+}
+
+.notes-layout {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    gap: 16px;
+    max-width: 1600px;
+    width: 100%;
+    margin-inline: auto;
     overflow: hidden;
 }
 
@@ -150,6 +161,8 @@
     text-decoration: none;
     color: inherit;
     transition: background var(--dur-fast), border-color var(--dur-fast);
+    will-change: auto;             /* avoid stuck GPU layers */
+    transform: translateZ(0);
 }
 
 .note-item:hover {
@@ -222,11 +235,12 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 40px 20px 100px;
-    max-width: 1250px;
+    padding: 40px 60px 100px;
+    max-width: 900px;
     margin: 0 auto;
     width: 100%;
-    overflow-y: auto;
+    overflow: hidden;              /* was: auto — body owns the scroll */
+    overscroll-behavior: contain;
 }
 
 .note-editor-header {
@@ -328,12 +342,12 @@
     font-family: inherit;
     font-size: 15px;
     line-height: 1.75;
-    padding: 10px 10px;
-    overflow-y: auto;
+    padding: 0;
+    overflow-y: auto;              /* keep — this is the only scroll */
+    overscroll-behavior: contain;  /* ← add: prevents scroll chaining */
     word-wrap: break-word;
     white-space: pre-wrap;
 }
-
 .note-editor-body:empty::before {
     content: attr(data-placeholder);
     color: var(--text-3);
@@ -567,16 +581,22 @@
 /* Responsive */
 @media (max-width: 1000px) {
     .notes-container {
-        flex-direction: column;
-        padding: 24px 20px;
-        overflow-y: auto;
+        overflow-y: auto; /* Allow page scroll */
     }
+
+    .notes-layout {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+    }
+
     .notes-sidebar {
         width: 100%;
-        min-height: 250px;
-        max-height: 400px;
+        height: 300px; /* Fixed height for the list on mobile */
+        flex-shrink: 0;
     }
+
     .notes-main-area {
-        min-height: 500px;
+        min-height: 500px; /* Ensure the editor has room */
     }
 }
