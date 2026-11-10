@@ -1,6 +1,5 @@
 /* ============================================================
    DASHBOARD — "Command Deck"
-   Editorial 2-column layout: main narrative + situational rail
    ============================================================ */
 
 :root {
@@ -23,7 +22,7 @@
     width: 100%;
     flex: 1;
     min-height: 0;
-    overflow: hidden; /* Changed from auto: stops the whole page from scrolling */
+    overflow: hidden;
     background: var(--bg-0);
     padding: 28px 40px 48px;
 }
@@ -122,8 +121,8 @@
     max-width: 1600px;
     width: 100%;
     margin-inline: auto;
-    flex: 1; /* Takes remaining height */
-    min-height: 0; /* Crucial for inner scroll */
+    flex: 1;
+    min-height: 0;
 }
 
 .dashboard-main {
@@ -164,7 +163,7 @@
 
 /* ── HERO CARD (clock + summary) ───────────────────────── */
 .hero-card {
-    padding: 40px 32px;
+    padding: 32px;
     background:
         radial-gradient(ellipse 70% 55% at 100% 0%,
             color-mix(in srgb, var(--accent) 7%, transparent) 0%,
@@ -173,15 +172,15 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 240px;
-    flex-shrink: 0; /* Prevents squashing */
+    min-height: 200px;
+    flex-shrink: 0;
 }
 
 .hero-top {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     gap: 16px;
 }
 
@@ -200,7 +199,7 @@
 }
 
 .hero-clock-time {
-    font-size: 84px;
+    font-size: 72px;
     font-weight: 700;
     color: var(--text-0);
     line-height: 0.92;
@@ -269,20 +268,25 @@
     opacity: 0.6;
 }
 
-/* ── FINANCIAL CARD ─────────────────────────────────────── */
+/* ── FINANCE CARD (Center) ─────────────────────────────── */
 .finance-card {
-    padding: 24px 28px;
-    flex-shrink: 0; /* Prevents squashing */
+    padding: 24px 32px;
+    flex-shrink: 0;
+    /* Removed the green gradient and left border. It now inherits the clean .deck-card look. */
+    background: var(--bg-1);
+    border: 1px solid var(--border);
 }
 
 .finance-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
-.finance-label {
+/* MATCH PROJECT HEALTH TYPOGRAPHY */
+.finance-title {
     font-size: 10.5px;
     font-weight: 600;
     text-transform: uppercase;
@@ -290,90 +294,77 @@
     color: var(--text-3);
 }
 
-.finance-period {
+.finance-meta {
     font-size: 11px;
     color: var(--text-3);
     font-weight: 500;
 }
 
-.finance-hero-value {
-    font-size: 44px;
-    font-weight: 700;
-    color: var(--text-0);
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.04em;
-    line-height: 1;
-    margin-bottom: 16px;
-}
-
-.finance-progress {
+.finance-content {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    align-items: flex-end;
     margin-bottom: 20px;
 }
 
-.finance-progress-bar {
-    flex: 1;
-    height: 6px;
-    background: var(--bg-2);
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
-}
-
-.finance-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg,
-        color-mix(in srgb, var(--success) 85%, transparent) 0%,
-        var(--success) 100%);
-    border-radius: var(--radius-full);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--success) 35%, transparent);
-    transition: width var(--dur-slow) var(--ease-out);
-}
-
-.finance-progress-label {
-    font-size: 11.5px;
-    font-weight: 600;
-    font-family: var(--font-mono);
-    color: var(--success);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
-    flex-shrink: 0;
-}
-
-.finance-outstanding {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 18px;
-    border-top: 1px solid var(--border-subtle);
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.finance-outstanding-row {
+.finance-stat {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
 }
 
-.finance-outstanding-label {
-    font-size: 10.5px;
+.finance-stat-right {
+    align-items: flex-end;
+    text-align: right;
+}
+
+.finance-stat-label {
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-3);
 }
 
-.finance-outstanding-value {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--warning);
+.finance-stat-value {
+    font-size: 36px;
+    font-weight: 700;
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+
+.finance-progress-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.finance-progress-bar {
+    height: 8px;
+    background: var(--bg-0);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.finance-progress-fill {
+    height: 100%;
+    /* Switched from green to accent so it matches the theme */
+    background: var(--accent);
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.finance-progress-label {
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    /* Switched from green to accent */
+    color: var(--accent);
+    font-weight: 600;
 }
 
 .finance-overdue-pill {
@@ -397,10 +388,10 @@
     background: var(--danger);
 }
 
-/* ── PROJECT HEALTH CARD (Scrollable) ──────────────────── */
+/* ── PROJECT HEALTH CARD (Fills remaining space) ───────── */
 .health-card {
     padding: 22px 26px;
-    flex: 1; /* Fills remaining vertical space */
+    flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -431,8 +422,8 @@
 
 .health-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
     flex: 1;
     overflow-y: auto;
     align-content: start;
@@ -444,7 +435,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 12px 14px;
+    padding: 14px 16px;
     background: var(--bg-2);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
@@ -459,7 +450,7 @@
 }
 
 .health-mini-title {
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-0);
     letter-spacing: -0.005em;
@@ -496,7 +487,7 @@
 /* ── DOUGHNUT CARD (rail) ──────────────────────────────── */
 .doughnut-card {
     padding: 22px 20px;
-    flex-shrink: 0; /* Prevents squashing */
+    flex-shrink: 0;
 }
 
 .doughnut-header {
@@ -615,7 +606,7 @@
 /* ── DEADLINES CARD (Scrollable) ───────────────────────── */
 .deadlines-card {
     padding: 22px 20px;
-    flex: 1; /* Fills remaining vertical space in rail */
+    flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -779,7 +770,7 @@
         grid-template-columns: minmax(0, 1fr) 300px;
     }
     .hero-clock-time {
-        font-size: 68px;
+        font-size: 64px;
     }
     .dashboard-container {
         padding: 24px 28px 40px;
@@ -787,7 +778,6 @@
 }
 
 @media (max-width: 1000px) {
-    /* Revert internal scrolling to page scrolling for stacked mobile view */
     .dashboard-container {
         overflow-y: auto;
     }
@@ -837,11 +827,11 @@
     .hero-clock-time {
         font-size: 56px;
     }
-    .finance-hero-value {
-        font-size: 34px;
+    .finance-stat-value {
+        font-size: 28px;
     }
     .health-grid {
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        grid-template-columns: 1fr;
     }
     .ribbon-kpi {
         min-width: 70px;

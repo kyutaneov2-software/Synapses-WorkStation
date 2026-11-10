@@ -1,3 +1,5 @@
+
+```markdown
 # Synapses WorkStation
 
 > Focus. Track. Deliver.
@@ -13,13 +15,15 @@ Synapses WorkStation is a desktop app that combines project management, task tra
 **Core features:**
 
 - **Tasks & Projects (Separated)** — A dedicated 3-column dashboard for Today, Tomorrow, and All Tasks. A separate space for managing Projects, clients, hourly rates, and payment phases (Deposit, Milestone, Final) with live money totals.
-- **File Attachments** — Attach contracts, briefs, or final deliverables directly to projects. Files are safely copied to the app's local storage so they never break if you move the originals. Open them with a single click.
-- **Rich Text Notes** — A Notion-style block editor with a floating toolbar. Supports bold, italic, headings, lists, native checkboxes, and safe external links. Features auto-saving, topic tags, and project linking. HTML is strictly sanitized for security.
-- **Premium Dashboard** — A bento-box grid layout featuring a live clock, financial summary (Earned vs. Outstanding), a 7-day Focus Trends line chart, a project-based Tracked Time doughnut chart, upcoming deadlines, and project health bars.
-- **Focus Window** — An always-on-top floating widget that shows your current task. Complete it with one click, auto-advances to the next. Global hotkey `Ctrl+Shift+F`.
+- **Appearance Engine** — Full Light/Dark mode support (including OS System sync), 5 custom accent colors (Blue, Ember, Violet, Emerald, Rose), and custom username greetings. The entire app re-themes instantly via CSS variables.
+- **Premium Dashboard** — A "Command Deck" layout featuring a live clock, compact horizontal financial summary, and project health bars. All charts (Line and Doughnut) are hand-coded SVGs.
+- **Focus Window** — An always-on-top floating widget that shows your current task. Complete it with one click, auto-advances to the next. Global hotkey `Ctrl+Shift+F`. Features a subtle animated "Synapses Core" mascot that reacts to active focus sessions.
 - **Session timer** — Start/stop time tracking on any task. The Dashboard aggregates tracked hours per project.
-- **Deadline notifications** — Native OS notifications at 8 AM (what's due today) and 5 PM (what slipped).
+- **Rich Text Notes** — A Notion-style block editor with a floating toolbar. Supports bold, italic, headings, lists, native checkboxes, and safe external links. Features auto-saving, topic tags, and project linking. HTML is strictly sanitized for security.
+- **File Attachments** — Attach contracts, briefs, or final deliverables directly to projects. Files are safely copied to the app's local storage so they never break if you move the originals. Open them with a single click.
+- **Deadline notifications** — Native OS notifications at 8 AM (what's due today) and 5 PM (what slipped). Can be toggled on/off in Settings.
 - **Cross-window sync** — Every window updates instantly when data changes anywhere via IPC broadcasting.
+- **System Tray** — Quick access to Settings, Focus Window, and Quit via the OS system tray.
 
 ---
 
@@ -34,7 +38,7 @@ Synapses WorkStation is a desktop app that combines project management, task tra
 | Database | SQLite (with WAL mode) |
 | Animations | Framer Motion |
 | Icons | Lucide React |
-| Fonts | Inter Variable + JetBrains Mono Variable |
+| Fonts | Geist Variable + Geist Mono Variable |
 | Scheduling | node-schedule |
 | Packaging | electron-builder |
 
@@ -50,15 +54,12 @@ src/
 │   ├── ipc/                 # IPC handlers split by domain
 │   │   ├── projects.ts
 │   │   ├── tasks.ts
-│   │   ├── phases.ts
-│   │   ├── attachments.ts
-│   │   ├── sessions.ts
-│   │   ├── notes.ts
-│   │   ├── focus.ts
-│   │   └── dashboard.ts
+│   │   ├── settings.ts      # Settings validation & updates
+│   │   └── ...
 │   ├── services/            # Cross-cutting concerns
 │   │   ├── broadcast.ts     # Cross-window event dispatch
 │   │   ├── settings.ts      # JSON settings persistence (atomic writes)
+│   │   ├── tray.ts          # System tray management
 │   │   └── notifications.ts # Scheduled deadline alerts
 │   └── focusWindow.ts       # Floating widget management
 ├── preload/                 # Secure IPC bridge
@@ -66,12 +67,13 @@ src/
 │   └── src/
 │       ├── spaces/          # Top-level route views (Tasks, Projects, Notes, Home)
 │       ├── views/           # Sub-views (Today, Dashboard, ProjectDetail, etc.)
-│       ├── components/      # UI grouped by domain (projects, notes, tasks, common)
+│       ├── components/      # UI grouped by domain
+│       │   ├── layout/      # SplashScreen, ErrorBoundary, ThemeMount, IconRail
+│       │   ├── common/      # SynapsesMascot, TagInput, etc.
+│       │   └── ...
 │       ├── lib/
-│       │   ├── hooks/       # useLiveData, useProjects, useTasks, etc.
-│       │   ├── dates.ts
-│       │   ├── sanitizeHtml.ts
-│       │   └── time.ts
+│       │   ├── hooks/       # useLiveData, useSettings, useProjects, etc.
+│       │   └── ...
 │       └── assets/          # Design system CSS
 └── shared/                  # Types and helpers shared across processes
 ```
@@ -80,6 +82,7 @@ src/
 
 - **Everything writes to SQLite in the main process.** The renderer never touches the DB directly.
 - **All writes broadcast a `data:changed` event.** Every window subscribes and refreshes automatically.
+- **Settings broadcast a `settings:changed` event.** The renderer applies the theme instantly via `ThemeMount`.
 - **Only one running session at a time.** Starting a new one auto-closes the previous.
 - **Rich text is sanitized.** Note HTML goes through a strict allow-list sanitizer before saving/rendering.
 - **Framer Motion handles physics.** Layouts, page transitions, and list shifts are animated cleanly on the GPU.
@@ -141,7 +144,7 @@ Your database, settings, and attachments live in your OS's user data folder:
 Files:
 - `task-notes.db` — SQLite database (all your data)
 - `task-notes.db-wal` / `task-notes.db-shm` — SQLite write-ahead log files (managed automatically)
-- `settings.json` — Focus window position, future preferences
+- `settings.json` — Theme, accent, user preferences, and focus window position
 - `attachments/` — Folder containing all files attached to projects
 
 **Back up `task-notes.db` and the `attachments/` folder regularly.** Your entire work history lives in that one file and folder.
@@ -165,12 +168,11 @@ Files:
 
 The UI uses a token-based design system defined in `src/renderer/src/assets/styles/tokens.css`:
 
-- **Colors** — layered surface (`--bg-0` through `--bg-3`), text scale (`--text-0` to `--text-3`), semantic accents (`--accent`, `--success`, `--warning`, `--danger`, `--purple`)
-- **Radii** — `--radius-sm` (4px) through `--radius-xl` (14px)
-- **Motion** — `--ease-out`, `--ease-spring`, durations at 120ms / 200ms / 320ms.
-- **Charts** — Custom-built SVG charts (Line and Doughnut) with zero external chart dependencies, powered by pure SVG and Framer Motion.
-
-**Fonts:** Inter Variable for UI text, JetBrains Mono Variable for all numbers (money, timers, counts). Both bundled locally via `@fontsource-variable` — no CDN dependency, works offline.
+- **Themes** — Full support for Dark and Light modes. The `[data-theme="light"]` token block overrides surfaces, borders, text, and shadows.
+- **Accents** — 5 dynamic palettes that swap `--accent`, `--accent-hover`, and `--accent-glow`. The entire UI (buttons, focus rings, charts, mascot) responds instantly.
+- **Colors** — layered surface (`--bg-0` through `--bg-4`), text scale (`--text-0` to `--text-3`), semantic accents (`--success`, `--warning`, `--danger`, `--purple`)
+- **Motion** — Custom cubic-beziers (`--ease-out`, `--ease-spring`) for a fluid, "Apple-like" feel. Framer Motion uses `stiffness: 500, damping: 35` for snappy modals and lists.
+- **Typography** — Geist Variable for UI text, Geist Mono Variable for all numbers (money, timers, counts). Both bundled locally via `@fontsource-variable` — no CDN dependency.
 
 ---
 
@@ -178,16 +180,20 @@ The UI uses a token-based design system defined in `src/renderer/src/assets/styl
 
 - [x] SQLite data layer with migrations (up to v11)
 - [x] Projects, tasks, payment phases
-- [x] Focus window with session timer
-- [x] Deadline notifications
-- [x] Premium Bento-grid Dashboard (Custom SVG Charts)
+- [x] Focus window with session timer & pixel mascot
+- [x] Deadline notifications (with toggle in Settings)
+- [x] Premium "Command Deck" Dashboard
 - [x] 3-Column Tasks layout
 - [x] Rich Text Notes (Auto-save, sanitization, floating toolbar)
 - [x] File attachments (drag-and-drop onto projects)
-- [x] Framer Motion animations
-- [ ] Settings panel (configurable notification times, default currency)
+- [x] Settings panel (Theme, Accents, Profile, Preferences)
+- [x] Light theme & dynamic accent colors
+- [x] System Tray menu
+- [x] App Splash Screen & Error Boundary
+- [ ] Command Palette (`Ctrl+K`)
+- [ ] Undo delete toast
 - [ ] CSV export for invoicing
-- [ ] Light theme
+- [ ] First-run onboarding
 
 ---
 
@@ -208,6 +214,9 @@ Windows requires the app to have a Start Menu shortcut matching its AppUserModel
 **HTML Sanitization:**
 The Rich Text Notes feature uses a custom `sanitizeHtml` function that parses DOM nodes with `DOMParser` and whitelists safe tags (b, i, ul, ol, h2, a, input[type=checkbox]). Scripts and styles are stripped to prevent XSS.
 
+**Modals & AnimatePresence:**
+To ensure exit animations play correctly, all modals (e.g., `ProjectEditModal`) must be wrapped in `<AnimatePresence>` at their parent level.
+
 ---
 
 ## License
@@ -224,4 +233,4 @@ This source code is provided for portfolio and demonstration purposes.
 No permission is granted to copy, modify, distribute, sublicense, or
 sell this software or any portion of it without the express written
 consent of the copyright holder.
-
+```

@@ -3,10 +3,9 @@ import { motion } from 'framer-motion'
 import { PieChart as PieChartIcon } from 'lucide-react'
 import type { Project, DashboardData } from '../../../shared/types'
 import { formatHM } from '../lib/time'
-import { useDashboard } from '../lib/hooks'
+import { useDashboard, useSettings } from '../lib/hooks'
 import { isOverdue } from '../lib/dates'
 import { formatMoney } from '../../../shared/money'
-import { useSettings } from '../lib/hooks'
 
 const easeOut = [0.16, 1, 0.3, 1] as const
 
@@ -207,21 +206,13 @@ export function DashboardView(): React.JSX.Element {
 
     const chartData = data?.sessionTotals.last7Days ?? []
 
-    // FIX: Find the currency that actually has money attached to it.
-    // If all are 0, fall back to the most frequently used currency.
     const displayCurrency = useMemo(() => {
-        // 1. If no data or no projects, use the user's default setting
         if (!data || data.projects.length === 0) return settings.defaultCurrency
-
-        // 2. Otherwise, still try to find the most common currency from actual projects
         const counts = new Map<string, number>()
         for (const p of data.projects) {
             counts.set(p.currency, (counts.get(p.currency) || 0) + 1)
         }
-
-        // 3. If all projects are empty (0 count), fall back to settings
         if (counts.size === 0) return settings.defaultCurrency
-
         return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0][0]
     }, [data, settings.defaultCurrency])
 
@@ -302,7 +293,6 @@ export function DashboardView(): React.JSX.Element {
         if (!data) return []
         return data.projects
             .map((project) => {
-                // FIX: Removed the invalid `p.currency === project.currency` check
                 const projectPhases = data.phases.filter((p) => p.project_id === project.id)
                 const moneyPaid = projectPhases
                     .filter((p) => p.paid)
@@ -331,6 +321,7 @@ export function DashboardView(): React.JSX.Element {
 
     return (
         <div className="dashboard-container">
+            {/* ── RIBBON (Greeting + KPIs) ─────────────────────── */}
             <motion.div
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -363,6 +354,7 @@ export function DashboardView(): React.JSX.Element {
                 </div>
             </motion.div>
 
+            {/* ── MAIN GRID ────────────────────────────────────── */}
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
@@ -370,6 +362,7 @@ export function DashboardView(): React.JSX.Element {
                 className="dashboard-grid"
             >
                 <div className="dashboard-main">
+                    {/* 1. HERO CARD (Clock) */}
                     <motion.div variants={cardVariants} className="deck-card hero-card">
                         <div className="hero-top">
                             <LiveClock />
@@ -378,7 +371,6 @@ export function DashboardView(): React.JSX.Element {
                                 Live
                             </div>
                         </div>
-
                         <div className="hero-summary">
                             <span>
                                 You have <strong>{stats.openTasks}</strong> open tasks
@@ -398,15 +390,27 @@ export function DashboardView(): React.JSX.Element {
                         </div>
                     </motion.div>
 
+                    {/* 2. FINANCE CARD (Center) */}
                     <motion.div variants={cardVariants} className="deck-card finance-card">
                         <div className="finance-header">
-                            <span className="finance-label">Earned</span>
-                            <span className="finance-period">Across all projects</span>
+                            <span className="finance-title">Financial Summary</span>
+                            <span className="finance-meta">Across all projects</span>
                         </div>
-                        <div className="finance-hero-value text-green" data-money>
-                            {formatMoney(stats.earned, displayCurrency)}
+                        <div className="finance-content">
+                            <div className="finance-stat">
+                                <span className="finance-stat-label">Earned</span>
+                                <span className="finance-stat-value text-green" data-money>
+                                    {formatMoney(stats.earned, displayCurrency)}
+                                </span>
+                            </div>
+                            <div className="finance-stat finance-stat-right">
+                                <span className="finance-stat-label">Outstanding</span>
+                                <span className="finance-stat-value text-amber" data-money>
+                                    {formatMoney(stats.outstanding, displayCurrency)}
+                                </span>
+                            </div>
                         </div>
-                        <div className="finance-progress">
+                        <div className="finance-progress-container">
                             <div className="finance-progress-bar">
                                 <motion.div
                                     initial={{ width: 0 }}
@@ -419,22 +423,9 @@ export function DashboardView(): React.JSX.Element {
                                 {stats.collectedPct}% collected
                             </span>
                         </div>
-                        <div className="finance-outstanding">
-                            <div className="finance-outstanding-row">
-                                <span className="finance-outstanding-label">Outstanding</span>
-                                <span className="finance-outstanding-value" data-money>
-                                    {formatMoney(stats.outstanding, displayCurrency)}
-                                </span>
-                            </div>
-                            {overdueTotal > 0 && (
-                                <span className="finance-overdue-pill">
-                                    <span className="finance-overdue-dot" />
-                                    {overdueTotal} overdue
-                                </span>
-                            )}
-                        </div>
                     </motion.div>
 
+                    {/* 3. PROJECT HEALTH (Fills remaining space) */}
                     <motion.div variants={cardVariants} className="deck-card health-card">
                         <div className="health-header">
                             <span className="health-title">Project Health</span>
@@ -473,6 +464,7 @@ export function DashboardView(): React.JSX.Element {
                     </motion.div>
                 </div>
 
+                {/* RAIL COLUMN */}
                 <div className="dashboard-rail">
                     <motion.div variants={cardVariants} className="deck-card doughnut-card">
                         <div className="doughnut-header">

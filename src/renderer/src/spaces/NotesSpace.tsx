@@ -1,8 +1,8 @@
 import { Navigate, Route, Routes, useParams, useNavigate, useLocation } from 'react-router-dom'
-import { StickyNote } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { NotesSidebar } from '../components/notes/NotesSidebar'
 import { NoteEditor } from '../components/notes/NoteEditor'
+import { SynapsesMascot } from '../components/common/SynapsesMascot'
 
 const easeOut = [0.16, 1, 0.3, 1] as const
 
@@ -44,8 +44,11 @@ function EmptyState(): React.JSX.Element {
 
     return (
         <div className="note-editor-empty">
-            <div className="note-empty-icon">
-                <StickyNote size={32} strokeWidth={1.5} />
+            <div
+                className="project-empty-icon-wrap"
+                style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
+            >
+                <SynapsesMascot size={80} animated={true} />
             </div>
             <h2>No note selected</h2>
             <p>Select a note from the sidebar or start a new one.</p>

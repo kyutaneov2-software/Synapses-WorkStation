@@ -1,9 +1,9 @@
 import { Navigate, Route, Routes, useNavigate, useParams, useLocation } from 'react-router-dom'
-import { FolderKanban } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sidebar } from '../components/layout/Sidebar'
 import { ProjectDetailView } from '../views/ProjectDetailView'
 import { ROUTES } from '../lib/routes'
+import { SynapsesMascot } from '../components/common/SynapsesMascot'
 
 const easeOut = [0.16, 1, 0.3, 1] as const
 
@@ -39,8 +39,11 @@ function ProjectDetailRoute(): React.JSX.Element {
 function EmptyProjectState(): React.JSX.Element {
     return (
         <div className="project-empty-state">
-            <div className="project-empty-icon-wrap">
-                <FolderKanban size={40} strokeWidth={1.5} />
+            <div
+                className="project-empty-icon-wrap"
+                style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
+            >
+                <SynapsesMascot size={80} animated={true} />
             </div>
             <h2>No Project Selected</h2>
             <p>Select a project from the sidebar to view its details, tasks, and financials.</p>

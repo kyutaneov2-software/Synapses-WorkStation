@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Zap } from 'lucide-react'
+import { SynapsesMascot } from '../common/SynapsesMascot' // <--- Import
 
 interface SplashScreenProps {
     onComplete: () => void
@@ -10,10 +10,7 @@ const easeOut = [0.16, 1, 0.3, 1] as const
 
 export function SplashScreen({ onComplete }: SplashScreenProps): React.JSX.Element {
     useEffect(() => {
-        // Wait 1.8 seconds to let the app mount and data fetch in the background
-        const timer = setTimeout(() => {
-            onComplete()
-        }, 1800)
+        const timer = setTimeout(() => onComplete(), 1800)
         return () => clearTimeout(timer)
     }, [onComplete])
 
@@ -31,8 +28,8 @@ export function SplashScreen({ onComplete }: SplashScreenProps): React.JSX.Eleme
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.8, ease: easeOut, delay: 0.1 }}
                 >
-                    <div className="splash-icon-glow" />
-                    <Zap size={32} strokeWidth={1.5} className="splash-icon" />
+                    {/* Use the Mascot here instead of the old icon */}
+                    <SynapsesMascot size={72} animated={true} />
                 </motion.div>
 
                 <motion.h1
@@ -43,20 +40,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps): React.JSX.Eleme
                 >
                     Synapses
                 </motion.h1>
-
-                <motion.div
-                    className="splash-loader-track"
-                    initial={{ opacity: 0, scaleX: 0 }}
-                    animate={{ opacity: 1, scaleX: 1 }}
-                    transition={{ duration: 0.6, ease: easeOut, delay: 0.4 }}
-                >
-                    <motion.div
-                        className="splash-loader-bar"
-                        initial={{ width: '0%' }}
-                        animate={{ width: '100%' }}
-                        transition={{ duration: 1.4, ease: easeOut, delay: 0.5 }}
-                    />
-                </motion.div>
+                {/* ... loader track ... */}
             </div>
         </motion.div>
     )
