@@ -40,6 +40,7 @@ import './assets/styles/dashboard.css'
 import './assets/styles/notes.css'
 import './assets/styles/settings.css'
 import './assets/styles/icons.css'
+import { ErrorBoundary } from './components/layout/ErrorBoundary'
 
 // Theme — overrides surfaces/shadows/radii on structural elements
 import './assets/styles/theme.css'
@@ -52,6 +53,8 @@ import App from './App'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
-        <App />
+        <ErrorBoundary>
+            <App />
+        </ErrorBoundary>
     </React.StrictMode>
 )

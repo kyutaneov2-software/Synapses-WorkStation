@@ -142,3 +142,75 @@
     scroll-behavior: smooth;
     overscroll-behavior-y: contain; /* Prevents scroll chaining to the body */
 }
+
+
+/* ── Error Boundary Screen ──────────────────────────────── */
+.error-boundary-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background: var(--bg-canvas);
+    padding: 20px;
+}
+
+.error-boundary-card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: var(--shadow-lg), var(--inset-highlight);
+}
+
+.error-boundary-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--danger-soft);
+    color: var(--danger);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.error-boundary-card h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-0);
+    margin: 0 0 12px 0;
+}
+
+.error-boundary-card p {
+    font-size: 14px;
+    color: var(--text-1);
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+}
+
+.error-boundary-trace {
+    width: 100%;
+    background: var(--bg-0);
+    color: var(--text-2);
+    padding: 12px;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-align: left;
+    overflow-x: auto;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-subtle);
+}
+
+.error-boundary-card .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}

@@ -1,7 +1,7 @@
 import { app, Menu, Tray, nativeImage } from 'electron'
 import trayIcon from '../../../resources/synapses-Icon.png?asset'
 import { toggleFocusWindow, getFocusWindow, createFocusWindow } from '../focusWindow'
-import { showMainWindow } from '../mainWindow'
+import { showMainWindow, getMainWindow, setQuitting } from '../mainWindow'
 
 let tray: Tray | null = null
 
@@ -31,6 +31,20 @@ export function createTray(): Tray {
             click: (): void => showMainWindow()
         },
         {
+            label: 'Settings',
+            click: (): void => {
+                const win = getMainWindow()
+                if (win && !win.isDestroyed()) {
+                    if (win.isMinimized()) win.restore()
+                    win.show()
+                    win.focus()
+                    // Use executeJavaScript to trigger HashRouter navigation
+                    win.webContents.executeJavaScript("window.location.hash = '#/settings'")
+                }
+            }
+        },
+        { type: 'separator' },
+        {
             label: 'Toggle Focus Window',
             click: (): void => toggleFocusWindow()
         },
@@ -50,6 +64,9 @@ export function createTray(): Tray {
         {
             label: 'Quit Synapses WorkStation',
             click: (): void => {
+                // CRITICAL: Tell mainWindow that we actually want to quit,
+                // so it bypasses the "Minimize to Tray on Close" logic.
+                setQuitting(true)
                 app.quit()
             }
         }
